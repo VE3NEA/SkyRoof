@@ -1,0 +1,145 @@
+{
+  "source_base_path": "/home/runner/work/SkyRoof/SkyRoof/docs",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "Resource",
+      "output": {
+        "resource": {
+          "relative_path": "index.json"
+        }
+      }
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "credits.md",
+      "output": {
+        ".html": {
+          "relative_path": "credits.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "download.md",
+      "output": {
+        ".html": {
+          "relative_path": "download.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/main_window.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/main_window.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/main_window_TH.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/main_window_TH.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "quick_start.md",
+      "output": {
+        ".html": {
+          "relative_path": "quick_start.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/data_folder.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/data_folder.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/overview.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/overview.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/pdf_cover.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/pdf_cover.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/satellite_data.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/satellite_data.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "users_guide/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/toc.html"
+        },
+        ".json": {
+          "relative_path": "users_guide/toc.json"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}

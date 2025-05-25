@@ -1,0 +1,42 @@
+{
+  "credits.html": {
+    "href": "credits.html",
+    "title": "Credits | SkyRoof",
+    "summary": "Credits"
+  },
+  "download.html": {
+    "href": "download.html",
+    "title": "Download | SkyRoof",
+    "summary": "Download"
+  },
+  "index.html": {
+    "href": "index.html",
+    "title": "SkyRoof | SkyRoof",
+    "summary": "SkyRoof A Windows application for Hams and satellite enthusiasts"
+  },
+  "quick_start.html": {
+    "href": "quick_start.html",
+    "title": "Quick Start | SkyRoof",
+    "summary": "Quick Start"
+  },
+  "users_guide/data_folder.html": {
+    "href": "users_guide/data_folder.html",
+    "title": "| SkyRoof",
+    "summary": ""
+  },
+  "users_guide/overview.html": {
+    "href": "users_guide/overview.html",
+    "title": "| SkyRoof",
+    "summary": ""
+  },
+  "users_guide/pdf_cover.html": {
+    "href": "users_guide/pdf_cover.html",
+    "title": "SkyRoof | SkyRoof",
+    "summary": "SkyRoof software for Hams and satellite enthusiasts User's Guide Copyright (c) 2025 Alex Shovkoplyas, VE3NEA"
+  },
+  "users_guide/satellite_data.html": {
+    "href": "users_guide/satellite_data.html",
+    "title": "| SkyRoof",
+    "summary": ""
+  }
+}
