@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Setting Up CAT Control | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Setting Up CAT Control | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/setting_up_cat_control.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="setting-up-cat-control">Setting Up CAT Control</h1>
+
+<div class="WARNING">
+<h5>Warning</h5>
+<p>The initial release of the beta version was tested only with an IC-9700 radio.
+The code for other radio models is present but has not been tested. If you have a different radio
+and are willing to do extensive testing, please send me an email.</p>
+</div>
+<h2 id="rigctldexe">rigctld.exe</h2>
+<p>SkyRoof uses <strong>rigctld.exe</strong>, a HamLib-based CAT control daemon, to control the radio.</p>
+<ol>
+<li><p>Download HamLib from <a href="https://github.com/Hamlib/Hamlib">its GitHub page</a>: click on <strong>Releases / Latest</strong>,
+then download <strong>hamlib-w64-4.6.2.exe</strong>, or a later version if available.</p>
+</li>
+<li><p>Run the downloaded file to install HamLib, note the folder where it is installed.</p>
+</li>
+<li><p>Create a shortcut to start *<em>rigctld.exe</em>, with command line arguments:</p>
+<p><img src="../images/rigctld_shortcut.png" alt="Rigctld Shortcut"></p>
+<p>The arguments on the command line must be tailored for your specific radio and COM port settings. Refer to the
+<a href="https://hamlib.sourceforge.net/html/rigctld.1.html">rigctld documentation</a> for a complete description
+of the arguments. In the example above the following arguments are used:</p>
+<ul>
+<li><strong>-m 3081</strong> - the radio model is IC-9700;</li>
+<li><strong>-r COM9</strong> - the COM port used by the radio. In this case, the USB connection to IC-9700 creates two virtual
+COM ports, COM9 and COM10. The port with the lower number is used for CAT;</li>
+<li><strong>-s 115200</strong> - use the highest available COM port speed.</li>
+</ul>
+</li>
+<li><p>Run rigctld.exe using this shortcut before you enable CAT control in SkyRoof.</p>
+</li>
+</ol>
+<h2 id="settings">Settings</h2>
+<p>Click on <strong>Tools / Settings</strong> in the main menu to open the
+<a href="settings_window.html">Settings dialog</a>:</p>
+<p><img src="../images/cat_settings.png" alt="Settings Dialog"></p>
+<ul>
+<li><strong>Delay</strong> determines how often SkyRoof sends commands to the radio. The default delay of 100 ms
+is good in most cases. Increase the delay if your radio is slow;</li>
+<li><strong>Log Traffic</strong> should be set to False and enabled only for debugging;</li>
+<li><strong>Ignore Dial Knob</strong> - by default, CAT control allows you to change the frequency both in the program and by
+spinning the dial knob. If for some reason this causes trouble, change this setting to True, then the dial knob
+will be ignored.</li>
+</ul>
+<p>The two sections in the Settings, <strong>RX CAT</strong> and <strong>TX CAT</strong>, allow you to use either the same radio for RX and TX, or
+two different radios. You can also enable only one of those, or disable both. The recommended configuration is to use an SDR for reception and a transceiver for transmission, in this case RX CAT should be disabled.</p>
+<p>To use the same radio for RX and TX, set <strong>Host</strong>, <strong>TCP Port</strong> and <strong>Radio Type</strong> to the same values in
+both sections.</p>
+<p>To use two different radios, create a second shortcut for the second radio, and specify a different port number on the command line.
+Enter this port number in the settings as well, and run two instances of <strong>rigctld.exe</strong> using both shortcuts.</p>
+<p>The settings in the RX and TX sections are:</p>
+<ul>
+<li><p><strong>Host</strong> - should be &quot;127.0.0.1&quot; or &quot;localhost&quot; if rigctld is running on the same computer as SkyRoof. It may be changed to a
+different address for remote control;</p>
+</li>
+<li><p><strong>TCP Port</strong> - 4532 is the default port used by rigctld. Use a different port in one of the sections to control different radios for RX and TX;</p>
+</li>
+<li><p><strong>Enabled</strong> - enable or disable CAT. Another way to toggle CAT is to click on the CAT labels on the status bar:</p>
+<p><img src="../images/cat_on_statusbar.png" alt="CAT on Statusbar"></p>
+</li>
+<li><p><strong>Radio Type</strong> - as mentioned above, the beta version has been tested only with IC-9700, which is a duplex transceiver.
+Change this setting if you want to test a radio of a different type;</p>
+</li>
+<li><p><strong>Show Corrected Frequency</strong> - The SkyRoof can display either the nominal frequency of the satellite transmitter, or the
+frequency with all corrections applied. Another way to toggle this setting is via a right-click menu on the frequency
+display on the toolbar.</p>
+</li>
+</ul>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

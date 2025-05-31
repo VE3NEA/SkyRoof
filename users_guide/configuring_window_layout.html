@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Configuring the Window Layout | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Configuring the Window Layout | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/configuring_window_layout.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="configuring-the-window-layout">Configuring the Window Layout</h1>
+
+<p>The layout of SkyRoof's main window is under your full control. Any panel may be shown or hidden,
+docked anywhere in the window, or left floating.</p>
+<h2 id="show-and-hide">Show and Hide</h2>
+<p>Show the panels using the menu commands in the <strong>View</strong> section, hide them using the same command again, or by clicking on the
+Close button on panel's caption bar.</p>
+<h3 id="dock">Dock</h3>
+<p>To dock the panel, start dragging it by its caption bar. When the dragging starts, the drop target icons appear in the places where
+the panel may be docked:</p>
+<p><img src="../images/drop_targed_icons.png" alt="Drop Target Icons"></p>
+<p>Drop the panel on one of such icons. Drop it anywhere else to leave it floating.</p>
+<h2 id="central-area">Central Area</h2>
+<p>The central area of the window is usually occupied with the waterfall display. If you are not using an SDR and thus do not have
+a waterfall, you may want to use that area for something else, e.g., the
+<a href="earth_view_panel.html">Earth View Panel</a>
+and
+<a href="sky_view_panel.html">Sky View Panel</a>:</p>
+<br>
+<p><img src="../images/window_layout_1.png" alt="Window Layout"></p>
+<p>Note that the frequency scale is useful even without an SDR, in this case it could be docked at the bottom.</p>
+<h2 id="auto-hide">Auto-Hide</h2>
+<p>A panel may be switched to the auto-hide mode so that it does not occupy any space until you click on its tab:</p>
+<p><img src="../images/window_layout_2.png" alt="Window Layout"></p>
+<p>Note the &quot;Waterfall&quot; tab in the bottom left corner of the screenshot above: when you click on it, the Waterfall panel
+temporarily slides into view. To enable auto-hide, click on the Auto-Hide button
+<img src="../images/auto_hide_button.png" alt="Auto Hide Btn"> on the caption bar.</p>
+<h2 id="tabbing">Tabbing</h2>
+<p>If you drop one panel over the other, they become tabbed, as
+<a href="satellite_details_panel.html">Satellite Details Panel</a>
+and
+<a href="satellite_transmitters_panel.html">Satellite Transmitters panel</a>
+in the screenshot below:</p>
+<p><img src="../images/window_layout_3.png" alt="Window Layout"></p>
+<p>Now you can switch between the panels by clicking on their tabs.</p>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

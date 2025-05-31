@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Satellites and Groups | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Satellites and Groups | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/satellites_and_groups_window.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="satellites-and-groups">Satellites and Groups</h1>
+
+<p>Click on <strong>Tools / Satellites and Groups</strong> in the main menu to open the <strong>Satellites and Groups</strong> window:</p>
+<p><img src="../images/satellites_and_groups.png" alt="Satellites and Groups Window"></p>
+<h2 id="exploring-the-satellite-data">Exploring the satellite data</h2>
+<p>This window is a great tool for browsing the information about the satellites that is available in SkyRoof.
+For a detailed description of the data see the <a href="satellite_data.html">Satellite Data</a> section.</p>
+<h3 id="highlighting">Highlighting</h3>
+<p>The satellites are highlighted based on their properties as described in the
+<a href="satellite_highlighting.html">Satellite Highlighting</a> section.</p>
+<h3 id="filtering">Filtering</h3>
+<p>Using the checkboxes at the top of the left panel, the satellites may be filtered by:</p>
+<ul>
+<li><strong>Status</strong> - Alive, Future or Re-Entered. If you cannot find some satellite in the list, tick the
+Re-Entered checkbox, maybe this satellite has already re-entered the atmosphere;</li>
+<li><strong>Bands</strong> - show only the satellites that have at least one transmitter working in the VHF (2m), UHF (70cm) or in any other band;</li>
+<li><strong>Radio</strong> - the radio type: linear transponder, FM transceiver or a telemetry/beacon transmitter;</li>
+<li><strong>Service</strong> - Ham or non-Ham, as marked in the database.</li>
+</ul>
+<h3 id="searching">Searching</h3>
+<p>Use the <strong>Search</strong> box to search the satellites by name, callsign or NORAD Id.
+The search is case-insensitive, punctuation is ignored. If a satellite has multiple names, any name may be used.
+For example, the RS-44 satellite is found by entering &quot;RS-44&quot;, &quot;rs44&quot; or &quot;DOSAAF-85&quot; in the search box.</p>
+<p>The numbers on the bottom bar show the total number of satellites in the database and the number of those that match the filters
+and search string.</p>
+<h3 id="viewing-details">Viewing Details</h3>
+<p>Right-click on a satellite and click on <strong>Satellite Details</strong>, or press <strong>Ctrl-D</strong>, to open the
+<a href="satellite_details_window.html">Satellite Details window</a>.</p>
+<h3 id="renaming-satellites">Renaming Satellites</h3>
+<p>To rename a satellite, press <strong>F2</strong>, or right-click on the satellite and click on <strong>Rename</strong> in the popup menu.</p>
+<h2 id="editing-satellite-groups">Editing Satellite Groups</h2>
+<p>The right panel of the window shows the satellite groups. See the <a href="creating_satellite_groups.html">Creating Satellite Groups</a> section
+for information about creating and editing the satellite groups. The following editing commands are available:</p>
+<ul>
+<li>the <strong>[+]</strong> button creates a new group. Press <strong>F2</strong>, or use the popup menu, to rename the group;</li>
+<li>the <strong>[&gt;]</strong> and <strong>[&lt;]</strong> buttons add or remove the satellites to/from the group;</li>
+<li>drad-and-drop from the satellite list to the grop adds the satellite to the group;</li>
+<li>drag-and-drop of a satellite between the groups moves it to another group;</li>
+<li>drag-and-drop with the <strong>Ctrl</strong> key down adds a copy of the satellite to another group;</li>
+<li>drad-and-drop re-orders the groups, or the satellites in the group;</li>
+<li>the Delete key deletes the group, or the satellite from the group;</li>
+<li>the popup menu of the group or satellite is an alternative way of accomplishing the same tasks.</li>
+</ul>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

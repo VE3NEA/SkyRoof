@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Setting Up Rotator Control | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Setting Up Rotator Control | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/setting_up_rotator_control.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="setting-up-rotator-control">Setting Up Rotator Control</h1>
+
+<h2 id="rotctldexe">rotctld.exe</h2>
+<p>SkyRoof uses <strong>rotctld.exe</strong>, a HamLib-based rotator control daemon, to control the antanna rotator.
+See the <a href="setting_up_cat_control.html">Setting Up CAT Control</a> section for the instructions how to
+download and install HamLib.</p>
+<p>Create a shortcut to start *<em>rotctld.exe</em>, with command line arguments:</p>
+<p><img src="../images/rotctld_shortcut.png" alt="Rotctld Shortcut"></p>
+<p>The arguments on the command line must be tailored for your specific rotator and COM port settings. Refer to the
+<a href="https://hamlib.sourceforge.net/html/rotctld.1.html">rotctld documentation</a> for a complete description
+of the arguments. In the example above the following arguments are used:</p>
+<ul>
+<li><strong>-m 601</strong> - the rotator model is Yaesu GS-232A;</li>
+<li><strong>-r COM12</strong> - the COM port used by the rotator;</li>
+<li><strong>-s 9600</strong> - the COM port speed.</li>
+</ul>
+<p>Run rotctld.exe using this shortcut before you enable rotator control in SkyRoof.</p>
+<h2 id="settings">Settings</h2>
+<p>Click on <strong>Tools / Settings</strong> in the main menu to open the
+<a href="settings_window.html">Settings dialog</a>:</p>
+<p><img src="../images/rotator_settings.png" alt="Settings Dialog"></p>
+<ul>
+<li><strong>Delay</strong> determines how often SkyRoof sends commands to the rotator. The default delay is 300 ms;</li>
+<li><strong>Log Traffic</strong> should be set to False and enabled only for debugging;</li>
+<li><strong>Enabled</strong> - enable or disable rotator control. Another way to toggle the rotator control
+is to click on the Rotator label on the status bar;</li>
+<li><strong>Host</strong> - should be &quot;127.0.0.1&quot; or &quot;localhost&quot; if rotctld is running on the same computer as SkyRoof. It may be changed to a
+different address for remote control;</li>
+<li><strong>TCP Port</strong> - 4533 is the default port used by rotctld;</li>
+<li><strong>Minimum Azimuth</strong>, <strong>Maximum Azimuth</strong>, <strong>Minimum Elevation</strong>, <strong>Maximum Elevation</strong> -
+specify the range of values your rotator accepts;</li>
+<li><strong>Azimuth Offset</strong>, <strong>Elevation Offset</strong> - if your rotator is not perfectly calibrated, these settings
+allow you to apply a correction;</li>
+<li><strong>Step Size</strong> - to prevent the rotator from starting and stopping too often, change the bearing
+only when the required change is greater than the step size. The default value is 5 degrees.</li>
+</ul>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

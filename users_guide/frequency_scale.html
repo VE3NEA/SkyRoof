@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Frequency Scale | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Frequency Scale | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/frequency_scale.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="frequency-scale">Frequency Scale</h1>
+
+<p>The frequency scale appears on the
+<a href="waterfall_display.html">Waterfall Display</a> panel, above the waterfall:</p>
+<p><img src="../images/frequency_scale.png" alt="Frequency Scale"></p>
+<h2 id="satellite-transmitters">Satellite Transmitters</h2>
+<p>The Doppler-corrected frequencies of the satellite transmitters are marked on the frequency scale
+with small triangles, labeled with the satellite names:</p>
+<ul>
+<li><strong>green triangles</strong> - the satellites that are currently above the horizon;</li>
+<li><strong>white triangles</strong> - the satellites that will rise in the next 5 minutes;</li>
+<li><strong>gray triangles</strong> - the satellites that are already below the horizon, but whose signals are still
+may be visible on the waterfall;</li>
+</ul>
+<br>
+<ul>
+<li><strong>blue rectangles</strong> - the transponder segments of the satellites above the horizon;</li>
+<li><strong>gray rectangles</strong> - the transponder segments of the satellites below the horizon.</li>
+</ul>
+<p>The names of the satellites that belong to the current group are shown in bold;</p>
+<p>The current transmitter has its satellite name on the light blue background.</p>
+<p>Move the mosue cursor over a satellite name to see the details on the mouse tooltip.</p>
+<p>Right-click on a satellite name to open the popup menu with these commands:</p>
+<ul>
+<li><p><strong>Select Transmitter</strong> - if the satellite has more than one transmitter on the same frequency,
+this command is enabled and allows you to set one of the transmitters as selected;</p>
+</li>
+<li><p><strong>Add to Group</strong> - add the satellite to one of the existing groups;</p>
+</li>
+<li><p><strong>Report to AMSAT</strong> - open the dialog to report your observation of this satellite
+to <a href="https://www.amsat.org/status/">AMSAT Live OSCAR Satellite Status Page</a></p>
+<p><img src="../images/amsat_dialog.png" alt="AMSAT Dialog"></p>
+</li>
+<li><p><strong>Satellite Details</strong> - opens the <a href="satellite_details_window.html">Satellite Details window</a></p>
+</li>
+</ul>
+<h2 id="sdr-receiver">SDR Receiver</h2>
+<p>The passband of the SDR receiver is shown on the frequency scale as a green rectangle.
+To tune the receiver:</p>
+<ul>
+<li>click on one of the satellite labels to start tracking satellite's transmitter;</li>
+<li>click within a blue transponder segment to select the transmitter and set the transponder offset;</li>
+<li>click anywhere on the frequency scale to tune to a terrestrial signal;</li>
+<li>drag the green rectangle to another frequency with a mouse;</li>
+<li>spin the mouse wheel on or near the green rectangle.</li>
+</ul>
+<p>The effect of tuning depends on the transmitter selection:</p>
+<ul>
+<li>when tuned to a terrestrial signal, tuning the SDR receiver just changes the receiver frequency;</li>
+<li>when a satellite transmitter is tracked, tuning adjusts the <strong>Manual Offset</strong> of the satellite
+(see below);</li>
+<li>if a satellite transponder is selected, tuning changes the receiver offset within the
+transponder segment.</li>
+</ul>
+<p>Another way to tune the SDR receiver is to use the
+<a href="frequency_control.html">Frequency Control</a>
+on the toolbar.</p>
+<p>If <a href="setting_up_cat_control.html">RX CAT</a>
+is enabled, tuning the SDR receiver also tunes the external radio to the same frequency.</p>
+<div class="NOTE">
+<h5>Note</h5>
+<p>Get a mouse with a free-spinning wheel, such as Logitech MX Master 3S, this makes tuning
+much easier.</p>
+<p><img src="../images/mouse.png" alt="logitech"></p>
+</div>
+<h2 id="manual-offset">Manual Offset</h2>
+<p>The Manual Offset setting compensates for the transmitter frequency error, see
+<a href="frequency_control.html">Frequency Control</a> and <a href="doppler_tracking.html">Doppler Tracking</a> for details.</p>
+<p>The offset value is usually the same for all transmitters of a satellite, adjust it for some
+non-transponder transmitter before using the transponder. Most satellites with a transponder also
+carry a telemetry or beacon transmitter that you can use to set the manual offset:</p>
+<p><img src="../images/mo-122.png" alt="MO-122"></p>
+<h2 id="rit">RIT</h2>
+<p>While the RIT function could be controlled using the
+<a href="frequency_control.html">Frequency Control</a> panel, it is more convenitent to do this on the frequency scale:</p>
+<p><img src="../images/rit.png" alt="RIT"></p>
+<p>When RIT is enabled, the clear rectangle shows the current receiver passband, while the green rectangle
+stays on the main frequency.</p>
+<ul>
+<li>spin the mouse wheel on or near the green rectangle while holding the <strong>Ctrl</strong> key down: this enables RIT
+and tunes its offset;</li>
+<li>spin the mouse wheel on or near the green rectangle WITHOUT holding the <strong>Ctrl</strong> key down: this
+disables RIT and tunes the main frequency;</li>
+<li>right-click on or near the green rectangle to turn RIT on and off.</li>
+</ul>
+<h2 id="resizing">Resizing</h2>
+<p>Adjust the height of the frequency scale by dragging the splitter between the scale and the waterfall:</p>
+<p><img src="../images/splitter.png" alt="Splitter"></p>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

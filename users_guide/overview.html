@@ -2,12 +2,12 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title> | SkyRoof </title>
+      <title>Overview | SkyRoof </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content=" | SkyRoof ">
+      <meta name="title" content="Overview | SkyRoof ">
       
       
-      <link rel="icon" href="../favicon.ico">
+      <link rel="icon" href="../images/SkyRoof.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
       <meta name="docfx:navrel" content="../toc.html">
@@ -44,8 +44,8 @@
       <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
         <div class="container-xxl flex-nowrap">
           <a class="navbar-brand" href="../index.html">
-            <img id="logo" class="svg" src="../logo.svg" alt="SkyRoof">
-            SkyRoof
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
           </a>
           <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
             <i class="bi bi-three-dots"></i>
@@ -85,13 +85,39 @@
         </div>
 
         <article data-uid="">
+<h1 id="overview">Overview</h1>
 
+<p>SkyRoof is an open source, 64-bit Windows application for Hams and satellite enthusiasts,
+available on the terms of the GPL v.3 license. It combines satellite trackikng and SDR functions in one program,
+which opens some interesting possibilities. For example, all satellite traces on the waterfall are labeled
+with satellite names, the boundaries of the transponder segments follow the Doppler shift,
+and all frequency tuning is done visually, with a mouse.</p>
+<p><img src="../images/main_window_TH.png" alt="Main Window"></p>
+<h2 id="features">Features</h2>
+<p>The main features of SkyRoof are:</p>
+<ul>
+<li>detailed information about all satellites that transmit in the Ham bands;</li>
+<li>satellite tracking in real time;</li>
+<li>pass prediction for the selected satellites;</li>
+<li>visual representation of the current satllite position and future passes, using:
+<ul>
+<li>Sky View - the view of the sky from your location;</li>
+<li>Earth View - the view of the Earth from the satellite;</li>
+<li>Time Line - the satellite passes on the time scale;</li>
+<li>Pass List - the details of the predicted passes;</li>
+</ul>
+</li>
+<li>SDR-based waterfall display that covers the whole satellite segments on the VHF and UHF bands, with zoom and pan;</li>
+<li>SDR-based SSB/CW/FM receiver with RIT and Doppler tracking;</li>
+<li>audio and I/Q output to external programs via VAC;</li>
+<li>frequency scale with satellite names and transponder segments, Doppler-corrected;</li>
+<li>CAT control of an external transceiver;</li>
+<li>antenna rotator control.</li>
+</ul>
+<p>The program can work without an SDR, or even without any radio at all, but many useful functions are not available in this mode.</p>
 
 </article>
 
-        <div class="contribution d-print-none">
-          <a href="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/overview.md/#L1" class="edit-link">Edit this page</a>
-        </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>
 

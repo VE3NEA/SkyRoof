@@ -32,6 +32,186 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/SkyRoof.ico",
+      "output": {
+        "resource": {
+          "relative_path": "images/SkyRoof.ico"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/amsat_dialog.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/amsat_dialog.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/audio_labels.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/audio_labels.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/audio_settings.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/audio_settings.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/auto_hide_button.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/auto_hide_button.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/cat_on_statusbar.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/cat_on_statusbar.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/cat_settings.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/cat_settings.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/current_group.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/current_group.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/data_download_dialog.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/data_download_dialog.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/drop_targed_icons.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/drop_targed_icons.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/earth_view.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/earth_view.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/email_me.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/email_me.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/fft_setup.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/fft_setup.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/frequency_control.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/frequency_control.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/frequency_entry_dialog.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/frequency_entry_dialog.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/frequency_scale.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/frequency_scale.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/gain_control.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/gain_control.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/letter-s-svgrepo-com.svg",
+      "output": {
+        "resource": {
+          "relative_path": "images/letter-s-svgrepo-com.svg"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/main_window.png",
       "output": {
         "resource": {
@@ -51,21 +231,381 @@
       "version": ""
     },
     {
-      "type": "Conceptual",
-      "source_relative_path": "index.md",
+      "type": "Resource",
+      "source_relative_path": "images/manual_rotator_control.png",
       "output": {
-        ".html": {
-          "relative_path": "index.html"
+        "resource": {
+          "relative_path": "images/manual_rotator_control.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/mo-122.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/mo-122.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/mouse.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/mouse.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/ppm_calibration_1.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/ppm_calibration_1.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/ppm_calibration_2.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/ppm_calibration_2.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/red_spot.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/red_spot.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rigctld_shortcut.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rigctld_shortcut.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rit.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rit.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rotator_control.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rotator_control.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rotator_settings.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rotator_settings.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rotctld_shortcut.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rotctld_shortcut.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/s_over_the_globe.svg",
+      "output": {
+        "resource": {
+          "relative_path": "images/s_over_the_globe.svg"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/satellite_data_age.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/satellite_data_age.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/satellite_details_dialog.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/satellite_details_dialog.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/satellite_details_panel.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/satellite_details_panel.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/satellite_passes.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/satellite_passes.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/satellite_selector.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/satellite_selector.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/satellite_transmitters_panel.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/satellite_transmitters_panel.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/satellites_and_groups.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/satellites_and_groups.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/sdr_devices_dialog.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/sdr_devices_dialog.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/settings_dialog.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/settings_dialog.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/sky_view.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/sky_view.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/skyroof_icon.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/skyroof_icon.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/skyroof_icon_128x128.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/skyroof_icon_128x128.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/skyroof_icon_32x32.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/skyroof_icon_32x32.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/splitter.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/splitter.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/time_line.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/time_line.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/tle_date_details.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/tle_date_details.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/tle_date_tooltip.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/tle_date_tooltip.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/tune_to_frequency.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/tune_to_frequency.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/user_details.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/user_details.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/voice_announcement_settings.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/voice_announcement_settings.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/waterfall.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/waterfall.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/waterfall_sliders.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/waterfall_sliders.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/window_layout_1.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/window_layout_1.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/window_layout_2.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/window_layout_2.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/window_layout_3.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/window_layout_3.png"
         }
       },
       "version": ""
     },
     {
       "type": "Conceptual",
-      "source_relative_path": "quick_start.md",
+      "source_relative_path": "index.md",
       "output": {
         ".html": {
-          "relative_path": "quick_start.html"
+          "relative_path": "index.html"
         }
       },
       "version": ""
@@ -85,10 +625,90 @@
     },
     {
       "type": "Conceptual",
-      "source_relative_path": "users_guide/data_folder.md",
+      "source_relative_path": "users_guide/calibrating_ppm_correction.md",
       "output": {
         ".html": {
-          "relative_path": "users_guide/data_folder.html"
+          "relative_path": "users_guide/calibrating_ppm_correction.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/configuring_window_layout.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/configuring_window_layout.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/creating_satellite_groups.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/creating_satellite_groups.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/current_group_panel.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/current_group_panel.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/doppler_tracking.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/doppler_tracking.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/earth_view_panel.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/earth_view_panel.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/frequency_control.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/frequency_control.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/frequency_scale.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/frequency_scale.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/gain_control.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/gain_control.html"
         }
       },
       "version": ""
@@ -115,10 +735,190 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "users_guide/quick_start.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/quick_start.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/rotator_control.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/rotator_control.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "users_guide/satellite_data.md",
       "output": {
         ".html": {
           "relative_path": "users_guide/satellite_data.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/satellite_details_panel.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/satellite_details_panel.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/satellite_details_window.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/satellite_details_window.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/satellite_highlighting.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/satellite_highlighting.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/satellite_passes_panel.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/satellite_passes_panel.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/satellite_selector.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/satellite_selector.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/satellite_transmitters_panel.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/satellite_transmitters_panel.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/satellites_and_groups_window.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/satellites_and_groups_window.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/setting_up_audio.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/setting_up_audio.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/setting_up_cat_control.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/setting_up_cat_control.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/setting_up_rotator_control.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/setting_up_rotator_control.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/setting_up_sdr.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/setting_up_sdr.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/setting_up_voice_announcements.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/setting_up_voice_announcements.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/settings_window.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/settings_window.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/sky_view_panel.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/sky_view_panel.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/system_requirements.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/system_requirements.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/time_line_panel.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/time_line_panel.html"
         }
       },
       "version": ""
@@ -132,6 +932,26 @@
         },
         ".json": {
           "relative_path": "users_guide/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/user_data_folder.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/user_data_folder.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/waterfall_display.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/waterfall_display.html"
         }
       },
       "version": ""

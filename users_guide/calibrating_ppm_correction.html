@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Calibrating PPM Correction | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Calibrating PPM Correction | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/calibrating_ppm_correction.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="calibrating-ppm-correction">Calibrating PPM Correction</h1>
+
+<h2 id="motivation">Motivation</h2>
+<p>The clock frequency of an SDR, as it comes from the factory, is rarely accurate. Typical errors are in the range of
+a few PPM (parts per million),
+which translates to a tuning error of 1-2 Khz on the 70 cm band. For accurate tracking of the satellite signals this error
+must be calibrated out. The calibration process is simple, we just find a signal of known frequency, check on what frequecy it
+appears on the waterfall, and compute the PPM correction factor from the difference between the two.</p>
+<p>There are plenty of signals on the air that may be used for calibration, if one knows what to look for. One of such
+signals is the
+<a href="https://en.wikipedia.org/wiki/FCCH">FCCH channel</a>
+of a
+<a href="https://en.wikipedia.org/wiki/GSM_frequency_bands">GSM</a>
+downlink. This channel is located 67,708 Hz above the center frequency of a GSM channel, and the accuracy of its
+frequency is claimed to be better than 0.05 PPM.</p>
+<h2 id="3-rd-party-software">3-rd Party Software</h2>
+<p>For the RTL-SDR dongles you can use the
+<a href="https://github.com/steve-m/kalibrate-rtl">Kalibrate</a>
+utility that performs such calibration automatically. For other radios follow the steps below.</p>
+<h2 id="steps">Steps</h2>
+<ol>
+<li><p>Find a strong GSM signal, or any other signal of known frequency. In my area one of such signals is present on 890.8 MHz.</p>
+</li>
+<li><p>Click on the Downlink frequency display in the
+<a href="frequency_control.html">Frequency Control</a>
+panel on the toolbar to open the frequency entry dialog:</p>
+<p><img src="../images/frequency_entry_dialog.png" alt="Frequency Entry Dialog"></p>
+</li>
+<li><p>Enter the frequency of the channel plus the FCCH offset:</p>
+<pre><code>890,800,000 + 67,708 = 890,867,708 Hz
+</code></pre>
+</li>
+<li><p>Click on the Tune button in the dialog and verify that the SDR is tuned to the desired frequency:</p>
+<p><img src="../images/ppm_calibration_1.png" alt="waterfall"></p>
+</li>
+<li><p>Zoom in by spinning the mouse wheel over the waterfall display:</p>
+</li>
+<li><p>Find the FCCH signal. On the screenshot below it is about 4 kHz above the expected frequency:</p>
+<p><img src="../images/ppm_calibration_2.png" alt="waterfall"></p>
+</li>
+<li><p>Now let us measure the offset between the receiver frequency (the center of the green rectangle that represents
+the receiver passband) and the FCCH frequency. Tick the <strong>RIT</strong> checkbox on the <strong>Frequency Control panel</strong>
+and adjust the RIT offset until the RIT passband (the clear rectangle) aligns with the signal.
+You can tune RIT in many different ways, as described in the
+<a href="frequency_control.html">Frequency Control</a> and <a href="frequency_scale.html">Frequency Scale</a> sections. For now, just use the
+up/down buttons in the RIT offset box, or spin the mouse wheel over that box.</p>
+</li>
+<li><p>Compute the PPM correction. The frequency error measured in the previuos step is 3,760 Hz, so the PPM is:</p>
+<pre><code>3,760 / 890,867,708 * 1e6 = 4.22 PPM
+</code></pre>
+</li>
+<li><p>Now enter this value in the <a href="setting_up_sdr.html">SDR Devices dialog</a>, and you are done.</p>
+</li>
+</ol>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
