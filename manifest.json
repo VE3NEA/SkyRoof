@@ -665,6 +665,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "users_guide/data_folder.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/data_folder.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "users_guide/doppler_tracking.md",
       "output": {
         ".html": {
@@ -932,16 +942,6 @@
         },
         ".json": {
           "relative_path": "users_guide/toc.json"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
-      "source_relative_path": "users_guide/user_data_folder.md",
-      "output": {
-        ".html": {
-          "relative_path": "users_guide/user_data_folder.html"
         }
       },
       "version": ""

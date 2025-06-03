@@ -7,12 +7,12 @@
   "download.html": {
     "href": "download.html",
     "title": "Download | SkyRoof",
-    "summary": "Download Current Version SkyRoof.zip v.1.1 Beta Previous Versions See All Releases Release Notes v.1.1 Beta missing DLL's added to the installer. v.1.0 Beta the first public release."
+    "summary": "Download Current Version SkyRoof.zip v.1.2 Beta Previous Versions See All Releases Release Notes v.1.2 Beta waterfall display now works with most video cards; improved logging. v.1.1 Beta missing DLL's added to the installer. v.1.0 Beta the first public release."
   },
   "index.html": {
     "href": "index.html",
     "title": "SkyRoof | SkyRoof",
-    "summary": "SkyRoof A Windows application for Hams and satellite enthusiasts open source Copyright © 2025 Alex Shovkoplyas, VE3NEA Features SkyRoof combines satellite trackikng and SDR functions in one application, which opens some interesting possibilities. For example, all satellite traces on the waterfall are labeled with satellite names, the boundaries of the transponder segments follow the Doppler shift, and all frequency tuning is done visually, with a mouse. The main features of SkyRoof are: detailed information about all satellites that transmit in the Ham bands; satellite tracking in real time; pass prediction for the selected satellites; visual representation of the current satllite position and future passes, using: Sky View - the view of the sky from your location; Earth View - the view of the Earth from the satellite; Time Line - the satellite passes on the time scale; Pass List - the details of the predicted passes; SDR-based waterfall display that covers the whole satellite segments on the VHF and UHF bands, with zoom and pan; SDR-based SSB/CW/FM receiver with RIT and Doppler tracking; audio and I/Q output to external programs via VAC; frequency scale with satellite names and transponder segments, Doppler-corrected; CAT control of an external transceiver; antenna rotator control. The program can work without an SDR, or even without any radio at all, but many useful functions are not available in this mode. See Also System Requirements"
+    "summary": "SkyRoof A Windows application for Hams and satellite enthusiasts open source Copyright © 2025 Alex Shovkoplyas, VE3NEA Features SkyRoof combines satellite trackikng and SDR functions in one application, which opens some interesting possibilities. For example, all satellite traces on the waterfall are labeled with satellite names, the boundaries of the transponder segments follow the Doppler shift, and all frequency tuning is done visually, with a mouse. The main features of SkyRoof are: detailed information about all satellites that transmit in the Ham bands; satellite tracking in real time; pass prediction for the selected satellites; visual representation of the current satllite position and future passes, using: Sky View - the view of the sky from your location; Earth View - the view of the Earth from the satellite; Time Line - the satellite passes on the time scale; Pass List - the details of the predicted passes; SDR-based waterfall display that covers the whole satellite segments on the VHF and UHF bands, with zoom and pan; SDR-based SSB/CW/FM receiver with RIT and Doppler tracking; audio and I/Q output to external programs via VAC; frequency scale with satellite names and transponder segments, Doppler-corrected; CAT control of an external transceiver; antenna rotator control. The program can work without an SDR, or even without any radio at all, but many useful functions are not available in this mode. See Also System Requirements Discussion Group SkyRoof at Google Groups"
   },
   "users_guide/calibrating_ppm_correction.html": {
     "href": "users_guide/calibrating_ppm_correction.html",
@@ -33,6 +33,11 @@
     "href": "users_guide/current_group_panel.html",
     "title": "Current Group | SkyRoof",
     "summary": "Current Group The Current Satellite Group panel shows the list of the satellites in the currently selected group: Click on a satellite to select it. Move the mouse cursor over the satellite name to see the mouse tooltip. Right-click on the satellite and click on Satellite Details in the popup menu to open the Satellite Details Wndow."
+  },
+  "users_guide/data_folder.html": {
+    "href": "users_guide/data_folder.html",
+    "title": "Data Folder | SkyRoof",
+    "summary": "Data Folder SkyRoof keeps all of its data in the data folder. Click on Help / Data Folder in the main menu to open this folder in File Explorer. To open the folder when the program is not running, type this in File Explorer: %appdata%\\Afreet\\Products\\SkyRoof Data Files Settings.json - this is the file where all user-defined settings are stored; amsat_sat_names.json - satellite names used on AMSAT Live OSCAR Satellite Status Page. The Frequency Scale section explains how to post your observations to this page; lotw_sat_names.json - the list of satellite abbreviations accepted by LoTW; Satellites.json - the satellite database compiled from the downloaded data; cat_info.json - information about the CAT capabilities of different radios; wsjtx_wisdom.dat - optimal FFT transform settings found by automatic testing. Folders Logs - contains the log files with error messages and other information; Downloads - a copy of the satellite data downloaded from various sources, kept for troubleshooting; Palettes - definition of the color palettes used by the waterfall display. Add your own palette as a text file with \"html\" color codes. Pick the color codes at htmlcolorcodes.com."
   },
   "users_guide/doppler_tracking.html": {
     "href": "users_guide/doppler_tracking.html",
@@ -163,11 +168,6 @@
     "href": "users_guide/time_line_panel.html",
     "title": "Time Line | SkyRoof",
     "summary": "Time Line The TimeLine panel shows the satellite elevation chart as a function of time for all satellites in the selected group: Zoom in and out using the mouse wheel Pan by dragging the chart with your mouse Click on the satellite name to make it current, and to view the pass on the Sky View panel. The dark part of the chart represents the past time."
-  },
-  "users_guide/user_data_folder.html": {
-    "href": "users_guide/user_data_folder.html",
-    "title": "User Data Folder | SkyRoof",
-    "summary": "User Data Folder SkyRoof keeps all of its data in the user data folder. Click on Help / User Data Folder in the main menu to open this folder in File Explorer. Data Files Settings.json - this is the file where all user-defined settings are stored; amsat_sat_names.json - satellite names used on AMSAT Live OSCAR Satellite Status Page. The Frequency Scale section explains how to post your observations to this page; lotw_sat_names.json - the list of satellite abbreviations accepted by LoTW; Satellites.json - the satellite database compiled from the downloaded data; cat_info.json - information about the CAT capabilities of different radios; wsjtx_wisdom.dat - optimal FFT transform settings found by automatic testing. Folders Logs - contains the log files with error messages and other information; Downloads - a copy of the satellite data downloaded from various sources, kept for troubleshooting; Palettes - definition of the color palettes used by the waterfall display. Add your own palette as a text file with \"html\" color codes. Pick the color codes at htmlcolorcodes.com."
   },
   "users_guide/waterfall_display.html": {
     "href": "users_guide/waterfall_display.html",
