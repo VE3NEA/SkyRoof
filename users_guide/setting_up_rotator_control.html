@@ -102,7 +102,11 @@ download and install HamLib.</p>
 <p><img src="../images/rotctld_shortcut.png" alt="Rotctld Shortcut"></p>
 <p>The arguments on the command line must be tailored for your specific rotator and COM port settings. Refer to the
 <a href="https://hamlib.sourceforge.net/html/rotctld.1.html">rotctld documentation</a> for a complete description
-of the arguments. In the example above the following arguments are used:</p>
+of the arguments.</p>
+<p>Assuming that HamLib is installed in the default location, here is an example string for the shortcut:</p>
+<pre><code class="lang-cmd">&quot;C:\Program Files\hamlib-w64-4.6.2\bin\rotctld.exe&quot; -m 601 -r COM12 -s 9600 
+</code></pre>
+<p>In the string above the following arguments are used:</p>
 <ul>
 <li><strong>-m 601</strong> - the rotator model is Yaesu GS-232A;</li>
 <li><strong>-r COM12</strong> - the COM port used by the rotator;</li>
