@@ -122,6 +122,86 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/dock_1.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/dock_1.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/dock_2.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/dock_2.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/dock_3.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/dock_3.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/dock_4.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/dock_4.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/dock_5.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/dock_5.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/dock_6.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/dock_6.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/dock_7.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/dock_7.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/dock_8.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/dock_8.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/drop_targed_icons.png",
       "output": {
         "resource": {

@@ -99,34 +99,51 @@ docked anywhere in the window, or left floating.</p>
 <h2 id="show-and-hide">Show and Hide</h2>
 <p>Show the panels using the menu commands in the <strong>View</strong> section, hide them using the same command again, or by clicking on the
 Close button on panel's caption bar.</p>
-<h3 id="dock">Dock</h3>
-<p>To dock the panel, start dragging it by its caption bar. When the dragging starts, the drop target icons appear in the places where
-the panel may be docked:</p>
-<p><img src="../images/drop_targed_icons.png" alt="Drop Target Icons"></p>
-<p>Drop the panel on one of such icons. Drop it anywhere else to leave it floating.</p>
-<h2 id="central-area">Central Area</h2>
-<p>The central area of the window is usually occupied with the waterfall display. If you are not using an SDR and thus do not have
-a waterfall, you may want to use that area for something else, e.g., the
-<a href="earth_view_panel.html">Earth View Panel</a>
-and
-<a href="sky_view_panel.html">Sky View Panel</a>:</p>
-<br>
-<p><img src="../images/window_layout_1.png" alt="Window Layout"></p>
-<p>Note that the frequency scale is useful even without an SDR, in this case it could be docked at the bottom.</p>
+<h2 id="docking">Docking</h2>
+<p>The panels you open are initially in the floating state. This is not very convenient as you cannot move or resize the
+main window without breaking your panel arrangement. You can dock the panels so that they move and resize when you move/resize the main window.</p>
+<h3 id="how-to-dock-a-floating-panel">How to Dock a Floating Panel</h3>
+<p>The <a href="time_line_panel.html">Timeline</a> panel in the screenshot below is floating. Let us dock it to the bottom of the main window.</p>
+<ol>
+<li><p><strong>Find the Panel's Title Bar</strong></p>
+<p>Locate the top bar of the floating panel labeled <em>&quot;Timeline&quot;</em>. This is known as the <strong>title bar</strong>.</p>
+<p><img src="../images/dock_1.png" alt="Dock"></p>
+</li>
+<li><p><strong>Click and Hold</strong><br>
+Move your mouse cursor to the title bar and press the <strong>left mouse button</strong>. Keep holding the button down.</p>
+</li>
+<li><p><strong>Drag the Panel</strong><br>
+While holding the mouse button, move the panel by dragging it with the mouse. As you begin to drag, you will see <strong>dock target icons</strong> appear in the main window—these icons represent the available docking positions.<br>
+You will also notice a <strong>dimmed rectangle</strong> showing where the panel would be docked if released.</p>
+<blockquote>
+<p>⚠️ <strong>Important:</strong> This rectangle is only a visual preview. Do <strong>not</strong> try to align it with the dock target icon. Instead, focus on where your mouse cursor is.</p>
+</blockquote>
+<p><img src="../images/dock_2.png" alt="Dock"></p>
+</li>
+<li><p><strong>Position the Mouse Cursor Over a Dock Target Icon</strong><br>
+Move your <strong>mouse cursor</strong> over one of the dock target icons (not the rectangle). The docking location will update automatically. The panel will only dock if the cursor is directly over the icon.</p>
+<p><img src="../images/dock_3.png" alt="Dock"></p>
+</li>
+<li><p><strong>Release to Dock</strong><br>
+Once the cursor is over your desired dock target icon, <strong>release the mouse button</strong>. The panel will snap into place — either at the side, in the center, or nested inside another panel, depending on the selected icon. Once docked, the panel becomes part of the main window layout, helping keep your workspace clean and organized.</p>
+<p><img src="../images/dock_4.png" alt="Dock"></p>
+</li>
+</ol>
 <h2 id="auto-hide">Auto-Hide</h2>
-<p>A panel may be switched to the auto-hide mode so that it does not occupy any space until you click on its tab:</p>
-<p><img src="../images/window_layout_2.png" alt="Window Layout"></p>
-<p>Note the &quot;Waterfall&quot; tab in the bottom left corner of the screenshot above: when you click on it, the Waterfall panel
-temporarily slides into view. To enable auto-hide, click on the Auto-Hide button
-<img src="../images/auto_hide_button.png" alt="Auto Hide Btn"> on the caption bar.</p>
+<p>A panel can be switched to the <strong>auto-hide mode</strong>, which allows it to stay hidden until you click on its tab.
+In the screenshot below, notice the <strong>&quot;Timeline&quot; tab</strong> in the bottom-left corner. Clicking this tab temporarily slides the <strong>Timeline</strong> panel into view.
+To enable auto-hide mode, click the <strong>Auto-Hide</strong> button  <img src="../images/auto_hide_button.png" alt="Auto Hide Btn">  located on the panel’s title bar.</p>
+<p><img src="../images/dock_5.png" alt="Dock"></p>
 <h2 id="tabbing">Tabbing</h2>
-<p>If you drop one panel over the other, they become tabbed, as
-<a href="satellite_details_panel.html">Satellite Details Panel</a>
-and
-<a href="satellite_transmitters_panel.html">Satellite Transmitters panel</a>
-in the screenshot below:</p>
-<p><img src="../images/window_layout_3.png" alt="Window Layout"></p>
-<p>Now you can switch between the panels by clicking on their tabs.</p>
+<p>You can also organize panels as <strong>tabs</strong>.</p>
+<p><img src="../images/dock_6.png" alt="Dock"></p>
+<p>If you drop one panel directly onto another, they will be grouped into a tabbed interface.</p>
+<p><img src="../images/dock_7.png" alt="Dock"></p>
+<p>In the screenshot below the
+<a href="sky_view_panel.html">Sky View Panel</a> and <a href="earth_view_panel.html">Earth View Panel</a>
+have been combined into a tabbed view.
+You can switch between these panels by clicking on their respective tabs.</p>
+<p><img src="../images/dock_8.png" alt="Dock"></p>
 
 </article>
 
