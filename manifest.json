@@ -202,16 +202,6 @@
     },
     {
       "type": "Resource",
-      "source_relative_path": "images/drop_targed_icons.png",
-      "output": {
-        "resource": {
-          "relative_path": "images/drop_targed_icons.png"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Resource",
       "source_relative_path": "images/earth_view.png",
       "output": {
         "resource": {
@@ -416,6 +406,16 @@
       "output": {
         "resource": {
           "relative_path": "images/rotctld_shortcut.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rx_tx_alignment.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rx_tx_alignment.png"
         }
       },
       "version": ""
