@@ -562,6 +562,16 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/soapyremote_settings.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/soapyremote_settings.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/splitter.png",
       "output": {
         "resource": {
@@ -616,6 +626,16 @@
       "output": {
         "resource": {
           "relative_path": "images/user_details.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/virus_total.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/virus_total.png"
         }
       },
       "version": ""
@@ -769,6 +789,16 @@
       "output": {
         ".html": {
           "relative_path": "users_guide/earth_view_panel.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/faq.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/faq.html"
         }
       },
       "version": ""

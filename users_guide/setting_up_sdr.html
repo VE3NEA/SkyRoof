@@ -128,6 +128,29 @@ This setting is important for the correct operation of the Doppler tracking algo
 <li><p><strong>Single Gain</strong> - when set to true, the SDR gain is controlled by the <strong>RF Gain</strong> slider on the toolbar.
 This is the recommended setting. When it is set to false, the settings in the <strong>Stage Gains</strong> are applied to the
 individual stages of the SDR, and the gain slider is disabled.</p>
+<h2 id="using-remote-sdr">Using Remote SDR</h2>
+<p>SkyRoof can use SDR devices connected to a remote computer via the
+<a href="https://github.com/pothosware/SoapyRemote">SoapyRemote</a> driver. To enable remote access to SDR:</p>
+<ul>
+<li><strong>On the remote computer:</strong>
+<ul>
+<li>install the <strong>SoapySDRServer</strong> that comes with
+<a href="https://github.com/pothosware/SoapySDR/wiki">SoapySDR</a>
+and run it.</li>
+</ul>
+</li>
+<li><strong>In SkyRoof:</strong>
+<ul>
+<li><p>enable <strong>SoapyRemote</strong> in the <strong>Settings</strong> dialog;</p>
+</li>
+<li><p>enter the <strong>host</strong> and <strong>port number</strong> of the remote computer.</p>
+<p><img src="../images/soapyremote_settings.png" alt="SoapyRemote Settings"></p>
+</li>
+<li><p>Open the <strong>SDR Devices</strong> dialog and select one of the remote SDR devices from the list.</p>
+</li>
+</ul>
+</li>
+</ul>
 </li>
 </ul>
 

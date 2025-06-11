@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Setting Up Rotator Control | SkyRoof </title>
+      <title>Frequently Asked Questions | SkyRoof </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Setting Up Rotator Control | SkyRoof ">
+      <meta name="title" content="Frequently Asked Questions | SkyRoof ">
       
       
       <link rel="icon" href="../images/SkyRoof.ico">
@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/setting_up_rotator_control.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/faq.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -92,50 +92,24 @@
         </div>
 
         <article data-uid="">
-<h1 id="setting-up-rotator-control">Setting Up Rotator Control</h1>
+<h1 id="frequently-asked-questions">Frequently Asked Questions</h1>
 
-<h2 id="rotctldexe">rotctld.exe</h2>
-<p>SkyRoof uses <strong>rotctld.exe</strong>, a HamLib-based rotator control daemon, to control the antanna rotator.
-See the <a href="setting_up_cat_control.html">Setting Up CAT Control</a> section for the instructions how to
-download and install HamLib.</p>
-<p>Create a shortcut to start *<em>rotctld.exe</em>, with command line arguments:</p>
-<p><img src="../images/rotctld_shortcut.png" alt="Rotctld Shortcut"></p>
-<p>The arguments on the command line must be tailored for your specific rotator and COM port settings. Refer to the
-<a href="https://hamlib.sourceforge.net/html/rotctld.1.html">rotctld documentation</a> for a complete description
-of the arguments.</p>
-<p>Assuming that HamLib is installed in the default location, here is an example string for the shortcut:</p>
-<pre><code class="lang-cmd">&quot;C:\Program Files\hamlib-w64-4.5.5\bin\rotctld.exe&quot; -m 601 -r COM12 -s 9600 
-</code></pre>
-<p>In the string above the following arguments are used:</p>
-<ul>
-<li><strong>-m 601</strong> - the rotator model is Yaesu GS-232A;</li>
-<li><strong>-r COM12</strong> - the COM port used by the rotator;</li>
-<li><strong>-s 9600</strong> - the COM port speed.</li>
-</ul>
-<p>Run rotctld.exe using this shortcut before you enable rotator control in SkyRoof.</p>
-<h2 id="settings">Settings</h2>
-<p>Click on <strong>Tools / Settings</strong> in the main menu to open the
-<a href="settings_window.html">Settings dialog</a>:</p>
-<p><img src="../images/rotator_settings.png" alt="Settings Dialog"></p>
-<ul>
-<li><strong>Delay</strong> determines how often SkyRoof sends commands to the rotator. The default delay is 300 ms;</li>
-<li><strong>Log Traffic</strong> should be set to False and enabled only for debugging;</li>
-<li><strong>Enabled</strong> - enable or disable rotator control. Another way to toggle the rotator control
-is to click on the Rotator label on the status bar;</li>
-<li><strong>Host</strong> - should be &quot;127.0.0.1&quot; or &quot;localhost&quot; if rotctld is running on the same computer as SkyRoof. It may be changed to a
-different address for remote control;</li>
-<li><strong>TCP Port</strong> - 4533 is the default port used by rotctld;</li>
-<li><strong>Minimum Azimuth</strong>, <strong>Maximum Azimuth</strong>, <strong>Minimum Elevation</strong>, <strong>Maximum Elevation</strong> -
-specify the range of values your rotator accepts;</li>
-<li><strong>Azimuth Offset</strong>, <strong>Elevation Offset</strong> - if your rotator is not perfectly calibrated, these settings
-allow you to apply a correction;</li>
-<li><strong>Step Size</strong> - to prevent the rotator from starting and stopping too often, change the bearing
-only when the required change is greater than the step size. The default value is 5 degrees.</li>
-</ul>
-<br>
-<p>If your rotator does not control elevation, set the MinimumElevation and MaximumElevation to the same value. With such settings,
-wrong elevation will not be considered a bearing error. Note that the bearing error is indicated with a pink color
-on the <a href="rotator_control.html">Rotator Control</a> panel.</p>
+<p><strong>Q</strong> I downloaded SkyRoof, and my virus scanner shows an infection. Is it real?</p>
+<p><strong>A</strong> Most likely, it is a false detection. However, it is always a good idea to test the dwonload link before downloading any software.
+One of the online virus scanners that you can use for this is
+<a href="https://www.virustotal.com/gui/home/url">VirusTotal</a>. Copy the download link and paste it on the virus scanner page. The scanner
+will download the file, test it with multiple antivirus programs, and show you the results. In the screenshot below the download link
+of SkyRoof 1.5 beta was tested, and all antivirus software, except one, agreed that the file was clean. When you see something like this,
+you know that it was a false alarm.</p>
+<p><img src="../images/virus_total.png" alt="Virusyotal"></p>
+<hr>
+<p><strong>Q</strong> The right part of the SkyRoof toolbar does not fit in the screen, even though the screen resoltuion is 1980x1280.</p>
+<p><strong>A</strong> This happens because your <strong>text size</strong> setting in Windows is too high. For example, if it is set to 200%, the effective
+screen width is only <code>1900 / 2 = 950 pixels</code>. To fix this, right-click on the Desktop, click on <strong>Display Settings</strong> and set the text size
+to a lower value.</p>
+<hr>
+<p><strong>Q</strong> How can I run two instances of SkyRoof?</p>
+<p><strong>A</strong> By default, only one instance of Skyroof can run at any time, but there is a work around. Make a copy of the SkyRoof.exe file in the same folder, but with a different name, e.g., SkyRoof_2.exe. Each exe will have its own settings, its own data folder, and will run independently of the other instance.</p>
 
 </article>
 
