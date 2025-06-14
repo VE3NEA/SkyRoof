@@ -94,6 +94,7 @@
         <article data-uid="">
 <h1 id="waterfall-display">Waterfall Display</h1>
 
+<h2 id="using-waterfall-display">Using Waterfall Display</h2>
 <p>The waterfall display and associated
 <a href="frequency_scale.html">Frequency Scale</a>
 is the central piece of SkyRoof that integrates most of the functions available in the application:</p>
@@ -120,6 +121,34 @@ and select a color palette:</p>
 <li><a href="frequency_scale.html">Frequency Scale</a></li>
 <li><a href="doppler_tracking.html">Doppler Tracking</a></li>
 </ul>
+<h2 id="waterfall-display-characteristics">Waterfall Display Characteristics</h2>
+<p>Finding and tracking satellite signals on the VHF and UHF bands is a difficult task. These signals are weak
+because the output power of most satellite transmiites is in the milliwatt range. The fact that
+an omnidirectional antenna needs to be used to receive all in-range satellites at the same time makes this task
+even more difficult. On top of that, we need to see the whole 3-MHz frequency segment where the satellite signals
+may appear, and at the same time we want a very high resolution to examine the structure of the signals,
+and to tune precisely to CW, SSB and digital transmissions.</p>
+<p>The waterfall display in SkyRoof solves these problems by computing power spectra oversampled by a factor of about 100.
+This has three important consequences:</p>
+<ol>
+<li><p>You can zoom in the waterfall display without changing its resolution in Settings, just by spinning the mouse wheel.
+When zoomed in to the maximum, you can see the signals with a <strong>100x</strong> maginification (20 Hz resolution).</p>
+</li>
+<li><p>When zoomed out to the maxmimum to see the whole 3-MHz segment, the sensitivity of the waterfall display to
+narrowband signals improves by about <strong>15 dB</strong> due to oversampling.</p>
+</li>
+<li><p>Spectrum oversampling, however, increases the requirements to the hardware:</p>
+<ul>
+<li>more CPU power is needed to compute very large spectra;</li>
+<li>more texture memory is needed in the video card to store the spectra;</li>
+<li>support of OpenGL 3.3 or higher is required for the zoom function.</li>
+</ul>
+<p>Please see the <a href="system_requirements.html">System Requirements</a> section for the exact requirements.</p>
+</li>
+</ol>
+<p>If your computer does not meet these requirements, you can still use the pass prediction, Doppler correction,
+radio control and rotator control functions in SkyRoof, just disable the SDR function and close the Waterfall
+Display panel.</p>
 
 </article>
 
