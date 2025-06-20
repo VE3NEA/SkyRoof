@@ -113,7 +113,7 @@ may be visible on the waterfall;</li>
 </ul>
 <p>The names of the satellites that belong to the current group are shown in bold;</p>
 <p>The current transmitter has its satellite name on the light blue background.</p>
-<p>Move the mosue cursor over a satellite name to see the details on the mouse tooltip.</p>
+<p>Move the mouse cursor over a satellite name to see the details on the mouse tooltip.</p>
 <p>Right-click on a satellite name to open the popup menu with these commands:</p>
 <ul>
 <li><p><strong>Select Transmitter</strong> - if the satellite has more than one transmitter on the same frequency,
@@ -165,23 +165,23 @@ non-transponder transmitter before using the transponder. Most satellites with a
 carry a telemetry or beacon transmitter that you can use to set the manual offset:</p>
 <p><img src="../images/mo-122.png" alt="MO-122"></p>
 <h2 id="aligning-the-uplink-and-downlink-frequencies">Aligning The Uplink and Downlink Frequencies</h2>
-<p>The screenshot below shows how to set Manual Correcttion for the uplink and downlink for a linear transponder, such as RS-44.</p>
+<p>The screenshot below shows how to set Manual Correction for the uplink and downlink for a linear transponder, such as RS-44.</p>
 <ol>
-<li><p>Select the beacon transmitter of the satellite and asjust the Downlink Manual Correction setting to align the transmitter label
+<li><p>Select the beacon transmitter of the satellite and adjust the Downlink Manual Correction setting to align the transmitter label
 and its signal trace on the waterfall. For RS-44 the required correction is about -1900 Hz. If your offset is different, then yor SDR
 requires <a href="calibrating_ppm_correction.html">PPM calibration</a>.</p>
 </li>
-<li><p>Select the transponder transmitter and find a clear frequency within the transmonder segment. Send a sequence of dots
+<li><p>Select the transponder transmitter and find a clear frequency within the transponder segment. Send a sequence of dots
 and adjust the Uplink Manual Correction to align the center of the green rectangle with the trace of your signals coming from the satellite.</p>
 </li>
 </ol>
 <p><img src="../images/rx_tx_alignment.png" alt="RX TX alignment"></p>
-<p>These adjustments need to be done only once. They stay the same, within a few tens of Herts, between the satellite passes.</p>
-<p>When TX CAT is enabled, RX CAT is disabled and the Ignore Dial Knob is set to false in the Settings, it is possilbe to asjust
+<p>These adjustments need to be done only once. They stay the same, within a few tens of Hertz, between the satellite passes.</p>
+<p>When TX CAT is enabled, RX CAT is disabled and the Ignore Dial Knob is set to false in the Settings, it is possible to adjust
 the Uplink Manual Offset using the dial knob on the radio.</p>
 <h2 id="rit">RIT</h2>
 <p>While the RIT function could be controlled using the
-<a href="frequency_control.html">Frequency Control</a> panel, it is more convenitent to do this on the frequency scale:</p>
+<a href="frequency_control.html">Frequency Control</a> panel, it is more convenient to do this on the frequency scale:</p>
 <p><img src="../images/rit.png" alt="RIT"></p>
 <p>When RIT is enabled, the clear rectangle shows the current receiver passband, while the green rectangle
 stays on the main frequency.</p>
