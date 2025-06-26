@@ -99,17 +99,24 @@
 <a href="https://github.com/pothosware/SoapySDR">Soapy SDR</a>
 engine to interface with the SDR radios. Currently it supports:</p>
 <ul>
-<li>Airspy Mini;</li>
+<li>Airspy;</li>
 <li>SDRplay;</li>
-<li>RTL-SDR.</li>
+<li>RTL-SDR;</li>
+<li>HackRF.</li>
 </ul>
 <div class="NOTE">
 <h5>Note</h5>
 <p>It may be possible to add support of other SDR devices to SkyRoof. Contact me if you have an unsupported SDR
 and are willing to do extensive testing.</p>
 </div>
-<p>If you plan on using one of the SDRplay radios with SkyRoof, download the latest SDRplay API from their
-<a href="https://www.sdrplay.com/api/">web site</a> and install it on your system before starting the program.</p>
+<h2 id="installing-the-drivers">Installing The Drivers</h2>
+<p>Most of the SDR devices require the driver to be installed before you can start using them. Check the manufacturer's web site,
+or search on Google, for the driver installation instructions. At the time of this writing, the following instructions were available on the Web:
+<a href="https://airspy.com/quickstart/">Airspy</a>,
+<a href="https://www.rtl-sdr.com/rtl-sdr-quick-start-guide/">RTL-SDR</a>,
+<a href="https://www.sdrplay.com/api/">SDRplay</a>,
+<a href="https://hackrf.readthedocs.io/en/latest/installing_hackrf_software.html">HackRF</a>.</p>
+<p>Once you install the drivers and make your radio work with its native software, proceed to the next step.</p>
 <h2 id="selecting-an-sdr-device">Selecting an SDR device</h2>
 <p>Connect your SDR device to the computer, then click on <strong>Tools / SDR Devices</strong> in the main menu. This will open the
 <strong>SDR Devices dialog</strong>:</p>
@@ -128,6 +135,8 @@ This setting is important for the correct operation of the Doppler tracking algo
 <li><p><strong>Single Gain</strong> - when set to true (<strong>and AGC is off</strong>), the SDR gain is controlled by the <strong>RF Gain</strong> slider on the toolbar.
 This is the recommended setting. When it is set to false, the settings in the <strong>Stage Gains</strong> are applied to the
 individual stages of the SDR, and the gain slider is disabled.</p>
+</li>
+</ul>
 <h2 id="using-remote-sdr">Using Remote SDR</h2>
 <p>SkyRoof can use SDR devices connected to a remote computer via the
 <a href="https://github.com/pothosware/SoapyRemote">SoapyRemote</a> driver. To enable remote access to SDR:</p>
@@ -147,8 +156,6 @@ and run it.</li>
 <p><img src="../images/soapyremote_settings.png" alt="SoapyRemote Settings"></p>
 </li>
 <li><p>Open the <strong>SDR Devices</strong> dialog and select one of the remote SDR devices from the list.</p>
-</li>
-</ul>
 </li>
 </ul>
 </li>
