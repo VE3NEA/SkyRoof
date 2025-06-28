@@ -332,6 +332,16 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/output_stream_settings.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/output_stream_settings.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/ppm_calibration_1.png",
       "output": {
         "resource": {
@@ -969,6 +979,16 @@
       "output": {
         ".html": {
           "relative_path": "users_guide/setting_up_cat_control.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/setting_up_output_stream.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/setting_up_output_stream.html"
         }
       },
       "version": ""

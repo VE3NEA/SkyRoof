@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Setting Up Voice Announcements | SkyRoof </title>
+      <title>Setting Up Output Stream | SkyRoof </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Setting Up Voice Announcements | SkyRoof ">
+      <meta name="title" content="Setting Up Output Stream | SkyRoof ">
       
       
       <link rel="icon" href="../images/SkyRoof.ico">
@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/setting_up_voice_announcements.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/setting_up_output_stream.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -92,24 +92,75 @@
         </div>
 
         <article data-uid="">
-<h1 id="setting-up-voice-announcements">Setting Up Voice Announcements</h1>
+<h1 id="setting-up-output-stream">Setting Up Output Stream</h1>
 
-<p>SkyRoof can make voice announcements of the the satellite AOS events and position changes. Up to two AOS announcements
-may be enabled.</p>
+<p>SkyRoof can optionally send the raw I/Q data or demodulated audio, either to a Virtual Audio Cable (VAC) or as a stream of UDP packets. The data are sent as 32-bit floating point values in the IEEE 754 format.
+The sampling rate is 48 kHz in all streaming modes.</p>
+<h2 id="configuring">Configuring</h2>
 <p>Click on <strong>Tools / Settings</strong> in the main menu to open the <a href="settings_window.html">Settings window</a>:</p>
-<p><img src="../images/voice_announcement_settings.png" alt="Voice Announcement Settings"></p>
+<p><img src="../images/output_stream_settings.png" alt="Output Stream Settings"></p>
 <ul>
-<li><strong>Voice</strong> - select one of the voices available on your system. To install a new voice package in Windows,
-go to <strong>Settings &gt; Time &amp; language &gt; Speech</strong> and then select <strong>Add voices</strong> to download and install
-the desired voice package.</li>
-<li><strong>Volume</strong> - set the volume between 1 and 100;</li>
-<li><strong>Enable</strong> - enable or disable the announcement;</li>
-<li><strong>Minutes Before AOS</strong>: enter 0 to 5 minutes;</li>
-<li><strong>Degrees Between Announcements</strong>: 1° to 30°. Satellite position is announced when the angular distance between the previous
-and current positions exceeds this value;</li>
-<li><strong>Message</strong> - enter the announcement message. For the satellite name enter <code>{name}</code>, for the number of minutes before AOS
-enter <code>{minutes}</code>, for the azimuth and elevation enter <code>{azimuth}</code> and <code>{elevation}</code> respectively.</li>
+<li><p><strong>Type</strong> - select the stream type:</p>
+<ul>
+<li>I/Q to VAC;</li>
+<li>Audio to VAC;</li>
+<li>I/Q to UDP;</li>
+<li>Audio to UDP.</li>
 </ul>
+</li>
+<li><p><strong>Gain</strong> - gain or attenuation, in dB, that will be applied to the stream data;</p>
+</li>
+<li><p><strong>VAC Device</strong> - the Virtual Audio Cable device to use;</p>
+</li>
+<li><p><strong>UDP Port</strong> - the UDP port number to use.</p>
+</li>
+</ul>
+<p>Output streaming can be turned on and off by clicking on the <strong>Output Stream</strong> label
+on the status bar.</p>
+<h2 id="decoding-satellite-telemetry">Decoding Satellite Telemetry</h2>
+<p>I/Q or Audio data, streamed via VAC or UDP, may be used to decode telemetry transmitted by the satellites.
+There is a number of telemetry decoders to choose from. One such decoder is
+<a href="https://gr-satellites.readthedocs.io/en/latest/command_line.html">gr_satellites.exe</a> command line tool,
+its installation instructions are
+<a href="https://gr-satellites.readthedocs.io/en/latest/installation_conda.html">here</a>.</p>
+<hr>
+<p>The command below runs gr_satellites.exe v.5.7.0 to decode telemetry of the PEARL-1C satellite using the I/Q UDP stream from SkyRoof:</p>
+<pre><code class="lang-text">(base) C:\Ham&gt;gr_satellites 58342 --udp --udp_port 7355 --udp_raw --iq --samp_rate 48e3 --hexdump
+</code></pre>
+<p>Example output from gr_satellites.exe:</p>
+<pre><code class="lang-text">pagesize :debug: Setting pagesize to 4096 B
+top_block_impl :debug: Using default scheduler &quot;TPB&quot;
+udp_source :info: Listening for data on UDP port 7355.
+***** VERBOSE PDU DEBUG PRINT ******
+((transmitter . 9k6 FSK downlink))
+pdu length =         64 bytes
+pdu vector contents =
+0000: 9c 86 aa 8e a6 62 e0 a0 8a 82 a4 98 86 e1 03 f0
+0010: f9 11 01 83 43 33 a9 e7 a4 10 00 00 11 00 00 00
+0020: 00 00 00 00 7a 0f 01 00 00 00 00 00 00 00 00 00
+0030: 05 00 00 00 77 fb 01 00 67 aa 00 00 00 00 00 00
+************************************
+***** VERBOSE PDU DEBUG PRINT ******
+((transmitter . 9k6 FSK downlink))
+pdu length =         88 bytes
+pdu vector contents =
+0000: 9c 86 aa 8e a6 62 e0 a0 8a 82 a4 98 86 e1 03 f0
+0010: fb 11 01 81 43 33 00 00 00 00 00 00 00 00 00 00
+0020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+0050: 00 00 00 00 00 00 00 00
+************************************
+***** VERBOSE PDU DEBUG PRINT ******
+((transmitter . 9k6 FSK downlink))
+pdu length =         56 bytes
+pdu vector contents =
+0000: 9c 86 aa 8e a6 62 e0 a0 8a 82 a4 98 86 e1 03 f0
+0010: 06 11 01 82 43 33 83 8a 01 00 9e 00 00 00 04 00
+0020: 00 00 88 ff f8 ae 00 00 80 01 00 00 0f 02 00 00
+0030: 00 00 00 00 00 00 00 00
+</code></pre>
+<hr>
 
 </article>
 
