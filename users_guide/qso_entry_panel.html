@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>QSO Entry Panel | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="QSO Entry Panel | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/qso_entry_panel.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MMW827H44"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-1MMW827H44');
+      </script>
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="qso-entry-panel">QSO Entry Panel</h1>
+
+<p>The QSO Entry panel allows the operator to enter the QSO details with minimum effort and save them to an ADIF file. This file may be later imported to the logging software for award tracking, QSL management, etc.</p>
+<h2 id="configuring-the-panel">Configuring The Panel</h2>
+<p>Click on <strong>View / QSO Entry</strong> to open the panel:</p>
+<p><img src="../images/qso_entry_panel.png" alt="QSO Entry Panel"></p>
+<p>You can either dock the panel somewhere in the main window
+as described in <a href="configuring_window_layout.html">Configuring Window Layout</a>,
+or keep it floating. By resizing the panel you can arrange the input fields in a row, a column, or a matrix:</p>
+<p><img src="../images/qso_entry_column.png" alt="QSO Entry as Column"></p>
+<p>If you do not need some input fields, disable them in the Settings dialog:</p>
+<p><img src="../images/qso_entry_settings.png" alt="QSO Entry Settings"></p>
+<p>Specify if a new ADIF file should be created every day, month or year, using the <strong>New file every...</strong> setting.</p>
+<h2 id="entering-the-qso-data">Entering The QSO Data</h2>
+<ul>
+<li><strong>UTC</strong> - this field shows the current UTC time. Click on it to freeze the clock or to make it run again, or enter the date and time manually if saving an old QSO;</li>
+<li><strong>Band, Mode, Sat</strong> - These fields are populated automatically, based on the currently selected satellite transmitter. You can select different values from the drop-down lists, or type them in, if needed;</li>
+<li><strong>Call</strong> - as you enter the callsign, the program tries to guess its grid square, US state and operator's name (see below).</li>
+<li><strong>Grid, State</strong> - if the program fails to guess these values, or guesses them incorrectly, enter them manually;</li>
+<li><strong>Sent, Recv</strong> - sent and received reports. Auto-populated with default values when the mode is set, change them manually as needed;</li>
+<li><strong>Name</strong> - auto-populated if known to the program, otherwise enter manually.</li>
+</ul>
+<p>The fields with manually entered values have a blue frame around them, these fields are not auto-populated.</p>
+<p>The minimum QSO record consists of <strong>UTC, Band, Mode</strong> and <strong>Call</strong>, all other fields are optional.</p>
+<h2 id="information-lookup">Information Lookup</h2>
+<p>When the QSO Entry panel opens, it loads all *<strong>.adi</strong> files in the <strong>Adif</strong> sub-folder of the <strong>Data Folder</strong> and builds the lookup lists of the grid squares, states and operator names associated with the callsigns. These lists are used to auto-populate the corresponding input fields. You can put an adif file with all your previous QSO in that folder to help the program build good lookup lists:</p>
+<p><img src="../images/adif_files.png" alt="Adif Files"></p>
+<h2 id="callsign-status">Callsign Status</h2>
+<p>When the program loads the adif files, it also builds the lists of worked callsigns, grid squares and states. Only the QSO with the <code>PROP_MODE</code> field set to <code>SAT</code> are counted. As you enter the callsign, the color of the input box changes to indicate the status:</p>
+<p><img src="../images/callsign_status.png" alt="Callsign Status"></p>
+<h1 id="interfacing-with-logging-software">Interfacing with Logging Software</h1>
+<p>The QSO Entry panel can interface with logging software, using a simple plugin system, to enter the QSO directly to the log and to get the callsign status and lookup values. The plugin DLL has to export 4 functions:</p>
+<ul>
+<li>Init();</li>
+<li>SaveQso(qso_data);</li>
+<li>GetStatus(qso_data);</li>
+<li>Augment(qso_data).</li>
+</ul>
+<p>If you are the author of a logger, please contact me directly for details.</p>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -42,6 +42,16 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/adif_files.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/adif_files.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/amsat_dialog.png",
       "output": {
         "resource": {
@@ -76,6 +86,16 @@
       "output": {
         "resource": {
           "relative_path": "images/auto_hide_button.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/callsign_status.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/callsign_status.png"
         }
       },
       "version": ""
@@ -342,6 +362,16 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/overlapping_transponders.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/overlapping_transponders.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/ppm_calibration_1.png",
       "output": {
         "resource": {
@@ -362,10 +392,50 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/qso_entry_column.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/qso_entry_column.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/qso_entry_panel.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/qso_entry_panel.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/qso_entry_settings.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/qso_entry_settings.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/red_spot.png",
       "output": {
         "resource": {
           "relative_path": "images/red_spot.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/remote_device.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/remote_device.png"
         }
       },
       "version": ""
@@ -859,6 +929,16 @@
       "output": {
         ".html": {
           "relative_path": "users_guide/pdf_cover.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/qso_entry_panel.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/qso_entry_panel.html"
         }
       },
       "version": ""

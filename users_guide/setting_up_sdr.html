@@ -138,24 +138,28 @@ individual stages of the SDR, and the gain slider is disabled.</p>
 </li>
 </ul>
 <h2 id="using-remote-sdr">Using Remote SDR</h2>
-<p>SkyRoof can use SDR devices connected to a remote computer via the
+<p>SkyRoof can use SDR devices connected to a remote (or local) computer via the
 <a href="https://github.com/pothosware/SoapyRemote">SoapyRemote</a> driver. To enable remote access to SDR:</p>
 <ul>
-<li><strong>On the remote computer:</strong>
+<li><p><strong>On the remote computer:</strong></p>
 <ul>
-<li>install the <strong>SoapySDRServer</strong> that comes with
-<a href="https://github.com/pothosware/SoapySDR/wiki">SoapySDR</a>
-and run it.</li>
+<li><p>install SoapySDR which is available as part of <a href="https://downloads.myriadrf.org/builds/PothosSDR/">PothosSDR</a>;</p>
+</li>
+<li><p>run the remote server that comes with SoapySDR:</p>
+<pre><code class="lang-text">SoapySDRServer.exe --bind
+</code></pre>
+</li>
 </ul>
 </li>
-<li><strong>In SkyRoof:</strong>
+<li><p><strong>In SkyRoof:</strong></p>
 <ul>
 <li><p>enable <strong>SoapyRemote</strong> in the <strong>Settings</strong> dialog;</p>
 </li>
-<li><p>enter the <strong>host</strong> and <strong>port number</strong> of the remote computer.</p>
+<li><p>enter the <strong>host</strong> name of the remote computer, or leave &quot;localhost&quot; if the radio is on the same computer.</p>
 <p><img src="../images/soapyremote_settings.png" alt="SoapyRemote Settings"></p>
 </li>
-<li><p>Open the <strong>SDR Devices</strong> dialog and select one of the remote SDR devices from the list.</p>
+<li><p>Open the <strong>SDR Devices</strong> dialog and select the remote SDR device from the list. If the device and remote server are on the localhost, you will have a choice between a direct connection to the radio and a connection via the server.</p>
+<p><img src="../images/remote_device.png" alt="SoapyRemote Settings"></p>
 </li>
 </ul>
 </li>

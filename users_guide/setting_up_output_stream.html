@@ -124,10 +124,13 @@ There is a number of telemetry decoders to choose from. One such decoder is
 its installation instructions are
 <a href="https://gr-satellites.readthedocs.io/en/latest/installation_conda.html">here</a>.</p>
 <hr>
-<p>The command below runs gr_satellites.exe v.5.7.0 to decode telemetry of the PEARL-1C satellite using the I/Q UDP stream from SkyRoof:</p>
+<p>This command runs gr_satellites.exe to decode telemetry of the PEARL-1C satellite using the I/Q UDP stream from SkyRoof:</p>
 <pre><code class="lang-text">(base) C:\Ham&gt;gr_satellites 58342 --udp --udp_port 7355 --udp_raw --iq --samp_rate 48e3 --hexdump
 </code></pre>
-<p>Example output from gr_satellites.exe:</p>
+<p>This command decodes the same satellite via I/Q output to VAC :</p>
+<pre><code class="lang-text">(base) C:\Ham&gt;gr_satellites 58342 --audio &quot;CABLE Output (VB-Audio Virtual Cable)&quot; --samp_rate 48000 --iq
+</code></pre>
+<p>Example output from gr_satellites.exe v.5.7.0:</p>
 <pre><code class="lang-text">pagesize :debug: Setting pagesize to 4096 B
 top_block_impl :debug: Using default scheduler &quot;TPB&quot;
 udp_source :info: Listening for data on UDP port 7355.

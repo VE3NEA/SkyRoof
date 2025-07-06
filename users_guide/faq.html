@@ -125,6 +125,14 @@ If you find an error in a satellite record (shown in the
 and
 <a href="satellite_transmitters_panel.html">Satellite Transmitters</a>
 panels), click on the &quot;SatNOGS&quot; link in the Satellite Details panel  to open the SatNOGS web site, then click on Transmitters, and select Edit from the drop-down menu. You may need to create an account with them (free) in order to submit changes.</p>
+<hr>
+<p><strong>Q:</strong> My video card does not have an OpenGL 3.3 driver. Is there a way to use a software-only implementation of OpenGL?</p>
+<p><strong>A:</strong> Some users have had success with the OpenGL 3.3 functionality implemented in the software, though this solution is very CPU-intensive. You can try
+<a href="https://github.com/lightningterror/Mesa3D-Windows">this</a> or
+<a href="https://github.com/pal1000/mesa-dist-win">this</a> solution. Download the 64-bit version of the library and extract all DLL's from the archive to the SkyRoof folder.</p>
+<hr>
+<p><strong>Q:</strong> How do I prevent CTCSS from turning off when using SkyRoof with FM satellites and an Icom radio?</p>
+<p><strong>A:</strong> If you're experiencing an issue where the CTCSS tone turns off when transmitting or changing frequencies with SkyRoof and an Icom radio, the solution is to disable the &quot;Auto Repeater&quot; setting in the radio. This setting causes the radio to automatically disable repeater-related features like CTCSS when the frequency is changed, assuming you're no longer on a repeater. Disabling &quot;Auto Repeater&quot; prevents this behavior and keeps CTCSS enabled during frequency changes. This workaround was highlighted in a helpful <a href="https://www.youtube.com/watch?v=6xO3LNsTidQ">YouTube video</a>.</p>
 
 </article>
 
