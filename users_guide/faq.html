@@ -95,7 +95,7 @@
 <h1 id="frequently-asked-questions">Frequently Asked Questions</h1>
 
 <p><strong>Q:</strong> I downloaded SkyRoof, and my virus scanner shows an infection. Is it real?</p>
-<p><strong>A:</strong> Most likely, it is a false detection. However, it is always a good idea to test the download links <strong>before downloading</strong> any software. There are several online virus scanning services that you can use to check the link.
+<p><strong>A:</strong> Most likely, it is a false detection. However, it is always a good idea to test the download links <strong>before</strong> downloading <strong>any</strong> software. There are several online virus scanning services that you can use to check the link.
 <a href="https://www.virustotal.com/gui/home/url">VirusTotal</a> and <a href="https://www.hybrid-analysis.com/%7D">Hybrid Analysis</a>
 are just two examples.</p>
 <p>Copy the download link and paste it in the virus scanner page. The scanner
@@ -104,6 +104,9 @@ will download the file, test it with multiple antivirus programs, and show you t
 <p>If the file is clean, you can add it to the exception list of your virus scanner and safely install it. For Windows Defender follow
 <a href="https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26#ID0EBF=Windows_11">these instructions</a>, for other anti-virus products
 follow the instructions in their documentation.</p>
+<p>To prevent such problems in the future, please submit the file to Microsoft for analysis using this link:</p>
+<p><a href="https://www.microsoft.com/en-us/wdsi/filesubmission">https://www.microsoft.com/en-us/wdsi/filesubmission</a></p>
+<p><br><br></p>
 <p><img src="../images/virus_total.png" alt="Virusyotal"></p>
 <hr>
 <p><strong>Q:</strong> The right part of the SkyRoof toolbar does not fit in the screen, even though the screen resolution is 1980x1280.</p>
@@ -133,6 +136,21 @@ panels), click on the &quot;SatNOGS&quot; link in the Satellite Details panel  t
 <hr>
 <p><strong>Q:</strong> How do I prevent CTCSS from turning off when using SkyRoof with FM satellites and an Icom radio?</p>
 <p><strong>A:</strong> If you're experiencing an issue where the CTCSS tone turns off when transmitting or changing frequencies with SkyRoof and an Icom radio, the solution is to disable the &quot;Auto Repeater&quot; setting in the radio. This setting causes the radio to automatically disable repeater-related features like CTCSS when the frequency is changed, assuming you're no longer on a repeater. Disabling &quot;Auto Repeater&quot; prevents this behavior and keeps CTCSS enabled during frequency changes. This workaround was highlighted in a helpful <a href="https://www.youtube.com/watch?v=6xO3LNsTidQ">YouTube video</a>.</p>
+<hr>
+<p><strong>Q:</strong> What are all those offset settings for?</p>
+<p><strong>A:</strong></p>
+<ul>
+<li><p><strong>Downlink Manual Correction:</strong> the frequencies of most satellite transmitters slightly differ from their published values. The purpose of this setting is to compensate for the difference, you set it once for each satellite and never change it again;</p>
+</li>
+<li><p><strong>RIT:</strong> just as in any HF radio, it is used to quickly switch the receiver between two frequencies close to each other. A typical use case is when someone answers your CQ slightly off the frequency and you want to tune to it without changing your main operating frequency;</p>
+</li>
+<li><p><strong>Uplink Manual Correction:</strong> this setting allows you to precisely align your own signal received back from the satellite with your receiver frequency. It needs to be set only once per satellite, and the offset is usually very small;</p>
+</li>
+<li><p><strong>Transponder Offset:</strong> the position of your operating frequency within the transponder passband. This offset is included in the Corrected Downlink Frequency shown on the toolbar, the actual value of the offset is shown only on the mouse tooltip of the frequency display. There are many ways to tune within the transponder passband, such as click on the desired frequency, drag the green passband rectangle, spin the mouse wheel over the rectangle, etc. These methods work only when the transponder is selected in the Transmitter drop-down box.</p>
+</li>
+<li><p><strong>Doppler correction:</strong> this correction is computed and applied automatically, it keeps your RX and TX signals in sync when you tune through the transponder segment.</p>
+</li>
+</ul>
 
 </article>
 
