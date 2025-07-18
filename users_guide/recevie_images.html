@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Receive Images from NOAA-15 | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Receive Images from NOAA-15 | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/recevie_images.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MMW827H44"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-1MMW827H44');
+      </script>
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="receive-images-from-noaa-15">Receive Images from NOAA-15</h1>
+
+<p>An external program is needed to decode and display the weather images transmitted by the NOAA-15 and NOAA-19 satellites. In this tutorial we will use <a href="https://wxtoimgrestored.xyz/downloads/">WXtoIMG</a>.</p>
+<h2 id="installing-vac">Installing VAC</h2>
+<p>A virtual audio cable, VAC, is required to pass the satellite signals demodulated in SkyRoof to the image decoding program. Download and install <a href="https://vb-audio.com/Cable/index.htm">VB-Audio</a> if you do not have it yet, and reboot your system. Be sure to get the latest version (2024) of VB-Audio, the old version may not work correctly.</p>
+<h2 id="setting-up-wxtoimg">Setting Up WXtoIMG</h2>
+<ul>
+<li><p>download
+<a href="https://wxtoimgrestored.xyz/beta/wxinst21102-beta.exe">wxinst21102-beta.exe</a>
+and run the installer, then start WXtoIMG;</p>
+</li>
+<li><p>enter your latitude and longitude when prompted;</p>
+</li>
+<li><p>the program tries to download the TLE data from a URL that no longer works.
+Download the <a href="https://celestrak.org/NORAD/elements/gp.php?GROUP=weather&amp;FORMAT=tle">weather.txt</a>
+file manually and save it to the WXtoIMG data folder. Type this in File Explorer to find the data folder:</p>
+<pre><code class="lang-txt">%appdata%\WXtoImg
+</code></pre>
+</li>
+<li><p>tick <strong>Satellite / Autodetect APT</strong> in the menu;</p>
+</li>
+<li><p>click on <strong>Options / Recording Options</strong> and select the <strong>Record only when active...</strong> radio button. Select the VAC cable in the <strong>soundcard</strong> drop-down list;</p>
+</li>
+<li><p>click on <strong>File / Record</strong> in the menu, then</p>
+<ul>
+<li>select <strong>Record and auto process</strong>;</li>
+<li>tick <strong>Create images</strong>;</li>
+<li>click on the <strong>Auto Record</strong> button.</li>
+</ul>
+</li>
+</ul>
+<h2 id="configuring-skyroof">Configuring SkyRoof</h2>
+<p>In the SkyRoof:</p>
+<ul>
+<li>select the NOAA-15 or NOAA-19 satellite. If it is not in the current group, add it using the
+<a href="satellites_and_groups_window.html">Satellites and Groups</a> dialog;</li>
+<li>Select <strong>APT</strong> transmitter on the 137 MHz band from the list of transmitters;</li>
+<li>Select <strong>FM_D</strong> downlink mode in the drop-down list on the toolbar;</li>
+<li>in the <strong>Output Stream</strong> section of the <a href="setting_up_output_stream.html">Settings</a> window:
+<ul>
+<li>select <strong>Audio to VAC</strong>;</li>
+<li>set Gain, dB to 0;</li>
+<li>select the VAC in the list of audio devices;</li>
+<li>click on the Output Stream label on the status bar to enable the output.</li>
+</ul>
+</li>
+</ul>
+<h2 id="receiving-images">Receiving Images</h2>
+<p>When the selected satellite raises above the horizon, WXtoIMG will start decoding and produce an image like this:</p>
+<p><img src="../images/noaa_19_image_1.png" alt="NOAA Image"></p>
+<p>At the end of the pass WXtoIMG will post-process received data and display an enhanced image:</p>
+<p><img src="../images/noaa_19_image_2.png" alt="NOAA Image"></p>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

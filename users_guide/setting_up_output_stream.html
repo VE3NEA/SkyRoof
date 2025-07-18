@@ -116,54 +116,8 @@ The sampling rate is 48 kHz in all streaming modes.</p>
 </li>
 </ul>
 <p>Output streaming can be turned on and off by clicking on the <strong>Output Stream</strong> label
-on the status bar.</p>
-<h2 id="decoding-satellite-telemetry">Decoding Satellite Telemetry</h2>
-<p>I/Q or Audio data, streamed via VAC or UDP, may be used to decode telemetry transmitted by the satellites.
-There is a number of telemetry decoders to choose from. One such decoder is
-<a href="https://gr-satellites.readthedocs.io/en/latest/command_line.html">gr_satellites.exe</a> command line tool,
-its installation instructions are
-<a href="https://gr-satellites.readthedocs.io/en/latest/installation_conda.html">here</a>.</p>
-<hr>
-<p>This command runs gr_satellites.exe to decode telemetry of the PEARL-1C satellite using the I/Q UDP stream from SkyRoof:</p>
-<pre><code class="lang-text">(base) C:\Ham&gt;gr_satellites 58342 --udp --udp_port 7355 --udp_raw --iq --samp_rate 48e3 --hexdump
-</code></pre>
-<p>This command decodes the same satellite via I/Q output to VAC :</p>
-<pre><code class="lang-text">(base) C:\Ham&gt;gr_satellites 58342 --audio &quot;CABLE Output (VB-Audio Virtual Cable)&quot; --samp_rate 48000 --iq
-</code></pre>
-<p>Example output from gr_satellites.exe v.5.7.0:</p>
-<pre><code class="lang-text">pagesize :debug: Setting pagesize to 4096 B
-top_block_impl :debug: Using default scheduler &quot;TPB&quot;
-udp_source :info: Listening for data on UDP port 7355.
-***** VERBOSE PDU DEBUG PRINT ******
-((transmitter . 9k6 FSK downlink))
-pdu length =         64 bytes
-pdu vector contents =
-0000: 9c 86 aa 8e a6 62 e0 a0 8a 82 a4 98 86 e1 03 f0
-0010: f9 11 01 83 43 33 a9 e7 a4 10 00 00 11 00 00 00
-0020: 00 00 00 00 7a 0f 01 00 00 00 00 00 00 00 00 00
-0030: 05 00 00 00 77 fb 01 00 67 aa 00 00 00 00 00 00
-************************************
-***** VERBOSE PDU DEBUG PRINT ******
-((transmitter . 9k6 FSK downlink))
-pdu length =         88 bytes
-pdu vector contents =
-0000: 9c 86 aa 8e a6 62 e0 a0 8a 82 a4 98 86 e1 03 f0
-0010: fb 11 01 81 43 33 00 00 00 00 00 00 00 00 00 00
-0020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-0030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-0040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-0050: 00 00 00 00 00 00 00 00
-************************************
-***** VERBOSE PDU DEBUG PRINT ******
-((transmitter . 9k6 FSK downlink))
-pdu length =         56 bytes
-pdu vector contents =
-0000: 9c 86 aa 8e a6 62 e0 a0 8a 82 a4 98 86 e1 03 f0
-0010: 06 11 01 82 43 33 83 8a 01 00 9e 00 00 00 04 00
-0020: 00 00 88 ff f8 ae 00 00 80 01 00 00 0f 02 00 00
-0030: 00 00 00 00 00 00 00 00
-</code></pre>
-<hr>
+on the status bar:</p>
+<p><img src="../images/output_stream_label.png" alt="Output Stream Label"></p>
 
 </article>
 

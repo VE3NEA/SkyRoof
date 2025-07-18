@@ -352,6 +352,36 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/noaa_19_image_1.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/noaa_19_image_1.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/noaa_19_image_2.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/noaa_19_image_2.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/output_stream_label.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/output_stream_label.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/output_stream_settings.png",
       "output": {
         "resource": {
@@ -855,6 +885,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "users_guide/decode_telemetry.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/decode_telemetry.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "users_guide/doppler_tracking.md",
       "output": {
         ".html": {
@@ -949,6 +989,16 @@
       "output": {
         ".html": {
           "relative_path": "users_guide/quick_start.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/recevie_images.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/recevie_images.html"
         }
       },
       "version": ""
