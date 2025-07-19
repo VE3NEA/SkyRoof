@@ -292,6 +292,16 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/iss_sstv.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/iss_sstv.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/letter-s-svgrepo-com.svg",
       "output": {
         "resource": {
@@ -346,6 +356,16 @@
       "output": {
         "resource": {
           "relative_path": "images/mouse.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/noaa_15_satdump.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/noaa_15_satdump.png"
         }
       },
       "version": ""
@@ -999,6 +1019,16 @@
       "output": {
         ".html": {
           "relative_path": "users_guide/recevie_images.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/recevie_sstv.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/recevie_sstv.html"
         }
       },
       "version": ""

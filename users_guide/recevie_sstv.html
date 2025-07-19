@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>How to Receive SSTV from ISS | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="How to Receive SSTV from ISS | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/recevie_sstv.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MMW827H44"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-1MMW827H44');
+      </script>
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="how-to-receive-sstv-from-iss">How to Receive SSTV from ISS</h1>
+
+<p>There are two popular programs that demodulate SSTV: <strong>MMSSTV</strong> and <strong>RX-SSTV</strong>,
+either one may be used with SkyRoof to receive SSTV transmissions form ISS.</p>
+<h2 id="installing-vac">Installing VAC</h2>
+<p>A virtual audio cable, VAC, is required to pass the satellite signals demodulated in SkyRoof to the SSTV decoding program. Download and install <a href="https://vb-audio.com/Cable/index.htm">VB-Audio</a> if you do not have it yet, and reboot your system. Be sure to get the latest version (2024) of VB-Audio, the old version may not work correctly.</p>
+<h2 id="setting-up-mmsstv">Setting Up MMSSTV</h2>
+<ul>
+<li>download <a href="https://hamsoft.ca/pages/mmsstv.php">MMSSTV</a>, install it and run the program;</li>
+<li>click on <strong>Option / Setup MMSSTV</strong> in the menu to open the settings dialog, and:
+<ul>
+<li>click on the <strong>Misc</strong> tab;</li>
+<li>select your VAC in the <strong>Sound Card / In</strong> drop-down list;</li>
+<li>enter &quot;48000&quot; in the <strong>Clock / Hz</strong> box.</li>
+</ul>
+</li>
+<li>in the main window:
+<ul>
+<li>click on the <strong>RX</strong> tab;</li>
+<li>in the <strong>RX Mode</strong> panel right-click on the second and third button, and select &quot;PD120&quot; and &quot;PD180&quot; respectively;</li>
+<li>click on <strong>RX Mode / Auto</strong>.</li>
+</ul>
+</li>
+</ul>
+<h2 id="setting-up-rx-sstv">Setting Up RX-SSTV</h2>
+<ul>
+<li>download <a href="https://www.qsl.net/on6mu/rxsstv.htm">RX-SSTV</a>, install it and run the program;</li>
+<li>in the <strong>Sound Card Selection</strong> window that pops up on start-up select your VAC as <strong>Sound Input</strong>;</li>
+<li>click on <strong>Setup / SSTV Engine</strong> in the menu, click on the <strong>Misc</strong>  tab, and set <strong>Clock / Hz</strong> to &quot;12000&quot;;</li>
+<li>click on <strong>Setup / RX-SSTV</strong> in the menu, under <strong>User-defined buttons</strong> set the first two buttons to &quot;PD120&quot; and&quot; PD-180&quot;;</li>
+<li>in the main window:
+<ul>
+<li>click on the <strong>RX</strong> tab;</li>
+<li>click on the <strong>PD120</strong> or <strong>PD180</strong> button, depending on the mode used at ISS (see below).</li>
+</ul>
+</li>
+</ul>
+<h2 id="setting-up-skyroof">Setting Up SkyRoof</h2>
+<p>In SkyRoof:</p>
+<ul>
+<li>select the <strong>ARISS</strong> satellite. If it is not in the current group, add it using the
+<a href="satellites_and_groups_window.html">Satellites and Groups</a> dialog;</li>
+<li>Select ISS transmitter that is used to send SSTV (see below);</li>
+<li>Select <strong>FM</strong> downlink mode in the drop-down list on the toolbar;</li>
+<li>in the <strong>Output Stream</strong> section of the <a href="setting_up_output_stream.html">Settings</a> window:
+<ul>
+<li>select <strong>Audio to VAC</strong>;</li>
+<li>set Gain, dB to 0;</li>
+<li>select the VAC in the list of audio devices;</li>
+<li>click on the Output Stream label on the status bar to enable the output stream.</li>
+</ul>
+</li>
+</ul>
+<h2 id="receiving-sstv">Receiving SSTV</h2>
+<p>Find out when the next SSTV activity on ISS will take place, usually it happens every few months and lasts for up to a week. One good source of information about such activities is the
+<a href="https://www.ariss.org/upcoming-sstv-events.html">ARISS web site</a>. You will need to know:</p>
+<ul>
+<li>when SSTV signals will be transmitted;</li>
+<li>which transmitter on ISS will be used, usually it is one of these:
+<ul>
+<li><strong>Mode U - SSTV</strong> on 437.800 MHz;</li>
+<li><strong>Mode V Imaging</strong> on 145.800 MHz;</li>
+</ul>
+</li>
+<li>which SSTV mode will be used, usually it is either <strong>PD120</strong> or <strong>PD180</strong>. In these modes the image transmission takes 120 s and 180 s respectively.</li>
+</ul>
+<p>In SkyRoof, select ARISS in the list of satellites, and the transmitter that is used in the current SSTV activity. When ISS rises above the horizon and its signals start to appear on the waterfall, the RX-SSTV or MMSSTV program automatically starts decoding the image. If for some reason it doesn't, click on the SSTV mode button (PD120 or PD180) to start it manually.</p>
+<p>Here is an example of an image received from ISS in July 2025. Both SSTV decoders seem to have the same image quality, which is mainly determined by the signal strength variations:</p>
+<p><img src="../images/iss_sstv.png" alt="SSTV"></p>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
