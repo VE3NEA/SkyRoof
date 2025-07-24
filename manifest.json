@@ -762,6 +762,46 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/uz7ho_lasarsat.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/uz7ho_lasarsat.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/uz7ho_setup.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/uz7ho_setup.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/uz7ho_tigrisat.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/uz7ho_tigrisat.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/uz7ho_veronica.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/uz7ho_veronica.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/virus_total.png",
       "output": {
         "resource": {
@@ -959,6 +999,16 @@
       "output": {
         ".html": {
           "relative_path": "users_guide/frequency_scale.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/fsk_afsk_telemetry.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/fsk_afsk_telemetry.html"
         }
       },
       "version": ""
