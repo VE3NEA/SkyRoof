@@ -12,7 +12,7 @@
       "set_split_mode": [ "when_transmitting", "when_receiving" ]
     },
     "commands": {
-      "setup_duplex": [ "U SATMODE 1" ],
+      "setup_duplex": [ "U SATMODE 1", "S 1 Sub" ],
       "setup_split": [ "U SATMODE 0", "U DUAL_WATCH 0", "V VFOA", "S 1 VFOB", "V VFOA" ],
       "setup_simplex": [ "U SATMODE 0", "U DUAL_WATCH 0", "V VFOA", "S 0 VFOB", "V VFOA" ],
       "read_main_frequency": "f",
@@ -27,7 +27,7 @@
     }
   },
   {
-    "radio": "Regular transceiver",
+    "radio": "Transceiver with Split",
     "comment": "not tested",
     "tuning_step_hz": 10,
     "capabilities": {
@@ -54,27 +54,54 @@
     }
   },
   {
+    "radio": "Simplex transceiver",
+    "comment": "not tested",
+    "tuning_step_hz": 10,
+    "capabilities": {
+      "read_main_frequency": [ "when_receiving" ],
+      "read_split_frequency": [ "when_transmitting" ],
+      "set_main_frequency": [ "when_receiving" ],
+      "set_split_frequency": [ "when_transmitting" ],
+      "set_main_mode": [ "when_receiving" ],
+      "set_split_mode": [ "when_transmitting" ]
+    },
+    "commands": {
+      "setup_duplex": null,
+      "setup_split": null,
+      "setup_simplex": [ "V VFOA", "S 0 VFOB" ],
+      "read_main_frequency": "f",
+      "read_split_frequency": "f",
+      "set_main_frequency": "F {frequency}",
+      "set_split_frequency": "F {frequency}",
+      "set_main_mode": "M {mode} 0",
+      "set_split_mode": "M {mode} 0",
+      "read_ptt": "t",
+      "set_ptt_on": "T 1",
+      "set_ptt_off": "T 0"
+    }
+  },
+  {
     "radio": "FT-817",
-    "comment": "never tested, may be wrong",
+    "comment": "not tested",
     "tuning_step_hz": 10,
     "capabilities": {
       "read_main_frequency": [ "when_receiving" ],
       "read_split_frequency": [],
       "set_main_frequency": [ "when_receiving" ],
-      "set_split_frequency": [ "before_ptt_on" ],
+      "set_split_frequency": null,
       "set_main_mode": [ "when_receiving" ],
-      "set_split_mode": [ "when_receiving" ]
+      "set_split_mode": null
     },
     "commands": {
       "setup_duplex": null,
-      "setup_split": [ "S 1 VFOB" ],
-      "setup_simplex": [ "S 0 VFOB" ],
+      "setup_split": null,
+      "setup_simplex": [ "V VFOA", "S 0 VFOB" ],
       "read_main_frequency": "f",
       "read_split_frequency": null,
       "set_main_frequency": "F {frequency}",
-      "set_split_frequency": "I {frequency}",
+      "set_split_frequency": null,
       "set_main_mode": "M {mode} 0",
-      "set_split_mode": "X {mode} 0",
+      "set_split_mode": null,
       "read_ptt": "t",
       "set_ptt_on": "T 1",
       "set_ptt_off": "T 0"

@@ -19,8 +19,7 @@ namespace SkyRoof
     public RadioLink RadioLink = new();
     private bool Changing;
     private readonly FrequencyEntryForm FrequencyDialog = new();
-    bool Ptt;
-
+    
 
     public FrequencyControl()
     {
@@ -46,7 +45,7 @@ namespace SkyRoof
       ctx.CatControl.ApplySettings();
       ctx.RotatorControl.SetSatellite(ctx.SatelliteSelector.SelectedSatellite);
       RadioLinkToRadio();
-      ShowHideTxButton();
+      UpdateTxButton();
     }
 
     public void SetTerrestrialFrequency(double frequency)
@@ -56,7 +55,7 @@ namespace SkyRoof
       ctx.CatControl.ApplySettings();
       ctx.RotatorControl.SetSatellite(null);
       RadioLinkToRadio();
-      ShowHideTxButton();
+      UpdateTxButton();
     }
 
     internal void SetTransponderOffset(SatnogsDbTransmitter transponder, double offset)
@@ -396,7 +395,7 @@ namespace SkyRoof
         UplinkFrequencyLabel.ForeColor = bright ? Color.White : Color.Gray;
       toolTip1.SetToolTip(UplinkFrequencyLabel, MakeUplinkTooltip());
 
-      ShowHideTxButton();    
+      UpdateTxButton();    
     }
 
     private string MakeUplinkTooltip()
@@ -505,16 +504,16 @@ namespace SkyRoof
 
     private void TxBtn_Click(object sender, EventArgs e)
     {
-      Ptt = !Ptt && ctx.CatControl.Tx != null;
-      ctx.CatControl.Tx?.SetPtt(Ptt);
-      TxBtn.Text = Ptt ? "Stop Transmitting" : "Transmit";
+      var ptt = ctx.CatControl.Tx!.Ptt == true;
+      ctx.CatControl.Tx!.SetPtt(!ptt);
+      UpdateTxButton();
     }
-    private void ShowHideTxButton()
+
+    private void UpdateTxButton()
     {
-      //TxBtn.Visible = ctx.CatControl.Tx != null && ctx.CatControl.Tx.CatMode != CatMode.RxOnly;
-      TxBtn.Visible = ctx.CatControl.Tx != null && ctx.CatControl.Tx.IsRunning;
-      Ptt = false;
-      TxBtn.Text = "Transmit";
+      TxBtn.Visible = ctx.CatControl.Tx?.CanPtt() == true;
+      var ptt = ctx.CatControl.Tx?.Ptt == true; 
+      TxBtn.Text = ptt ? "Stop Transmitting" : "Transmit";
     }
   }
 }

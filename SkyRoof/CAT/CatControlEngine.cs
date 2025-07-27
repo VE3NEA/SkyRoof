@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Linq;
 using System.Net.Sockets;
+using System.Reflection.Metadata.Ecma335;
 using System.Speech.Synthesis.TtsEngine;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,23 +18,24 @@ using VE3NEA;
 
 namespace SkyRoof
 {
-  public enum CatMode { RxOnly, TxOnly, Split, Duplex }
+  public enum CatMode { RxOnly, TxOnly, Simplex, Split, Duplex }
 
   public class CatControlEngine : ControlEngine
   {
-    private RadioInfo RadioInfo;
+    private readonly RadioInfo RadioInfo;
+    private Capabilities Caps => RadioInfo.capabilities;
+    private Commands Cmds => RadioInfo.commands;
+
     public CatMode CatMode;
     private readonly bool IgnoreDialKnob;
 
-    private bool Ptt => ptt ??= ReadPtt();
+    public bool? Ptt { get; private set; } = null;
+    private bool PttChanged = false;
 
-    private bool? ptt;
-
-    private long RequestedRxFrequency, RequestedTxFrequency;
-    private long LastWrittenRxFrequency, LastWrittenTxFrequency;
-    public long LastReadRxFrequency, LastReadTxFrequency;
-    private Slicer.Mode? RequestedRxMode, RequestedTxMode;
-    private Slicer.Mode? LastWrittenRxMode, LastWrittenTxMode;
+    public long RequestedRxFrequency, LastWrittenRxFrequency, LastReadRxFrequency;
+    public long RequestedTxFrequency, LastWrittenTxFrequency, LastReadTxFrequency;
+    private Slicer.Mode? RequestedRxMode, LastWrittenRxMode;      
+    private Slicer.Mode? RequestedTxMode, LastWrittenTxMode;
     private bool? RequestedPtt;
 
     public event EventHandler? RxTuned;
@@ -41,7 +44,8 @@ namespace SkyRoof
     public static RadioInfoList BuildRadioInfoList()
     {
       string path = Path.Combine(Utils.GetUserDataFolder(), "cat_info.json");
-      if (!File.Exists(path)) File.WriteAllBytes(path, Resources.cat_info);
+      //if (!File.Exists(path)) 
+        File.WriteAllBytes(path, Resources.cat_info);
 
       return JsonConvert.DeserializeObject<RadioInfoList>(File.ReadAllText(path))!;
     }
@@ -51,6 +55,11 @@ namespace SkyRoof
       RadioInfo = BuildRadioInfoList().First(r => r.radio == radioSettings.RadioType);
     }
 
+
+    private void LogPtt(string msg)
+    {
+      if (log) Log.Information(msg);
+    }
 
     private void LogFreqs(string msg)
     {
@@ -75,9 +84,9 @@ namespace SkyRoof
       // determmine required cat control mode
       if (rx && !tx) CatMode = CatMode.RxOnly;
       else if (!rx && tx) CatMode = CatMode.TxOnly;
-      else if (crossband && RadioInfo.commands.setup_duplex != null) CatMode = CatMode.Duplex;
-      else if (RadioInfo.commands.setup_split != null) CatMode = CatMode.Split;
-      else { Log.Error($"Radio {RadioInfo.radio} does not support split mode"); return; }
+      else if (crossband && Cmds.setup_duplex != null) CatMode = CatMode.Duplex;
+      else if (Cmds.setup_split != null) CatMode = CatMode.Split;
+      else CatMode = CatMode.Simplex;
 
       StartThread();
     }
@@ -108,10 +117,9 @@ namespace SkyRoof
 
     public void SetPtt(bool ptt)
     {
+      LogPtt($"SetPtt {ptt}");
       RequestedPtt = ptt;
     }
-
-
 
 
 
@@ -121,94 +129,70 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     protected override void ReadWrite()
     {
-      // will read PTT only if needed
-      ptt = null; 
-
-      if (!IgnoreDialKnob)
-      {
-        TryReadRxFrequency();
-        TryReadTxFrequency();
-      }
-
-      TryWriteRxFrequency();
-      TryWriteTxFrequency();
-      TryWriteRxMode();
-      TryWriteTxMode();
+      ReadPtt();
+      if (NeddToWriteTxFreqModeBeforePtt()) TryWriteTxFreqModeBeforePtt();
       TryWritePtt();
-    }
 
+      if (!IgnoreDialKnob) TryReadRxFrequency();
+      if (!IgnoreDialKnob) TryReadTxFrequency();
+
+      if (NeedToWriteRxFrequency()) TryWriteRxFrequency();
+      if (NeedToWriteTxFrequency()) TryWriteTxFrequency();
+
+      if (NeedToWriteRxMode()) TryWriteRxMode();
+      if (NeedToWriteTxMode()) TryWriteTxMode();
+    }
 
     protected override bool Setup()
     {
       try
       {
-        bool ok = false;
-
         switch (CatMode)
         {
           case CatMode.RxOnly:
           case CatMode.TxOnly:
-            ok = SendWriteCommands(RadioInfo.commands.setup_simplex);
-            break;
-          case CatMode.Split:
-            ok = SendWriteCommands(RadioInfo.commands.setup_split);
-            break;
-          case CatMode.Duplex:
-            ok = SendWriteCommands(RadioInfo.commands.setup_duplex);
-            break;
+          case CatMode.Simplex: return SendWriteCommands(Cmds.setup_simplex); 
+          case CatMode.Split:   return SendWriteCommands(Cmds.setup_split); 
+          case CatMode.Duplex:  return SendWriteCommands(Cmds.setup_duplex); 
         }
-
-        return ok;
       }
       catch (Exception ex)
       {
         Log.Error(ex, $"Failed to set up radio {RadioInfo.radio}");
-        return false;
       }
+
+      return false;
     }
 
 
 
 
     //----------------------------------------------------------------------------------------------
-    //                                         read
+    //                                    read frequencies
     //----------------------------------------------------------------------------------------------
     private void TryReadRxFrequency()
     {
-      if (HasCapability(RadioInfo.capabilities.read_main_frequency))
-      {
-        string command = RadioInfo.commands.read_main_frequency!;
-        var reply = SendReadCommand(command);
-        if (reply == null) return;
-        if (!long.TryParse(reply, CultureInfo.InvariantCulture, out long frequency)) BadReply(reply);
-        frequency = RoundTo10(frequency);
+      string command = GetReadRxFrequencyCommand();
+      if (command == string.Empty) return;
 
-        bool changed = LastReadRxFrequency != 0 &&     // first read
-          IsDiff(frequency, LastReadRxFrequency) &&    // same freq as before
-          IsDiff(frequency, LastWrittenRxFrequency) && // new freq was written
-          IsDiff(frequency, LastWrittenTxFrequency);   // tx freq read by accident, ignore
+      long frequency = ReadFrequency(command);
 
-        LastReadRxFrequency = frequency;
-        if (changed) OnRxFrequencyChanged();
-      }
+      bool changed = LastReadRxFrequency != 0 &&     // first read - ignore, no previous value
+        IsDiff(frequency, LastReadRxFrequency) &&    // same freq as before, no change
+        IsDiff(frequency, LastWrittenRxFrequency) && // new freq was written, ingnore
+        IsDiff(frequency, LastWrittenTxFrequency);   // tx freq read by accident, ignore
+
+      LastReadRxFrequency = frequency;
+      if (changed) OnRxFrequencyChanged();
     }
+    
 
     private void TryReadTxFrequency()
     {
-      if (CatMode != CatMode.TxOnly) return;
+      string command = GetReadTxFrequencyCommand();
+      if (command == string.Empty) return;
 
-      string command;
-      if (CatMode == CatMode.TxOnly && HasCapability(RadioInfo.capabilities.read_main_frequency))
-        command = RadioInfo.commands.read_main_frequency!;
-      else if (CatMode != CatMode.TxOnly && HasCapability(RadioInfo.capabilities.read_split_frequency))
-        command = RadioInfo.commands.read_split_frequency!;
-      else
-        return;
-
-      var reply = SendReadCommand(command);
-      if (reply == null) return;
-      if (!long.TryParse(reply, CultureInfo.InvariantCulture, out long frequency)) BadReply(reply);
-      frequency = RoundTo10(frequency);
+      long frequency = ReadFrequency(command);
 
       bool changed = LastReadTxFrequency != 0 &&
         IsDiff(frequency, LastReadTxFrequency) &&
@@ -219,28 +203,54 @@ namespace SkyRoof
       if (changed) OnTxFrequencyChanged();
     }
 
-    private bool ReadPtt()
+    private string GetReadRxFrequencyCommand()
     {
-      var reply = SendReadCommand(RadioInfo.commands.read_ptt!);
-      bool newPtt = reply == "1";
-      return newPtt;
+      if (!HasCapability(Caps.read_main_frequency)) return string.Empty;
+      return Cmds.read_main_frequency!;
     }
 
+    private string GetReadTxFrequencyCommand()
+    {
+      switch (CatMode)
+      {
+        case CatMode.TxOnly:
+        case CatMode.Simplex:
+          if (HasCapability(Caps.read_main_frequency))
+            return Cmds.read_main_frequency!;
+          break;
+      
+        case CatMode.Split:          
+        case CatMode.Duplex:
+          if (HasCapability(Caps.read_split_frequency))
+            return Cmds.read_split_frequency!;
+          break;
+      }
+
+      return string.Empty;
+    }
+
+    private long ReadFrequency(string command)
+    {
+      var reply = SendReadCommand(command);
+      if (reply == null) return 0;
+      if (!long.TryParse(reply, CultureInfo.InvariantCulture, out long frequency)) BadReply(reply);
+      return RoundTo10(frequency);
+    }
+    
 
 
 
     //----------------------------------------------------------------------------------------------
-    //                                        write
+    //                                 write frequencies
     //----------------------------------------------------------------------------------------------
     private void TryWriteRxFrequency()
     {
-      if (!NeedToWriteRxFrequency()) return;
-      if (!HasCapability(RadioInfo.capabilities.set_main_frequency)) return;
-
-      // RequestedRxFrequency may change on another thread while we are writing, use a local copy
+      // another thread may change RequestedRxFrequency while we are writing, use a local copy
       long frequency = RequestedRxFrequency;
 
-      string command = RadioInfo.commands.set_main_frequency!.Replace("{frequency}", $"{frequency}");
+      string command = GetWriteRxFrequencyCommand(frequency);
+      if (command == string.Empty) return;
+
       SendWriteCommand(command);
       LastWrittenRxFrequency = frequency;
       LogFreqs("Rx frequency written");
@@ -251,47 +261,108 @@ namespace SkyRoof
       if (!NeedToWriteTxFrequency()) return;
 
       long frequency = RequestedTxFrequency;
-
-      // tx only, write main frequency
-      string command;
-      if (CatMode == CatMode.TxOnly && HasCapability(RadioInfo.capabilities.set_main_frequency))
-        command = RadioInfo.commands.set_main_frequency!.Replace("{frequency}", $"{frequency}");
-
-      // split or duplex, write split frequency
-      else if (CatMode != CatMode.TxOnly && HasCapability(RadioInfo.capabilities.set_split_frequency))
-        command = RadioInfo.commands.set_split_frequency!.Replace("{frequency}", $"{frequency}");
-
-      // no capability
-      else return;
+      string command = GetWriteTxFrequencyCommand(frequency);
+      if (command == string.Empty) return;
 
       SendWriteCommand(command);
       LastWrittenTxFrequency = frequency;
+      LogFreqs("Tx frequency written");
     }
 
+    private string GetWriteRxFrequencyCommand(long frequency)
+    {
+      if (CatMode == CatMode.TxOnly) return string.Empty;
+
+      if (!HasCapability(Caps.set_main_frequency)) return string.Empty;
+      return Cmds.set_main_frequency!.Replace("{frequency}", $"{frequency}");
+
+    }
+
+    private string GetWriteTxFrequencyCommand(long frequency)
+    {
+      if (CatMode == CatMode.RxOnly) return string.Empty;
+
+      if (HasCapability(Caps.set_split_frequency))
+          return Cmds.set_split_frequency!.Replace("{frequency}", $"{frequency}");
+
+      return string.Empty;
+    }
+
+    // for FT-817: cannot set split frequency/mode and cannot set main frequency/mode when transmitting,
+    // set it immediately before switching to transmit mode
+    private void TryWriteTxFreqModeBeforePtt()
+    {
+      LogPtt("Writing TX frequency and mode before PTT ON");
+      TryWriteTxFrequency();
+      TryWriteTxMode();
+    }
+
+
+
+
+    //----------------------------------------------------------------------------------------------
+    //                                       mode
+    //----------------------------------------------------------------------------------------------
     private void TryWriteRxMode()
     {
-      if (!NeedToWriteRxMode()) return;
-      if (!HasCapability(RadioInfo.capabilities.set_main_mode)) return;
+      if (!HasCapability(Caps.set_main_mode)) return;
 
       string mode = $"{RequestedRxMode}".Replace("_D", "");
-      string command = RadioInfo.commands.set_main_mode!.Replace("{mode}", mode);
+      string command = Cmds.set_main_mode!.Replace("{mode}", mode);
       SendWriteCommand(command);
       LastWrittenRxMode = RequestedRxMode;
     }
 
     private void TryWriteTxMode()
     {
-      if (!NeedToWriteTxMode()) return;
-
-      string command;
-      if (CatMode == CatMode.TxOnly && HasCapability(RadioInfo.capabilities.set_main_mode))
-        command = RadioInfo.commands.set_main_mode!.Replace("{mode}", $"{RequestedTxMode}");
-      else if (CatMode != CatMode.TxOnly && HasCapability(RadioInfo.capabilities.set_split_mode))
-        command = RadioInfo.commands.set_split_mode!.Replace("{mode}", $"{RequestedTxMode}");
-      else return;
+      string command = GetWriteTxModeCommand();
+      if (command == string.Empty) return;
 
       SendWriteCommand(command);
       LastWrittenTxMode = RequestedTxMode;
+    }
+
+    private string GetWriteTxModeCommand()
+    {
+      string mode = $"{RequestedTxMode}".Replace("_D", "");
+
+      if (CatMode == CatMode.RxOnly) return string.Empty;
+
+      if (HasCapability(Caps.set_split_mode))
+          return Cmds.set_split_mode!.Replace("{mode}", mode);
+
+      return string.Empty;
+    }
+
+
+
+
+    //----------------------------------------------------------------------------------------------
+    //                                         ptt
+    //----------------------------------------------------------------------------------------------
+    internal bool CanPtt()
+    {
+      return CatMode != CatMode.RxOnly &&
+             Cmds.set_ptt_on != null &&
+             Cmds.set_ptt_off != null;
+    }
+
+    private void ReadPtt()
+    {
+      PttChanged = false;
+      if (Cmds.read_ptt == null) return;
+
+      var reply = SendReadCommand(Cmds.read_ptt!);
+      bool newPtt = reply == "1";
+
+      PttChanged = newPtt != Ptt;
+      Ptt = newPtt;
+
+      if (PttChanged)
+        if (Ptt == true) LastWrittenTxFrequency = 0; else LastWrittenRxFrequency = 0;
+
+
+          LogPtt($"ReadPtt: {Ptt} (changed={PttChanged})");
     }
 
     private void TryWritePtt()
@@ -300,35 +371,17 @@ namespace SkyRoof
       if (!RequestedPtt.HasValue) return;
       if (RequestedPtt == Ptt) return;
 
-      if (RequestedPtt == false && RadioInfo.commands.set_ptt_off != null)
-        SendWriteCommand(RadioInfo.commands.set_ptt_off);
+      if (RequestedPtt == false && Cmds.set_ptt_off != null)
+        SendWriteCommand(Cmds.set_ptt_off);
 
-      if (RequestedPtt == true && RadioInfo.commands.set_ptt_on != null)
+      if (RequestedPtt == true && Cmds.set_ptt_on != null)
       {
-        TryWriteTxFrequencyBeforePtt();
-        SendWriteCommand(RadioInfo.commands.set_ptt_on);
+        TryWriteTxFreqModeBeforePtt();
+        SendWriteCommand(Cmds.set_ptt_on);
       }
+
+      RequestedPtt = null;
     }
-
-    private void TryWriteTxFrequencyBeforePtt()
-    {
-      if (!RadioInfo.capabilities.set_split_frequency.Contains("before_ptt_on")) return;
-
-      long frequency = RequestedTxFrequency;
-      string command;
-
-      if (CatMode == CatMode.TxOnly && RadioInfo.commands.set_main_frequency != null)
-        command = RadioInfo.commands.set_main_frequency!.Replace("{frequency}", $"{frequency}");
-
-      else if (CatMode != CatMode.TxOnly && RadioInfo.commands.set_split_frequency != null)
-        command = RadioInfo.commands.set_split_frequency!.Replace("{frequency}", $"{frequency}");
-
-      else return;
-
-      SendWriteCommand(command);
-    }
-
-
 
 
 
@@ -336,21 +389,42 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     //                                  check conditions
     //----------------------------------------------------------------------------------------------
-    // this function reads Ptt only if capability depends on it, and reads it only once
     private bool HasCapability(string[] capability)
     {
       return
         (capability.Contains("when_receiving") && capability.Contains("when_transmitting"))
         ||
-        (capability.Contains("when_receiving") && !Ptt)
+        (capability.Contains("when_receiving") && Ptt == false)
         ||
-        (capability.Contains("when_transmitting") && Ptt);
+        (capability.Contains("when_transmitting") && Ptt == true);
+    }
+
+
+    private bool NeddToWriteTxFreqModeBeforePtt()
+    {
+      // not simplex
+      if (CatMode != CatMode.Simplex) return false;
+
+      // not swsitching to tx
+      if (!PttChanged || Ptt != true) return false;
+
+      // nothing to write
+      if (RequestedTxFrequency == 0 && !RequestedTxMode.HasValue) return false;
+
+      // can write when transmitting
+      if (Caps.set_main_frequency.Contains("when_transmitting") && Caps.set_main_mode.Contains("when_transmitting"))
+        return false;
+
+
+      return true;
+
     }
 
     private bool NeedToWriteRxFrequency()
     {
       if (CatMode == CatMode.TxOnly) return false;
       if (RequestedRxFrequency == 0) return false; // never assigned
+      if (CatMode == CatMode.Simplex && PttChanged) return true;
       return IsDiff(RequestedRxFrequency, LastWrittenRxFrequency);
     }
 
@@ -358,6 +432,7 @@ namespace SkyRoof
     {
       if (CatMode == CatMode.RxOnly) return false;
       if (RequestedTxFrequency == 0) return false;
+      if (CatMode == CatMode.Simplex && PttChanged) return true;
       return IsDiff(RequestedTxFrequency, LastWrittenTxFrequency);
     }
 
@@ -365,6 +440,7 @@ namespace SkyRoof
     {
       if (CatMode == CatMode.TxOnly) return false;
       if (!RequestedRxMode.HasValue) return false;
+      if (CatMode == CatMode.Simplex && PttChanged) return true;
       return RequestedRxMode != LastWrittenRxMode;
     }
 
@@ -372,6 +448,7 @@ namespace SkyRoof
     {
       if (CatMode == CatMode.RxOnly) return false;
       if (!RequestedTxMode.HasValue) return false;
+      if (CatMode == CatMode.Simplex && PttChanged) return true;
       return RequestedTxMode != LastWrittenTxMode;
     }
 
