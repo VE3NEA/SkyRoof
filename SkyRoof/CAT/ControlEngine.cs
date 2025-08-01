@@ -199,7 +199,7 @@ namespace SkyRoof
       }
       catch (Exception ex)
       {
-        Log.Error(ex, "Failed to send command to {GetType().Name} ctld");
+        Log.Error(ex, $"Failed to send command to {GetType().Name} ctld");
         throw;
       }
 
@@ -211,7 +211,7 @@ namespace SkyRoof
       }
       catch (Exception ex)
       {
-        Log.Error(ex, "Failed to receive reply from {GetType().Name} ctld");
+        Log.Error(ex, $"Failed to receive reply from {GetType().Name} ctld");
         throw;
       }
     }
