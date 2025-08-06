@@ -94,7 +94,7 @@
         <article data-uid="">
 <h1 id="frequently-asked-questions">Frequently Asked Questions</h1>
 
-<p><strong>Q:</strong> I downloaded SkyRoof, and my virus scanner shows an infection. Is it real?</p>
+<p><strong>Q: I downloaded SkyRoof, and my virus scanner shows an infection. Is it real?</strong></p>
 <p><strong>A:</strong> Most likely, it is a false detection. However, it is always a good idea to test the download links <strong>before</strong> downloading <strong>any</strong> software. There are several online virus scanning services that you can use to check the link.
 <a href="https://www.virustotal.com/gui/home/url">VirusTotal</a> and <a href="https://www.hybrid-analysis.com/%7D">Hybrid Analysis</a>
 are just two examples.</p>
@@ -109,15 +109,15 @@ follow the instructions in their documentation.</p>
 <p><br><br></p>
 <p><img src="../images/virus_total.png" alt="VirusTotal"></p>
 <hr>
-<p><strong>Q:</strong> The right part of the SkyRoof toolbar does not fit in the screen, even though the screen resolution is 1980x1280.</p>
+<p><strong>Q: The right part of the SkyRoof toolbar does not fit in the screen, even though the screen resolution is 1980x1280.</strong></p>
 <p><strong>A:</strong> This happens because your <strong>text size</strong> setting in Windows is too high. For example, if it is set to 200%, the effective
 screen width is only <code>1900 / 2 = 950 pixels</code>. To fix this, right-click on the Desktop, click on <strong>Display Settings</strong> and set the text size
 to a lower value.</p>
 <hr>
-<p><strong>Q:</strong> How can I run two instances of SkyRoof?</p>
+<p><strong>Q: How can I run two instances of SkyRoof?</strong></p>
 <p><strong>A:</strong> By default, only one instance of SkyRoof can run at any time, but there is a work around. Make a copy of the SkyRoof.exe file in the same folder, but with a different name, e.g., SkyRoof_2.exe. Each exe will have its own settings, its own data folder, and will run independently of the other instance.</p>
 <hr>
-<p><strong>Q:</strong> I found an error in the satellite database: one of the satellite transmitters is marked as active, while it has been inactive for years. How can I correct the error?</p>
+<p><strong>Q: I found an error in the satellite database: one of the satellite transmitters is marked as active, while it has been inactive for years. How can I correct the error?</strong></p>
 <p><strong>A:</strong> SkyRoof uses
 <a href="satellite_data.html">satellite data</a>
 from the
@@ -129,7 +129,7 @@ and
 <a href="satellite_transmitters_panel.html">Satellite Transmitters</a>
 panels), click on the &quot;SatNOGS&quot; link in the Satellite Details panel  to open the SatNOGS web site, then click on Transmitters, and select Edit from the drop-down menu. You may need to create an account with them (free) in order to submit changes.</p>
 <hr>
-<p><strong>Q:</strong> How can I add a satellite that is currently not listed in SkyRoof?</p>
+<p><strong>Q: How can I add a satellite that is currently not listed in SkyRoof?</strong></p>
 <p><strong>A:</strong> The only way to add a satellite to SkyRoof is to add it to the SatNOGS database. Here is how you can do this:</p>
 <ul>
 <li>navigate to the <a href="https://db.satnogs.org/">SatNOGS DB web site</a>;</li>
@@ -140,15 +140,15 @@ panels), click on the &quot;SatNOGS&quot; link in the Satellite Details panel  t
 </ul>
 <p>See this <a href="https://wiki.satnogs.org/SatNOGS_DB">Wiki page</a> for details.</p>
 <hr>
-<p><strong>Q:</strong> My video card does not have an OpenGL 3.3 driver. Is there a way to use a software-only implementation of OpenGL?</p>
+<p><strong>Q: My video card does not have an OpenGL 3.3 driver. Is there a way to use a software-only implementation of OpenGL?</strong></p>
 <p><strong>A:</strong> Some users have had success with the OpenGL 3.3 functionality implemented in the software, though this solution is very CPU-intensive. You can try
 <a href="https://github.com/lightningterror/Mesa3D-Windows">this</a> or
 <a href="https://github.com/pal1000/mesa-dist-win">this</a> solution. Download the 64-bit version of the library and extract all DLL's from the archive to the SkyRoof folder.</p>
 <hr>
-<p><strong>Q:</strong> How do I prevent CTCSS from turning off when using SkyRoof with FM satellites and an Icom radio?</p>
+<p><strong>Q: How do I prevent CTCSS from turning off when using SkyRoof with FM satellites and an Icom radio?</strong></p>
 <p><strong>A:</strong> If you're experiencing an issue where the CTCSS tone turns off when transmitting or changing frequencies with SkyRoof and an Icom radio, the solution is to disable the &quot;Auto Repeater&quot; setting in the radio. This setting causes the radio to automatically disable repeater-related features like CTCSS when the frequency is changed, assuming you're no longer on a repeater. Disabling &quot;Auto Repeater&quot; prevents this behavior and keeps CTCSS enabled during frequency changes. This workaround was highlighted in a helpful <a href="https://www.youtube.com/watch?v=6xO3LNsTidQ">YouTube video</a>.</p>
 <hr>
-<p><strong>Q:</strong> What are all those offset settings for?</p>
+<p><strong>Q: What are all those offset settings for?</strong></p>
 <p><strong>A:</strong></p>
 <ul>
 <li><p><strong>Downlink Manual Correction:</strong> the frequencies of most satellite transmitters slightly differ from their published values. The purpose of this setting is to compensate for the difference, you set it once for each satellite and never change it again;</p>
@@ -162,6 +162,36 @@ panels), click on the &quot;SatNOGS&quot; link in the Satellite Details panel  t
 <li><p><strong>Doppler correction:</strong> this correction is computed and applied automatically, it keeps your RX and TX signals in sync when you tune through the transponder segment.</p>
 </li>
 </ul>
+<p><strong>Q: How to troubleshoot the rotator control?</strong></p>
+<p><strong>A:</strong></p>
+<ol>
+<li><p>Set up and enable rotator control as described in
+<a href="setting_up_rotator_control.html">Setting Up Rotator Control</a>.</p>
+<ul>
+<li>if the Rotator light on the status bar is red, the problem is with the SkyRoof to rotctld.exe connection;</li>
+<li>if the light is green, then the SkyRoof to rotcltd.exe connection is fine, the problem is with the rotctld.exe to rotor connection.</li>
+</ul>
+</li>
+<li><p>Add the <code>-vvvvv</code> option to the command line that starts rotctld.exe, and restart it. This option tells rotctld.exe to print detailed information to the console window (the black window that opens when rotctld.exe is started).</p>
+</li>
+<li><p>Read the <a href="https://hamlib.sourceforge.net/html/rotctl.1.html">rotctld.exe documentation</a> that will help you to understand information in the console window.</p>
+</li>
+<li><p>Possible causes of SkyRoof to rotctld.exe connection problems:</p>
+<ul>
+<li>rotctld.exe failed to start;</li>
+<li>SkyRoof is configured to use a port number different from the rotctld.exe listening port.</li>
+</ul>
+</li>
+<li><p>Possible causes of the rotctld.exe to rotator connection error problems:</p>
+<ul>
+<li>the rotator is not connected to the computer or not powered on;</li>
+<li>the COM port number or Baud rate specified on the command line is wrong - then the COM port fails to open;</li>
+<li>the rotator model specified on the command line is wrong - then the commands sent to the rotor are rejected or have no effect.</li>
+</ul>
+</li>
+<li><p>Make rotator control work without SkyRoof first: use <strong>rotctl.exe</strong>, an interactive version of rotctld.exe, and send commands to the rotator manually, by typing them in the console window. Rotator control uses three commands, &quot;P&quot;, &quot;p&quot; and &quot;S&quot; (set position, read position, stop rotation). Once you make rotctl.exe work with the rotator, run rotctld.exe with the same command line parameters.</p>
+</li>
+</ol>
 
 </article>
 
