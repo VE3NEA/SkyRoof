@@ -1265,6 +1265,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "users_guide/skycat_cat_notes.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/skycat_cat_notes.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "users_guide/system_requirements.md",
       "output": {
         ".html": {
