@@ -95,19 +95,22 @@
 <h1 id="cat-command-notes">CAT command notes</h1>
 
 <p>While working on the SkyCAT engine, I discovered that the documentation for the CAT commands of many radios is incomplete and sometimes wrong.
-The only way to learn the actual behavior of the CAT system is by experimentation. Below are my notes that may help the people trying to use CAT commands in their software.</p>
+The only way to learn the actual behavior of the CAT system is by experimentation. Below are my notes that may help those who are trying to use CAT commands in their software.</p>
 <h2 id="ic-9700">IC-9700</h2>
 <ul>
 <li><p><strong>&quot;16&quot;, &quot;59&quot;, &quot;00&quot;</strong> - this command that disables the dual watch mode sometimes returns success code <strong>&quot;FB&quot;</strong> and sometimes the error code, <strong>&quot;FA&quot;</strong>. In both cases dual watch is disabled. I could not find any pattern in its response, just be prepared to ignore the error;</p>
 </li>
-<li><p><strong>&quot;&quot;05&quot;</strong> - set the operating frequency, fails in the SAT mode if the frequency is on the same band as that of the Sub receiver. The work around is, when it fails, to send the Swap A/B command, then set the frequency again. Note that the modes of the Main and Sub receive also get swapped and need to be re-set;</p>
+<li><p><strong>&quot;&quot;05&quot;</strong> - set the operating frequency, fails in the SAT mode if the frequency is on the same band as that of the Sub receiver. The work around is, when it fails, to send the Swap A/B command, then set the frequency again. Note that the modes of the Main and Sub receive also get swapped and need to be restored;</p>
 </li>
-<li><p><strong>&quot;&quot;05&quot;</strong> - if Split is enabled and we are setting the frequency of the selected VFO that is on a band other than the unselected VFO band, this command disables Split. However, if another frequency change returns to the previous band, the Split gets automatically enabled! It remembered all this time that we wanted Split, and enabled it when the VFO A and B were tuned to the same band.</p>
+<li><p><strong>&quot;&quot;05&quot;</strong> - if Split is enabled and we are setting the VFO frequency that is on a band other than the band of the other VFO, this command disables Split. However, if another frequency change returns to the previous band, the Split gets automatically enabled! It remembered all this time that we wanted Split, and enabled it when the VFO A and B were tuned to the same band.</p>
 </li>
 </ul>
 <h2 id="ft-847">FT-847</h2>
 <ul>
-<li>this radio has the Split mode, and even allows it to be used in a cross-band manner, but does not have a CAT command to enable Split, nor does it even have a command to swap the VFO's.</li>
+<li><p>all CAT commands are ignored until the client sends the CAT On command (5 zero bytes);</p>
+</li>
+<li><p>this radio has the Split mode, and even allows it to be used in a cross-band manner, but does not have a CAT command to enable Split, nor does it even have a command to set the VFO B frequency or at least swap the VFO's.</p>
+</li>
 </ul>
 <h2 id="ft-817">FT-817</h2>
 <ul>
@@ -118,8 +121,19 @@ The only way to learn the actual behavior of the CAT system is by experimentatio
 </ul>
 <h2 id="ic-706mkiig">IC-706MKIIG</h2>
 <ul>
-<li>supports split operation but the only way to change the TX frequency is by swapping the VFO's - useless for SAT work&quot;;</li>
-<li>does not have commands to read or set PTT.</li>
+<li><p>supports split operation, but the only way to change the TX frequency is by swapping the VFO's. Useless for the SAT work;</p>
+</li>
+<li><p>does not have commands to read or set PTT.</p>
+</li>
+</ul>
+<h2 id="ic-910">IC-910</h2>
+<ul>
+<li><p>has SAT mode but no way to set the frequency of the other VFO;</p>
+</li>
+<li><p><strong>19</strong>, <strong>01</strong> - &quot;Set satellite memory&quot;. No description of the data format is provided. Actually the format of the parameters is not described for many commands, should be inferred from other radios;</p>
+</li>
+<li><p>the CAT command table in the older versions of Instruction Manual is split in rows incorrectly, the command parameters and their descriptions do not match. Get the latest revision of the Manual from the ICOM web site.</p>
+</li>
 </ul>
 
 </article>
