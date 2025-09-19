@@ -137,7 +137,7 @@ To tune the receiver:</p>
 <li>click within a blue transponder segment to select the transmitter and set the transponder offset;</li>
 <li>click anywhere on the frequency scale to tune to a terrestrial signal;</li>
 <li>drag the green rectangle to another frequency with a mouse;</li>
-<li>spin the mouse wheel on or near the green rectangle.</li>
+<li>spin the mouse wheel on or near the green rectangle. Hold the <strong>Alt</strong> key down to increase the tuning speed.</li>
 </ul>
 <p>The effect of tuning depends on the transmitter selection:</p>
 <ul>
@@ -161,16 +161,15 @@ much easier.</p>
 <h2 id="manual-offset">Manual Offset</h2>
 <p>The Manual Offset setting compensates for the transmitter frequency error, see
 <a href="frequency_control.html">Frequency Control</a> and <a href="doppler_tracking.html">Doppler Tracking</a> for details.</p>
-<p>The offset value is usually the same for all transmitters of a satellite, adjust it for some
+<p>The offset value is usually the same for all transmitters of a satellite, so you can adjust it for some
 non-transponder transmitter before using the transponder. Most satellites with a transponder also
-carry a telemetry or beacon transmitter that you can use to set the manual offset:</p>
+carry a telemetry or beacon transmitter that you can use to set the manual offset. The screenshot below shows the telemetry signal of the MO-122 satellite, and the green rectangle perfectly aligned with its frequency by adjusting the Downlink Manual Offset:</p>
 <p><img src="../images/mo-122.png" alt="MO-122"></p>
 <h2 id="aligning-the-uplink-and-downlink-frequencies">Aligning The Uplink and Downlink Frequencies</h2>
 <p>The screenshot below shows how to set Manual Correction for the uplink and downlink for a linear transponder, such as RS-44.</p>
 <ol>
 <li><p>Select the beacon transmitter of the satellite and adjust the Downlink Manual Correction setting to align the transmitter label
-and its signal trace on the waterfall. For RS-44 the required correction is about -1900 Hz. If your offset is different, then yor SDR
-requires <a href="calibrating_ppm_correction.html">PPM calibration</a>.</p>
+and its signal trace on the waterfall. For RS-44 the required correction is about -1900 Hz. If your offset is significantly different from this value, this means that your SDR requires <a href="calibrating_ppm_correction.html">PPM calibration</a>.</p>
 </li>
 <li><p>Select the transponder transmitter and find a clear frequency within the transponder segment. Send a sequence of dots
 and adjust the Uplink Manual Correction to align the center of the green rectangle with the trace of your signals coming from the satellite.</p>

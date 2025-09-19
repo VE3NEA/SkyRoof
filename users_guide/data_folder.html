@@ -96,9 +96,12 @@
 
 <p>SkyRoof keeps all of its data in the <strong>data folder</strong>.</p>
 <ul>
-<li>Click on <strong>Help / Data Folder</strong> in the main menu to open this folder in File Explorer.</li>
-<li>To open the folder when the program is not running, type this in File Explorer:
-<code>%appdata%\Afreet\Products\SkyRoof</code></li>
+<li><p>Click on <strong>Help / Data Folder</strong> in the main menu to open this folder in File Explorer.</p>
+</li>
+<li><p>To open the folder when the program is not running, type this in File Explorer:</p>
+<pre><code class="lang-bash">%appdata%\Afreet\Products\SkyRoof`
+</code></pre>
+</li>
 </ul>
 <h2 id="data-files">Data Files</h2>
 <ul>
@@ -114,7 +117,7 @@ to this page;</p>
 </li>
 <li><p><strong>Satellites.json</strong> - the satellite database compiled from the downloaded data;</p>
 </li>
-<li><p><strong>cat_info.json</strong> - information about the CAT capabilities of different radios;</p>
+<li><p><strong>cat_info.json</strong> - lists the CAT capabilities of a generic simplex radio;</p>
 </li>
 <li><p><strong>wsjtx_wisdom.dat</strong> - optimal FFT transform settings found by automatic testing.</p>
 </li>
@@ -122,6 +125,7 @@ to this page;</p>
 <h2 id="folders">Folders</h2>
 <ul>
 <li><strong>Logs</strong> - contains the log files with error messages and other information;</li>
+<li><strong>Adif</strong> - QSO records stored in the ADIF format;</li>
 <li><strong>Downloads</strong> - a copy of the satellite data downloaded from various sources, kept for troubleshooting;</li>
 <li><strong>Palettes</strong> - definition of the color palettes used by the waterfall display. Add your own
 palette as a text file with &quot;html&quot; color codes. Pick the color codes at

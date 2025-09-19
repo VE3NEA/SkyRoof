@@ -884,11 +884,11 @@
       "type": "Toc",
       "source_relative_path": "toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "toc.html"
-        },
         ".json": {
           "relative_path": "toc.json"
+        },
+        ".html": {
+          "relative_path": "toc.html"
         }
       },
       "version": ""
@@ -1307,11 +1307,11 @@
       "type": "Toc",
       "source_relative_path": "users_guide/toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "users_guide/toc.html"
-        },
         ".json": {
           "relative_path": "users_guide/toc.json"
+        },
+        ".html": {
+          "relative_path": "users_guide/toc.html"
         }
       },
       "version": ""

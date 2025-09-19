@@ -94,8 +94,15 @@
         <article data-uid="">
 <h1 id="setting-up-cat-control">Setting Up CAT Control</h1>
 
-<h2 id="rigctldexe">rigctld.exe</h2>
-<p>SkyRoof uses <strong>rigctld.exe</strong>, a HamLib-based CAT control daemon, to control the radio.</p>
+<p>SkyRoof uses an external program, either skyctld.exe from SkyCAT or rigctld.exe from HamLib, to control the transceiver. In both cases the CAT control commands are sent using the TCP protocol, so the radio may be moved to a remote computer and controlled via the network if desired.</p>
+<h2 id="skycat">SkyCAT</h2>
+<p>SkyCAT is specifically designed for the best satellite tracking experience. It has an open architecture where support of the new radio models is added by creating the command definition files with the corresponding commands. Check the <a href="https://ve3nea.github.io/SkyCAT/index.html">SkyCAT web site</a>
+for the list of currently supported radios. If your radio model is not yet supported, either create a command definition file for it using the instructions on the SkyCAT web site, or use rigctld.exe instead (see below).</p>
+<h2 id="using-skycatexe">Using skycat.exe</h2>
+<p>If your radio is supported by SkyCAT, use skycatd.exe, a command line program that comes as part of the SkyCAT package. To start using it, follow the
+<a href="https://ve3nea.github.io/SkyCAT/skycatd.html">setup instructions</a> on the SkyCAT web site.</p>
+<h2 id="using-rigctldexe">Using rigctld.exe</h2>
+<p>If a SkyCAT command definition file for your transceiver is not yet available, use <strong>rigctld.exe</strong>, a HamLib-based CAT control daemon. Note, however, that some commands may not work properly with rigctld.exe.</p>
 <ol>
 <li><p>Download <strong>hamlib-w64-4.5.5.exe</strong> <a href="https://github.com/Hamlib/Hamlib/releases/tag/4.5.5">from GitHub</a>.
 Other versions may not work correctly.</p>
@@ -112,49 +119,45 @@ of the arguments.</p>
 </code></pre>
 <p>In the string above the following arguments are used:</p>
 <ul>
-<li><strong>-m 3081</strong> - the radio model is IC-9700;</li>
+<li><strong>-m 3081</strong> - the radio model; 3081 is the Id of IC-9700 (see the
+<a href="https://github.com/Hamlib/Hamlib/wiki/Supported-Radios">list of id's</a>);</li>
 <li><strong>-r COM9</strong> - the COM port used by the radio. In this case, the USB connection to IC-9700 creates two virtual
 COM ports, COM9 and COM10. The port with the lower number is used for CAT;</li>
-<li><strong>-s 115200</strong> - use the highest available COM port speed.</li>
+<li><strong>-s 115200</strong> - use the highest available COM port speed;</li>
+<li><strong>-vvvvv</strong> - optional, writes detailed information to the console window. Useful for troubleshooting.</li>
 </ul>
 </li>
 <li><p>Run rigctld.exe using this shortcut before you enable CAT control in SkyRoof.</p>
 </li>
 </ol>
 <h2 id="settings">Settings</h2>
-<p>Click on <strong>Tools / Settings</strong> in the main menu to open the
-<a href="settings_window.html">Settings dialog</a>:</p>
+<p>The CAT Control settings in the <a href="settings_window.html">Settings dialog</a> are the same for skycatd.exe and rigctld.exe.</p>
+<p>Click on <strong>Tools / Settings</strong> in the main menu to open the <strong>Settings dialog</strong>:</p>
 <p><img src="../images/cat_settings.png" alt="Settings Dialog"></p>
 <ul>
 <li><strong>Delay</strong> determines how often SkyRoof sends commands to the radio. The default delay of 100 ms
-is good in most cases. Increase the delay if your radio is slow;</li>
+is good in most cases. Increase the delay if your radio's CAT interface is slow;</li>
 <li><strong>Log Traffic</strong> should be set to False and enabled only for debugging;</li>
 <li><strong>Ignore Dial Knob</strong> - by default, CAT control allows you to change the frequency both in the program and by
-spinning the dial knob. If for some reason this causes trouble, change this setting to True, then the dial knob
-will be ignored.</li>
+spinning the dial knob. If for some reason this causes trouble, change this setting to True, so that the dial knob rotation is ignored.</li>
 </ul>
 <p>The two sections in the Settings, <strong>RX CAT</strong> and <strong>TX CAT</strong>, allow you to use either the same radio for RX and TX, or
 two different radios. You can also enable only one of those, or disable both. The recommended configuration is to use an SDR for reception and a transceiver for transmission, in this case RX CAT should be disabled.</p>
-<p>To use the same radio for RX and TX, set <strong>Host</strong>, <strong>TCP Port</strong> and <strong>Radio Type</strong> to the same values in
+<p>To use the same radio for RX and TX, set <strong>Host</strong> and <strong>TCP Port</strong> to the same values in
 both sections.</p>
 <p>To use two different radios, create a second shortcut for the second radio, and specify a different port number on the command line.
 Enter this port number in the settings as well, and run two instances of <strong>rigctld.exe</strong> using both shortcuts.</p>
 <p>The settings in the RX and TX sections are:</p>
 <ul>
-<li><p><strong>Host</strong> - should be &quot;127.0.0.1&quot; or &quot;localhost&quot; if rigctld is running on the same computer as SkyRoof. It may be changed to a
-different address for remote control;</p>
+<li><p><strong>Host</strong> - should be &quot;127.0.0.1&quot; or &quot;localhost&quot; if skycatd or rigctld is running on the same computer as SkyRoof. It may be changed to a different address for remote control;</p>
 </li>
-<li><p><strong>TCP Port</strong> - 4532 is the default port used by rigctld. Use a different port in one of the sections to control different radios for RX and TX;</p>
+<li><p><strong>TCP Port</strong> - 4532 is the default port used by skycatd and rigctld. Use a different port in one of the sections to control different radios for RX and TX;</p>
 </li>
 <li><p><strong>Enabled</strong> - enable or disable CAT. Another way to toggle CAT is to click on the CAT labels on the status bar:</p>
 <p><img src="../images/cat_on_statusbar.png" alt="CAT on Statusbar"></p>
 </li>
-<li><p><strong>Radio Type</strong> - as mentioned above, the beta version has been tested only with IC-9700, which is a duplex transceiver.
-Change this setting if you want to test a radio of a different type;</p>
-</li>
 <li><p><strong>Show Corrected Frequency</strong> - The SkyRoof can display either the nominal frequency of the satellite transmitter, or the
-frequency with all corrections applied. Another way to toggle this setting is via a right-click menu on the frequency
-display on the toolbar.</p>
+frequency with all corrections applied. Another way to toggle this setting is via the right-click menu on the frequency display widget on the toolbar.</p>
 </li>
 </ul>
 

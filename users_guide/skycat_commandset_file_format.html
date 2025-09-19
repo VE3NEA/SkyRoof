@@ -94,7 +94,7 @@
         <article data-uid="">
 <h1 id="command-set-file-format">Command Set File Format</h1>
 
-<p><em>Updated: 2021-08-23</em>.</p>
+<p><em>Updated: 2021-08-26</em>.</p>
 <p><a href="skycat.html">SkyCAT</a> stores the CAT commands of each supported radio in a separate file of type <strong>.json</strong>. The file name is the model name of the radio, for example, <em>&quot;IC-9700.json&quot;</em> contains the commands of ICOM IC-9700. Support of new radio models may be added to SkyCAT by creating the new command set files for those radios.</p>
 <h2 id="operating-modes">Operating Modes</h2>
 <p>Many radios have different CAT commands, depending on the operating mode of a radio. SkyCAT explicitly sets the operating mode during the radio initialization and then uses the commands that correspond to that mode. The following operating modes are supported:</p>
@@ -132,7 +132,7 @@ This value allows the users to specify the radio model in a format compatible wi
 </li>
 <li><p><strong>default_baud_rate</strong> - the highest Baud rate of the RS-232 interface supported by the radio;</p>
 </li>
-<li><p><strong>cross_band_split</strong> - set it to true if the radio can work in the Split mode when the receive and transmit frequencies are on different bands. Surprisingly, many radios cannot do that. <em>This setting is currently not used</em>;</p>
+<li><p><strong>cross_band_split</strong> - set it to true if the radio can work in the Split mode when the receive and transmit frequencies are on different bands. Surprisingly, many radios cannot do that;</p>
 </li>
 <li><p><strong>bad reply</strong> - if the radio sends a certain sequence of bytes in response to a failed command, enter that sequence here, otherwise set it to <code>null</code>. The description of the byte sequence format is provided below;</p>
 </li>
@@ -171,13 +171,13 @@ This value allows the users to specify the radio model in a format compatible wi
 <ul>
 <li><p><strong>messages</strong> - an array of messages to send to the radio. A single command may require multiple messages to be sent. For example, the Split mode in FT-991 is enabled by sending two messages, <code>FR0;</code> and <code>FT1;</code>.</p>
 </li>
-<li><p><strong>alt_messages</strong> - an alternative array of messages that should be used if the <strong>messages</strong> return an error. For example, IC-9700 in the SAT mode returns an error if the frequency of the Main receiver is set to the same band as the Sub receiver. When this happens, the solution is to swap the Main and Sub VFO's and set the frequency again;</p>
+<li><p><strong>alt_messages</strong> - an alternative array of messages that will be used if the <strong>messages</strong> return an error. For example, IC-9700 in the SAT mode returns an error if the frequency of the Main receiver is set to the same band as the Sub receiver. When this happens, the solution is to swap the Main and Sub VFO's and set the frequency again;</p>
 </li>
 <li><p><strong>restriction</strong> - optional. Include this field if the radio accepts the given command only in one of the modes:</p>
 <ul>
 <li><strong>when_receiving</strong>;</li>
 <li><strong>when_transmitting</strong>;</li>
-<li><strong>when_setting_up</strong> (<em>currently ignored</em>). Set this value if the command interrupts reception or transmission, e.g., swaps the VFO, and thus may be used only during the initial setup.</li>
+<li><strong>when_setting_up</strong> - set this value if the command interrupts reception or transmission, e.g., swaps the VFO, and thus may be used only during the initial setup.</li>
 </ul>
 </li>
 </ul>
@@ -193,19 +193,19 @@ This value allows the users to specify the radio model in a format compatible wi
 }
 </code></pre>
 <ul>
-<li><strong>comment</strong> - optional, a short command description that will appear in the log for convenience;</li>
+<li><strong>comment</strong> - optional, a short description that will appear in the log for convenience;</li>
 <li><strong>command</strong> - required. The sequence of bytes that will be sent to the radio;</li>
 <li><strong>command_param</strong> - only for the Write commands;</li>
 <li><strong>reply</strong> - the sequence of bytes expected from the radio in reply to the command message. May be null if the radio does not reply to the given message;</li>
 <li><strong>reply_param</strong> - only for the Read commands;</li>
-<li><strong>ignore_error</strong> - <em>currently not used.</em> Set it to <code>true</code> if the radio may return an error even if the command succeeds. For example, some radios reply with an error to the Set Split command if the Split mode is already enabled.</li>
+<li><strong>ignore_error</strong> -- set it to <code>true</code> if the radio may return an error even if the command succeeds. For example, some radios reply with an error to the Set Split command if the Split mode is already enabled.</li>
 </ul>
 <h2 id="byte-sequence-format">Byte Sequence Format</h2>
 <p>The sequence of bytes is represented with  an array of strings, were each string is a two-character
 <a href="https://learn.sparkfun.com/tutorials/hexadecimal/all">hex code</a>
 of the byte. Some bytes may have <code>null</code> values:</p>
 <ul>
-<li><p>in the Write commands the nulls indicate the bytes that will be replaced with the value of the parameter being written. For example, the Set Mode command, &quot;MDn;&quot;, in TS-2000 is stored as</p>
+<li><p>in the Write commands the nulls indicate the bytes that will be replaced with the value of the parameter being written. For example, the Set Mode command of TS-2000,&quot;MDn;&quot;, is stored as</p>
 <pre><code class="lang-json">&quot;command&quot;: [&quot;4D&quot;, &quot;44&quot;, null, &quot;3B&quot;],
 </code></pre>
 <p>where the <code>null</code> will be replaced with the mode byte;</p>
@@ -238,7 +238,7 @@ of the byte. Some bytes may have <code>null</code> values:</p>
 </li>
 <li><p><strong>text</strong> - numerical value as a sequence of <a href="https://www.ascii-code.com/">ASCII</a> character codes. Example: frequency in the TS-2000 commands;</p>
 </li>
-<li><p><strong>enum</strong> - a parameter that can take only one of the pre-defined values, such as mode or ON/OFF setting.</p>
+<li><p><strong>enum</strong> - a parameter that can take only one of several pre-defined values, such as mode or ON/OFF setting.</p>
 </li>
 </ul>
 </li>
@@ -246,10 +246,10 @@ of the byte. Some bytes may have <code>null</code> values:</p>
 </li>
 <li><p><strong>start</strong> and <strong>length</strong> - optional. If the reply field contains more nulls than needed to represent the parameter, these settings are used to specify which bytes contain the parameter value;</p>
 </li>
-<li><p><strong>mask</strong> - only in the reply params, optional. The bitwise AND operation is performed on the mask and the bytes that contain the parameter, to remove the bits that may take any value. Example: the Read PTT command of FT-817 returns one byte. The 7-th bit of the byte contains the TX/RX flag, the rest of the bits contain some other parameters. <code>&quot;Mask&quot;: [ &quot;80 ]</code> clears irrelevant bits and leaves only the one of interest;</p>
+<li><p><strong>mask</strong> - only in the reply params, optional. The bitwise AND operation is performed on the mask and the bytes that contain the parameter, to remove the bits that may take any value. Example: the Read PTT command of FT-817 returns one byte. The 7-th bit of the byte contains the TX/RX flag, the rest of the bits contain some other parameters. <code>&quot;Mask&quot;: [ &quot;80&quot; ]</code> clears irrelevant bits and leaves only the one of interest;</p>
 </li>
 <li><p><strong>values</strong> - is present if, and only if, the parameter format is <strong>enum</strong>. It contains the list of pre-defined values and the byte sequences that represent them. Example:</p>
-<pre><code>&quot;values&quot;: { &quot;LSB&quot;: [ &quot;00&quot; ], &quot;USB&quot;: [ &quot;01&quot; ], &quot;CW&quot;: [ &quot;03&quot; ] }
+<pre><code>&quot;values&quot;: { &quot;LSB&quot;: [ &quot;00&quot; ], &quot;USB&quot;: [ &quot;01&quot; ], &quot;CW&quot;: [ &quot;03&quot; ], &quot;FM&quot;: [ &quot;04&quot; ] }
 </code></pre>
 </li>
 </ul>
