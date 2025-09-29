@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Smart Antenna Rotation | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Smart Antenna Rotation | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/smart_antenna_rotation.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MMW827H44"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-1MMW827H44');
+      </script>
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="smart-antenna-rotation">Smart Antenna Rotation</h1>
+
+<p>SkyRoof uses a unique antenna rotation algorithm, based on dynamic programming, that globally optimizes the tracking of the satellite pass and ensures the minimum possible communication downtime. The algorithm makes full use of the extended range of azimuth and elevation available in the modern rotators.</p>
+<h2 id="limitations-of-the-simple-approach">Limitations of the Simple Approach</h2>
+<p>The satellite path prediction algorithm computes the satellite azimuth in the range of <strong>0° to 360°</strong> and elevation in the range of <strong>0° to 90°</strong>. A simple antenna rotator just sends these azimuth and elevation values to the controller. This works most of the time, but there are cases when this requires the antenna to rotate by 180° or 360°. While the antenna is making this full circle, or half-circle, it does not point at the satellite, causing a significant downtime in the communication. The charts below show two such cases.</p>
+<p>In the first chart the path crosses the  360° azimuth line, and the antenna needs to make a full circle counter clockwise to get to 0°.</p>
+<p>In the second chart, when the satellite is at its highest elevation point, its azimuth quickly changes from South to North, by about 180°. This rotation may take up to a minute, causing a significant downtime.</p>
+<p><img src="../images/rotation/zero_crossing_path.png" alt="zero crossing path">
+<img src="../images/rotation/polar_path.png" alt="polar path"></p>
+<h2 id="rotator-capabilities">Rotator Capabilities</h2>
+<p>Many antenna rotators have an extended range of azimuth and elevation that goes beyond the <strong>0° to 360°</strong> for the azimuth and <strong>0° to 90°</strong> for the elevation. This allows the controller to point the antenna in the same direction in more than one way. We will use
+<a href="https://www.yaesu.com/product-detail.aspx?Model=G-5500DC&amp;CatName=Rotators">Yaesu G-5500DC</a>,
+one of the most popular satellite antenna rotators, as an example. This rotator has the following rotation range:</p>
+<ul>
+<li><strong>0° to 450°</strong> for the azimuth;</li>
+<li><strong>0° to 180°</strong> for the elevation.</li>
+</ul>
+<p>With this azimuth range, there is a 90° segment where every point may be reached in two ways. The first chart below shows that Azimuth=30° and Azimuth=390° point in the same direction.</p>
+<p>With this elevation range, every point may be reached in two ways, with elevation &lt; 90° and &gt; 90°, as shown in the second chart.</p>
+<p><img src="../images/rotation/spiral.png" alt="polar path">
+<img src="../images/rotation/flip.png" alt="polar path"></p>
+<p>Note also that the rotation speed of G-5500DC is different in the horizontal and vertical planes. Here is what appears in its specifications:</p>
+<pre><code class="lang-yaml">Rotation time (approx.): 
+  Elevation (180°): 65 sec.
+  Azimuth+(360°): 60 sec.
+</code></pre>
+<p>The SkyRoof algorithm assumes that vertical rotation is two times slower than horizontal.</p>
+<h2 id="algorithm">Algorithm</h2>
+<p>The SkyRoof algorithm that finds the optimum tracking strategy for the given satellite path is not rule-based, it uses the global optimizaton approach to find the optimal solution. The examples below show how it handles certain special cases.</p>
+<hr>
+<p><img src="../images/rotation/zero_crossing_forward.png" alt="1"></p>
+<p>This is an easy case. The azimuth changes from 330° to 80°, so the rotation starts at 330° and, when the azimuth crosses 360°, continues in the same direction, up to 440°, which is the same direction as 80°.</p>
+<hr>
+<p><img src="../images/rotation/zero_crossing_backward.png" alt="2"></p>
+<p>The same path, but in the opposite direction. The simple approach described above, that is used in many simple antenna rotation programs, no longer works. If we start at Azimuth=80°, we hit the 0° limit and cannot continue. The algorithm in SkyRoof looks at the whole pass and chooses to start at 440° instead of 80° so that the pass is tracked without interruption.</p>
+<hr>
+<p><img src="../images/rotation/crossing_both.png" alt="3"></p>
+<p>Now the path crosses both 0° and 450° lines. In this case the 90° overlap is not enough to ensure uninterrupted tracking. The dynamic algorithm still finds a solution: it uses the elevations &gt; 90°. Tracking starts at (Az=170°, El=180°) and ends at (Az=280°, El=180°). Again, all azimuths are in the 0° - 360° range, ensuring uninterrupted tracking.</p>
+<hr>
+<p><img src="../images/rotation/small_overshoot.png" alt="4"></p>
+<p>SkyRoof has a parameter in the rotator control settings that determines the steps in which the antenna is rotated, to prevent frequent starts and stops of the motors. Indeed, if the antenna beam width is, say, 60°, there is no point in rotating it in 1° steps. The default step size is 5°.</p>
+<p>The path in the chart above crosses 360°, but it extends beyond the red line only by a couple of degrees. If the overshoot does not exceed the rotation step, the algorithm is smart enough to start the path at 0° so that 360° rotation is not required. This works even if the rotator does not have an extended azimuth range.</p>
+<hr>
+<p><img src="../images/rotation/polar_path_flip.png" alt="5"></p>
+<p>This path comes close to the zenith and, as we have seen before, requires the antenna to make a fast rotation by about 180° in azimuth. The rotators that support elevations of 0° to 180° can use elevation &gt; 90° for the second half of the path, thus eliminating the 180° azimuth change. However, to switch from the elevation &lt; 90° to &gt; 90°, the antenna must deviate from the path a little bit and pass through the zenith (90°), as shown with the orange lines in the chart above. Dynamic programming plans this deviation in an optimal way.</p>
+<hr>
+<p><img src="../images/rotation/within_quadrant.png" alt="6"></p>
+<p>In many cases there is more than one way of tracking the same path. For example, the path above may be tracked in three different ways:</p>
+<ul>
+<li>(Az=20°, El=0°) -&gt; (Az=70°, El=0°)</li>
+<li>(Az=380°, El=0°) -&gt; (Az=430°, El=0°)</li>
+<li>(Az=200°, El=180°) -&gt; (Az=250°, El=180°)</li>
+</ul>
+<p>When the algorithm finds multiple optimum paths, it chooses the one which has the starting point closest to the current antenna direction.</p>
+<hr>
+<p><img src="../images/rotation/clip.png" alt="7"></p>
+<p>Some antenna rotators have a turning range that does not cover the whole upper hemisphere. The chart above shows the case where the rotator has an elevation range of 15° to 90°. This could be a limitation of the hardware or just an obstructed horizon that makes lower elevation angles useless. The algorithm obeys these restrictions, it does not go beyond the red line. It follows the path shown in the chart with orange lines.</p>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

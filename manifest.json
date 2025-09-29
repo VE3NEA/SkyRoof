@@ -512,6 +512,116 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/rotation/clip.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rotation/clip.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rotation/crossing_both.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rotation/crossing_both.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rotation/flip.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rotation/flip.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rotation/polar_path.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rotation/polar_path.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rotation/polar_path_flip.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rotation/polar_path_flip.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rotation/small_overshoot.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rotation/small_overshoot.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rotation/spiral.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rotation/spiral.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rotation/within_quadrant.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rotation/within_quadrant.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rotation/zero_crossing_backward.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rotation/zero_crossing_backward.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rotation/zero_crossing_forward.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rotation/zero_crossing_forward.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/rotation/zero_crossing_path.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/rotation/zero_crossing_path.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/rotator_control.png",
       "output": {
         "resource": {
@@ -884,11 +994,11 @@
       "type": "Toc",
       "source_relative_path": "toc.yml",
       "output": {
-        ".json": {
-          "relative_path": "toc.json"
-        },
         ".html": {
           "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
         }
       },
       "version": ""
@@ -1285,6 +1395,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "users_guide/smart_antenna_rotation.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/smart_antenna_rotation.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "users_guide/system_requirements.md",
       "output": {
         ".html": {
@@ -1307,11 +1427,11 @@
       "type": "Toc",
       "source_relative_path": "users_guide/toc.yml",
       "output": {
-        ".json": {
-          "relative_path": "users_guide/toc.json"
-        },
         ".html": {
           "relative_path": "users_guide/toc.html"
+        },
+        ".json": {
+          "relative_path": "users_guide/toc.json"
         }
       },
       "version": ""

@@ -113,12 +113,14 @@ of the arguments.</p>
 <li><strong>-s 9600</strong> - the COM port speed.</li>
 </ul>
 <p>Run rotctld.exe using this shortcut before you enable rotator control in SkyRoof.</p>
+<p>The list of rotator models supported by rotctld.exe is available on the
+<a href="https://github.com/Hamlib/Hamlib/wiki/Supported-Rotators">HamLib web site</a>. Note that one of the models is <strong>PSTRotator</strong>. When this model is selected, rotctld.exe just passes the rotation commands to the PST Rotator software.</p>
 <h2 id="settings">Settings</h2>
 <p>Click on <strong>Tools / Settings</strong> in the main menu to open the
 <a href="settings_window.html">Settings dialog</a>:</p>
 <p><img src="../images/rotator_settings.png" alt="Settings Dialog"></p>
 <ul>
-<li><strong>Delay</strong> determines how often SkyRoof sends commands to the rotator. The default delay is 300 ms;</li>
+<li><strong>Delay</strong> determines how often SkyRoof sends commands to the rotator. The default delay is 300 ms, but you can set it to a lower value, such as 100 ms, without adverse effects;</li>
 <li><strong>Log Traffic</strong> should be set to False and enabled only for debugging;</li>
 <li><strong>Enabled</strong> - enable or disable rotator control. Another way to toggle the rotator control
 is to click on the Rotator label on the status bar;</li>
@@ -136,6 +138,10 @@ only when the required change is greater than the step size. The default value i
 <p>If your rotator does not control elevation, set the MinimumElevation and MaximumElevation to the same value. With such settings,
 wrong elevation will not be considered a bearing error. Note that the bearing error is indicated with a pink color
 on the <a href="rotator_control.html">Rotator Control</a> panel.</p>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="smart_antenna_rotation.html">Smart Antenna Rotation</a></li>
+</ul>
 
 </article>
 
