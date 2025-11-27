@@ -595,6 +595,15 @@ namespace SkyRoof
         ctx.QsoEntryPanel.Close();
     }
 
+
+    private void Ft4ConsoleMNU_Click(object sender, EventArgs e)
+    {
+      if (ctx.Ft4ConsolePanel == null)
+        ShowFloatingPanel(new Ft4ConsolePanel(ctx));
+      else
+        ctx.Ft4ConsolePanel.Close();
+    }
+
     private void SettingsMNU_Click(object sender, EventArgs e)
     {
       new SettingsDialog(ctx).ShowDialog();
@@ -809,6 +818,7 @@ namespace SkyRoof
         case "SkyRoof.EarthViewPanel": return new EarthViewPanel(ctx);
         case "SkyRoof.WaterfallPanel": return new WaterfallPanel(ctx);
         case "SkyRoof.QsoEntryPanel": return new QsoEntryPanel(ctx);
+        case "SkyRoof.Ft4ConsolePanel": return new Ft4ConsolePanel(ctx);
 
         default: return null;
       }

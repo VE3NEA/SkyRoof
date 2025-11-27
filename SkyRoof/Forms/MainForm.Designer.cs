@@ -58,6 +58,7 @@
       SkyViewMNU = new ToolStripMenuItem();
       EarthViewMNU = new ToolStripMenuItem();
       QsoEntryMNU = new ToolStripMenuItem();
+      Ft4ConsoleMNU = new ToolStripMenuItem();
       toolStripMenuItem4 = new ToolStripSeparator();
       ResetWindowLayoutMNU = new ToolStripMenuItem();
       toolsToolStripMenuItem = new ToolStripMenuItem();
@@ -279,7 +280,7 @@
       // 
       // GroupViewPanelMNU
       // 
-      GroupViewPanelMNU.DropDownItems.AddRange(new ToolStripItem[] { GroupViewMNU, SatelliteDetailsMNU, TransmittersMNU, SatellitePassesMNU, WaterfallMNU, TimelineMNU, SkyViewMNU, EarthViewMNU, QsoEntryMNU, toolStripMenuItem4, ResetWindowLayoutMNU });
+      GroupViewPanelMNU.DropDownItems.AddRange(new ToolStripItem[] { GroupViewMNU, SatelliteDetailsMNU, TransmittersMNU, SatellitePassesMNU, WaterfallMNU, TimelineMNU, SkyViewMNU, EarthViewMNU, QsoEntryMNU, Ft4ConsoleMNU, toolStripMenuItem4, ResetWindowLayoutMNU });
       GroupViewPanelMNU.Name = "GroupViewPanelMNU";
       GroupViewPanelMNU.Size = new Size(44, 20);
       GroupViewPanelMNU.Text = "View";
@@ -346,6 +347,13 @@
       QsoEntryMNU.Size = new Size(194, 22);
       QsoEntryMNU.Text = "QSO Entry";
       QsoEntryMNU.Click += QsoEntryMNU_Click;
+      // 
+      // Ft4ConsoleMNU
+      // 
+      Ft4ConsoleMNU.Name = "Ft4ConsoleMNU";
+      Ft4ConsoleMNU.Size = new Size(194, 22);
+      Ft4ConsoleMNU.Text = "FT4 Console";
+      Ft4ConsoleMNU.Click += Ft4ConsoleMNU_Click;
       // 
       // toolStripMenuItem4
       // 
@@ -836,5 +844,6 @@
     private ToolStripDropDownButton RotatorDropdownBtn;
     private ToolStripMenuItem EnableRotatorMNU;
     private ToolStripMenuItem TrackRotatorMNU;
+    public ToolStripMenuItem Ft4ConsoleMNU;
   }
 }

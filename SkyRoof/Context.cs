@@ -34,6 +34,7 @@ namespace SkyRoof
     public TransmittersPanel? TransmittersPanel;
     public WaterfallPanel? WaterfallPanel;
     public QsoEntryPanel? QsoEntryPanel;
+    public Ft4ConsolePanel? Ft4ConsolePanel;
 
     // devices
     public SoapySdrDevice? Sdr;
@@ -46,7 +47,7 @@ namespace SkyRoof
     public readonly Soundcard<Complex32> IqVacSoundcard = new();
     public readonly Announcer Announcer = new();
     public UdpStreamSender UdpStreamSender = new();
-
+    
     public void ClosePanels()
     {
       GroupViewPanel?.Close();
@@ -58,6 +59,7 @@ namespace SkyRoof
       TransmittersPanel?.Close();
       WaterfallPanel?.Close();
       QsoEntryPanel?.Close();
+      Ft4ConsolePanel?.Close();
     }
   }
 }
