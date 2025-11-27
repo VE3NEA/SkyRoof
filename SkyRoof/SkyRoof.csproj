@@ -52,6 +52,9 @@
     <None Include="..\Vendor\fftw-3.3.5\libfftw3f-3.dll" Link="libfftw3f-3.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="..\Vendor\ft4_coder\ft4_coder.dll" Link="ft4_coder.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="..\Vendor\liquid-dsp\libgcc_s_sjlj-1.dll" Link="libgcc_s_sjlj-1.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
