@@ -144,8 +144,6 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     //                                        process
     //----------------------------------------------------------------------------------------------
-    Random random = new Random(5);
-
     protected override void Process(DataEventArgs<Complex32> args)
     {
       if (NewMode != CurrentMode) SetMode(NewMode);

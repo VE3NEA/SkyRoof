@@ -21,8 +21,11 @@ namespace VE3NEA
     public DataEventArgs<T> RentCopyOf(DataEventArgs<T> args)
     {
       var result = Rent(args.Data.Length);
+
       result.Count = args.Count;
+      result.Utc = args.Utc;
       Array.Copy(args.Data, result.Data, result.Count);
+
       return result;
     }
 
@@ -49,7 +52,11 @@ namespace VE3NEA
 
       internal DataEventArgs<T> Rent()
       {
-        if (Pool.TryTake(out DataEventArgs<T>? result)) return result;
+        if (Pool.TryTake(out DataEventArgs<T>? result))
+        {
+          result.Utc = DateTime.UtcNow;
+          return result;
+        }
 
         return new DataEventArgs<T>(new T[DataSize], DataSize);
       }

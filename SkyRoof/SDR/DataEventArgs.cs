@@ -4,6 +4,7 @@
   {
     public T[] Data = Array.Empty<T>();
     public int Count;
+    public DateTime Utc;
 
     public DataEventArgs() { }
 
@@ -11,6 +12,7 @@
     {
       Data = data;
       Count = count;
+      Utc = DateTime.UtcNow;
     }
   }
 }

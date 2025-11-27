@@ -220,6 +220,8 @@ namespace SkyRoof
     {
       ctx.SpeakerSoundcard.AddSamples(e.Data);
 
+      ctx.Ft4ConsolePanel?.Ft4Decoder?.StartProcessing(e);
+
       // apply output stream gain (float)
       float gain = Dsp.FromDb2(ctx.Settings.OutputStream.Gain);
       for (int i = 0; i < e.Data.Length; i++) e.Data[i] *= gain;
