@@ -42,9 +42,9 @@ namespace SkyRoof
     public CatControl CatControl = new();
 
     // soundcards
-    public readonly Soundcard<float> SpeakerSoundcard = new();
-    public readonly Soundcard<float> AudioVacSoundcard = new();
-    public readonly Soundcard<Complex32> IqVacSoundcard = new();
+    public readonly OutputSoundcard<float> SpeakerSoundcard = new();
+    public readonly OutputSoundcard<float> AudioVacSoundcard = new();
+    public readonly OutputSoundcard<Complex32> IqVacSoundcard = new();
     public readonly Announcer Announcer = new();
     public UdpStreamSender UdpStreamSender = new();
     

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using CSCore.CoreAudioAPI;
 using VE3NEA;
 
 namespace SkyRoof
@@ -31,7 +32,7 @@ namespace SkyRoof
     [DisplayName("VAC Device")]
     [Description("Virtual Audio Cable device")]
     [TypeConverter(typeof(OutputSoundcardNameConverter))]
-    public string? Vac { get; set; } = Soundcard<float>.GetFirstVacId();
+    public string? Vac { get; set; } = Soundcard.GetFirstVacId(DataFlow.Render);
 
     [DisplayName("UDP Port")]
     [DefaultValue((ushort)7355)]

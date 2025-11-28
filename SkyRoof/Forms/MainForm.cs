@@ -367,16 +367,16 @@ namespace SkyRoof
     {
       if (!ctx.SpeakerSoundcard.Enabled)
         SoundcardLedLabel.ForeColor = Color.Gray;
-      else if (!ctx.SpeakerSoundcard.IsPlaying())
+      else if (!ctx.SpeakerSoundcard.IsRunning())
         SoundcardLedLabel.ForeColor = Color.Red;
       else
         SoundcardLedLabel.ForeColor = Color.Lime;
 
       if (!ctx.Settings.OutputStream.Enabled)
         VacLedLabel.ForeColor = Color.Gray;
-      else if (ctx.Settings.OutputStream.Type == DataStreamType.AudioToVac && !ctx.AudioVacSoundcard.IsPlaying())
+      else if (ctx.Settings.OutputStream.Type == DataStreamType.AudioToVac && !ctx.AudioVacSoundcard.IsRunning())
         VacLedLabel.ForeColor = Color.Red;
-      else if (ctx.Settings.OutputStream.Type == DataStreamType.IqToVac && !ctx.IqVacSoundcard.IsPlaying())
+      else if (ctx.Settings.OutputStream.Type == DataStreamType.IqToVac && !ctx.IqVacSoundcard.IsRunning())
         VacLedLabel.ForeColor = Color.Red;
       else
         VacLedLabel.ForeColor = Color.Lime;
@@ -720,7 +720,7 @@ namespace SkyRoof
     private void SoundcardDropdownBtn_DropDownOpening(object sender, EventArgs e)
     {
       SoundcardDropdownBtn.DropDownItems.Clear();
-      foreach (var dev in Soundcard<float>.ListDevices(DataFlow.Render))
+      foreach (var dev in OutputSoundcard<float>.ListDevices(DataFlow.Render))
       {
         var item = new ToolStripMenuItem(dev.Name);
         item.Checked = dev.Id == ctx.Settings.Audio.SpeakerSoundcard;

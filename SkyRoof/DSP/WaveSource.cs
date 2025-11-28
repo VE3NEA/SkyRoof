@@ -3,17 +3,17 @@ using MathNet.Numerics;
 
 namespace VE3NEA
 {
+  // <T> is float or Complex32
   public class WaveSource<T> : IWaveSource
   {
-    public const int AUDIO_SAMPLING_RATE = 48_000;
-
     private readonly WaveFormat format;
-    private RingBuffer<T> ringBuffer = new(AUDIO_SAMPLING_RATE / 5);
+    private RingBuffer<T> ringBuffer;
 
-    public WaveSource(int? samplingRate = null)
+    public WaveSource(int samplingRate)
     {
       int channelCount = typeof(T) == typeof(Complex32) ? 2 : 1;
-      format = new WaveFormat(samplingRate ?? AUDIO_SAMPLING_RATE, 32, channelCount, AudioEncoding.IeeeFloat);
+      format = new WaveFormat(samplingRate, 32, channelCount, AudioEncoding.IeeeFloat);
+      ringBuffer = new(samplingRate / 5);
     }
 
   public void AddSamples(T[] samples, int offset = 0, int? count = null)
