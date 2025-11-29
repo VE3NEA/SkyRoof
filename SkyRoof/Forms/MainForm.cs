@@ -82,6 +82,8 @@ namespace SkyRoof
     {
       // save settings
       ctx.Settings.Ui.StoreDockingLayout(DockHost);
+      ctx.ClosePanels();
+
       ctx.Settings.Ui.StoreWindowPosition(this);
       ctx.Settings.Ui.ClockUtcMode = Clock.UtcMode;
       if (ctx.WaterfallPanel != null)
@@ -220,7 +222,7 @@ namespace SkyRoof
     {
       ctx.SpeakerSoundcard.AddSamples(e.Data);
 
-      ctx.Ft4ConsolePanel?.Ft4Decoder?.StartProcessing(e);
+      ctx.Ft4ConsolePanel?.AddSamplesFromSdr(e);
 
       // apply output stream gain (float)
       float gain = Dsp.FromDb2(ctx.Settings.OutputStream.Gain);

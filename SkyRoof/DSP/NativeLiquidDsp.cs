@@ -116,8 +116,13 @@ namespace VE3NEA
     [DllImport(LIBLIQUID, CallingConvention = cdecl)]
     public static extern unsafe int msresamp2_crcf_execute(msresamp2_crcf* q, Complex32* x, out Complex32 y);
 
+    [DllImport(LIBLIQUID, CallingConvention = cdecl)]
+    public static extern unsafe float msresamp2_crcf_get_delay(msresamp2_crcf* q);
 
-    // rational resampler
+
+
+
+    // rational resampler, complex coefficients
 
     [DllImport(LIBLIQUID, CallingConvention = cdecl)]
     public static extern unsafe rresamp_cccf* rresamp_cccf_create(uint interp, uint decim, uint m, Complex32* h);
@@ -137,6 +142,10 @@ namespace VE3NEA
     [DllImport(LIBLIQUID, CallingConvention = cdecl)]
     public static extern unsafe int rresamp_cccf_execute(rresamp_cccf* q, Complex32* x, Complex32* y);
 
+
+
+
+    // rational resampler, real coefficients
     [DllImport(LIBLIQUID, CallingConvention = cdecl)]
     public static extern unsafe rresamp_crcf* rresamp_crcf_create(uint interp, uint decim, uint m, float* h);
     [DllImport(LIBLIQUID, CallingConvention = cdecl)]
@@ -147,6 +156,11 @@ namespace VE3NEA
 
     [DllImport(LIBLIQUID, CallingConvention = cdecl)]
     public static extern unsafe rresamp_crcf* rresamp_crcf_create_kaiser(uint interp, uint decim, uint m, float bw, float As);
+
+    [DllImport(LIBLIQUID, CallingConvention = cdecl)]
+    public static extern unsafe uint rresamp_crcf_get_delay(rresamp_crcf* q);
+    
+    
 
 
     // fir filter

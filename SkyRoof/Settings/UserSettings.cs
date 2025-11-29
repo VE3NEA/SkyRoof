@@ -6,7 +6,7 @@ namespace SkyRoof
   {
     [DisplayName("Callsign")]
     [Description("Your callsign")]
-    public string Call { get; set; }
+    public string Call { get; set; } = "";
 
     [DisplayName("Grid Square")]
     [Description("Your grid square")]

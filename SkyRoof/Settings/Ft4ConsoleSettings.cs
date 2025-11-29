@@ -1,24 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using CSCore.CoreAudioAPI;
 using VE3NEA;
 
-public enum FtrAudioSource
+public enum Ft4AudioSource
 {
   SDR,
-  SoundCard,
+  Soundcard,
 }
 
 namespace SkyRoof
 {
   public class Ft4ConsoleSettings
   {
-    [DefaultValue(FtrAudioSource.SDR)]
-    public FtrAudioSource AudioSource { get; set; } = FtrAudioSource.SDR;
+    [DefaultValue(Ft4AudioSource.SDR)]
+    public Ft4AudioSource AudioSource { get; set; } = Ft4AudioSource.SDR;
 
     [DisplayName("RX Soundcard")]
     [TypeConverter(typeof(InputSoundcardNameConverter))]
@@ -28,16 +23,13 @@ namespace SkyRoof
     [TypeConverter(typeof(OutputSoundcardNameConverter))]
     public string? TxSoundcard { get; set; } = Soundcard.GetDefaultSoundcardId(DataFlow.Render);
 
-    [DisplayName("RX Gain, dB")]
-    [Description(" Amplify or attenuate RX data, dB")]
-    [DefaultValue(0)]
-    public int RxGain { get; set; } = 0;
-
-    [DisplayName("TX Gain, dB")]
+    [DisplayName("TX Gain")]
     [Description(" Amplify or attenuate TX data, dB")]
     [DefaultValue(0)]
     public int TxGain { get; set; } = 0;
 
+    [DisplayName("Enable Transmit")]
+    [DefaultValue(false)]
     public bool EnableTransmit { get; set; } = false;
 
 

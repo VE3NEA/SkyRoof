@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Security.Policy;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using MathNet.Numerics;
 using VE3NEA;
 
 namespace SkyRoof
@@ -15,6 +10,8 @@ namespace SkyRoof
     private float[] Samples = [];
     private int SampleCount = 0;
     DateTime DataUtc;
+    public string MyCall = "";
+    public string TheirCall = "";
 
     public event EventHandler<DecodeEventArgs>? SlotDecoded;
 
@@ -57,14 +54,16 @@ namespace SkyRoof
         for (int i = 0; i < samples.Length; i++) 
           samples[i] /= max;
 
-      StringBuilder output_messages = new StringBuilder();
-      output_messages.Append(' ', NativeFT4Coder.DECODE_MAX_CHARS);
+      StringBuilder decodedMessages = new StringBuilder();
+      decodedMessages.Append(' ', NativeFT4Coder.DECODE_MAX_CHARS);
+      NativeFT4Coder.QsoStage stage = NativeFT4Coder.QsoStage.CALLING;
+      int rx_audioFrequency = 1500;
+      
+
+      NativeFT4Coder.decode(samples, ref stage, ref rx_audioFrequency, MyCall, TheirCall, decodedMessages);
 
 
-      NativeFT4Coder.decode(samples, output_messages);
-
-
-      string messages = output_messages.ToString().Trim();
+      string messages = decodedMessages.ToString().Trim();
 
       SampleCount = 0;
       DecodedSlotNumber = CurrentSlotNumber;

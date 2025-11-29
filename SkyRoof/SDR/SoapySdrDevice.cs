@@ -143,6 +143,7 @@ namespace VE3NEA
         try
         {
           Stream.ReadStream();
+          Stream.Args.Utc = DateTime.UtcNow;
           DataAvailable?.Invoke(this, Stream.Args);
         }
         catch (Exception ex)

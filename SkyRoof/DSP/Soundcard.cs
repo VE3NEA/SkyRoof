@@ -4,8 +4,6 @@ using CSCore.SoundIn;
 using CSCore.SoundOut;
 using CSCore.Streams;
 using MathNet.Numerics;
-using VE3NEA;
-using static SkyRoof.Slicer;
 
 namespace VE3NEA
 {
@@ -191,8 +189,10 @@ namespace VE3NEA
   {
     private WasapiCapture? soundIn;
     private ISampleSource? SampleSource;
+    private DataEventArgsPool<float> ArgsPool = new();
 
-    public event EventHandler? SamplesAvailable;
+
+    public event EventHandler<DataEventArgs<float>>? SamplesAvailable;
 
     public InputSoundcard(string? audioDeviceId = null, int? samplingRate = null) : base(audioDeviceId)
     {
@@ -203,8 +203,6 @@ namespace VE3NEA
       try
       {
         if (mmDevice?.DeviceState != DeviceState.Active) return;
-
-        soundIn?.Dispose();
 
         // init audio device
         int channelCount = typeof(T) == typeof(Complex32) ? 2 : 1;
@@ -242,10 +240,17 @@ namespace VE3NEA
       return soundIn?.RecordingState == RecordingState.Recording;
     }
 
-
     private void SoundIn_DataAvailable(object? sender, DataAvailableEventArgs e)
     {
-      throw new NotImplementedException();
+      if (SampleSource == null) return;
+
+      int bytesPerSample = sizeof(float) * (typeof(T) == typeof(Complex32) ? 2 : 1);
+      int sampleCount = e.ByteCount / bytesPerSample;
+
+      var args = ArgsPool.Rent(sampleCount);
+      SampleSource.Read(args.Data, 0, sampleCount);
+      SamplesAvailable?.Invoke(this, args);
+      ArgsPool.Return(args);
     }
   }
 }

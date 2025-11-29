@@ -8,7 +8,8 @@ namespace SkyRoof
   public partial class Ft4ConsolePanel : DockContent
   {
     private readonly Context ctx;
-    public readonly Ft4Decoder Ft4Decoder = new();
+    private readonly InputSoundcard<float> Soundcard = new();
+    private readonly Ft4Decoder Ft4Decoder = new();
 
     public Ft4ConsolePanel()
     {
@@ -25,14 +26,9 @@ namespace SkyRoof
       ctx.MainForm.Ft4ConsoleMNU.Checked = true;
 
       Ft4Decoder.SlotDecoded += Ft4Decoder_SlotDecoded;
-    }
+      Soundcard.SamplesAvailable += (s,a) => AddSamplesFromSoundcard(a);
 
-    private void Ft4Decoder_SlotDecoded(object? sender, DecodeEventArgs e)
-    {
-      if (e.Messages.Length > 0)
-          richTextBox1.BeginInvoke(() => { 
-            richTextBox1.AppendText($"{e.Utc:HH:mm:ss.f}\n{e.Messages}\n");
-          });
+      ApplySettings();
     }
 
     private void Ft4ConsolePanel_FormClosing(object sender, FormClosingEventArgs e)
@@ -40,6 +36,40 @@ namespace SkyRoof
       Log.Information("Closing Ft4ConsolePanel");
       ctx.Ft4ConsolePanel = null;
       ctx.MainForm.Ft4ConsoleMNU.Checked = false;
+
+      Soundcard.Dispose();
+      Ft4Decoder.Dispose();
+    }
+
+    public void ApplySettings()
+    {
+      var sett = ctx.Settings.Ft4Console;
+
+      Soundcard.Enabled = false;
+      Soundcard.SetDeviceId(sett.RxSoundcard);
+      Soundcard.Enabled = sett.AudioSource == Ft4AudioSource.Soundcard;
+
+      Ft4Decoder.MyCall = ctx.Settings.User.Call;
+    }
+
+    public void AddSamplesFromSdr(DataEventArgs<float> e)
+    {
+      if (ctx.Settings.Ft4Console.AudioSource == Ft4AudioSource.SDR)
+        Ft4Decoder.StartProcessing(e);
+    }
+
+    public void AddSamplesFromSoundcard(DataEventArgs<float> e)
+    {
+      if (ctx.Settings.Ft4Console.AudioSource == Ft4AudioSource.Soundcard)
+        Ft4Decoder.StartProcessing(e);
+    }
+
+    private void Ft4Decoder_SlotDecoded(object? sender, DecodeEventArgs e)
+    {
+        richTextBox1.BeginInvoke(() => {
+          richTextBox1.AppendText($"{e.Utc:HH:mm:ss.f}--------------------------------------\n");
+          if (e.Messages.Length > 0) richTextBox1.AppendText($"{e.Messages}\n");
+        });
     }
   }
 }
