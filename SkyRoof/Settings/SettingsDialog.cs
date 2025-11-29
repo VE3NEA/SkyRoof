@@ -165,6 +165,8 @@ namespace SkyRoof
       if (ChangedFields.Exists(s => s.StartsWith("SkyRoof.QsoEntrySettings.")))
         ctx.QsoEntryPanel?.ApplySettings();
 
+      if (ChangedFields.Exists(s => s.StartsWith("SkyRoof.Ft4ConsoleSettings.EnableTransmit")))
+        ctx.Ft4ConsolePanel?.ApplySettings();
 
           
       ChangedFields.Clear();
