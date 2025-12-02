@@ -10,7 +10,7 @@ namespace SkyRoof
   public unsafe class Slicer : ThreadedProcessor<Complex32>
   {
     public enum Mode { USB, LSB, USB_D, LSB_D, CW, FM, FM_D }
-    //300..3000, 100..4000, 350..850, -8000..8000 Hz
+    // filter bandwidth by mode SSB = 300..3000, SSB-D = 50..4050, CW = 350..850, FM = -8000..8000 Hz, FM-D = -24000..24000 Hz
     private static readonly int[] Bandwidths = [2800, 2800, 4000, 4000, 500, 16000, 48000];
     private static readonly int[] ModeOffsets = [1600, -1600, 2050, -2050, 600, 0, 0];
 

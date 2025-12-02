@@ -29,9 +29,17 @@ namespace SkyRoof
       Ft4Decoder.SlotDecoded += Ft4Decoder_SlotDecoded;
       Soundcard.SamplesAvailable += (s,a) => AddSamplesFromSoundcard(a);
 
+      AudioWaterfall.MouseDown += AudioWaterfall_MouseDown;
+
       AudioWaterfall.Ft4Decoder = Ft4Decoder;
 
       ApplySettings();
+    }
+
+    private void AudioWaterfall_MouseDown(object? sender, MouseEventArgs e)
+    {
+      Ft4Decoder.RxAudioFrequency = AudioWaterfall.RxAudioFrequency;
+      Ft4Decoder.TxAudioFrequency = AudioWaterfall.TxAudioFrequency;
     }
 
     private void Ft4ConsolePanel_FormClosing(object sender, FormClosingEventArgs e)

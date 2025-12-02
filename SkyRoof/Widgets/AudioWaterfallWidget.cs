@@ -9,8 +9,9 @@ namespace SkyRoof
     private const int TOP_BAR_HEIGHT = 31;
     private const int LEFT_BAR_WIDTH = 15;
     private const int SPECTRUM_SIZE = 4096;
-    private const float WaterfallBandwidth = 4100;
-    private const int BmpWidth = (int)(SPECTRUM_SIZE * WaterfallBandwidth / (SdrConst.AUDIO_SAMPLING_RATE / 2));
+    private const int WATERFALL_BANDWIDTH = 4100;
+    private const int FT4_SIGNAL_BANDWIDTH = 83; //Hz
+    private const int BmpWidth = (int)(SPECTRUM_SIZE * WATERFALL_BANDWIDTH / (SdrConst.AUDIO_SAMPLING_RATE / 2));
     private const int BmpHeight = 1024;
 
     private readonly Palette Palette = new Palette();
@@ -19,6 +20,8 @@ namespace SkyRoof
     private readonly int[] leftBarSlots = new int[BmpHeight];
 
     public readonly SpectrumAnalyzer<float> SpectrumAnalyzer = new(SPECTRUM_SIZE, 12000, BmpWidth); //{!}
+    public int RxAudioFrequency = 1500;
+    public int TxAudioFrequency = 1500;
 
     private int WriteRow;
     private int LastSlot;
@@ -26,7 +29,6 @@ namespace SkyRoof
     public Ft4Decoder? Ft4Decoder;
     internal int Brightness = 50;
     internal int Contrast = 50;
-    private bool Paused = true;
 
     public AudioWaterfallWidget()
     {
@@ -38,7 +40,7 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     //                                      paint
     //----------------------------------------------------------------------------------------------
-    protected override void OnPaintBackground(PaintEventArgs e) 
+    protected override void OnPaintBackground(PaintEventArgs e)
     {
       // do not paint background
     }
@@ -54,7 +56,7 @@ namespace SkyRoof
 
       int WaterfallHeight = ClientRectangle.Height - TOP_BAR_HEIGHT;
       int WaterfallWidth = ClientRectangle.Width - LEFT_BAR_WIDTH;
-      float pixelsPerHz = WaterfallWidth / WaterfallBandwidth;
+      float pixelsPerHz = WaterfallWidth / (float)WATERFALL_BANDWIDTH;
 
 
       // top bar bg
@@ -62,12 +64,20 @@ namespace SkyRoof
       e.Graphics.FillRectangle(SystemBrushes.Control, rect);
 
       // rx and tx marks
+      float dx = FT4_SIGNAL_BANDWIDTH * pixelsPerHz;
 
+      float x = LEFT_BAR_WIDTH + TxAudioFrequency * pixelsPerHz;
+      rect = new Rectangle((int)x, 0, (int)dx, TOP_BAR_HEIGHT / 2 - 1);
+      e.Graphics.FillRectangle(Brushes.LightCoral, rect);
+
+      x = LEFT_BAR_WIDTH + RxAudioFrequency * pixelsPerHz;
+      rect = new Rectangle((int)x, TOP_BAR_HEIGHT / 2 + 1, (int)dx, TOP_BAR_HEIGHT - 1);
+      e.Graphics.FillRectangle(Brushes.LightGreen, rect);
 
       // scale
-      for (float f = 0; f <= 4100; f += 100)
+      for (float f = 0; f <= WATERFALL_BANDWIDTH; f += 100)
       {
-        float x = LEFT_BAR_WIDTH + f * pixelsPerHz;
+        x = LEFT_BAR_WIDTH + f * pixelsPerHz;
         e.Graphics.DrawLine(Pens.Black, x, TOP_BAR_HEIGHT - 12, x, TOP_BAR_HEIGHT);
         if (f % 500 == 0)
         {
@@ -106,6 +116,7 @@ namespace SkyRoof
       }
     }
 
+
     //----------------------------------------------------------------------------------------------
     //                                      spectra
     //----------------------------------------------------------------------------------------------
@@ -117,7 +128,7 @@ namespace SkyRoof
 
       // left bar slot number
       int slotNumber = Ft4Decoder?.DecodedSlotNumber ?? 0;
-      leftBarSlots[WriteRow] = slotNumber; 
+      leftBarSlots[WriteRow] = slotNumber;
 
 
       // separator
@@ -125,10 +136,7 @@ namespace SkyRoof
       {
         AddSeparator(Color.Lime);
         LastSlot = slotNumber;
-        Paused = false;
       }
-
-      if (Paused) return;
 
       // left bar
       Color leftColor = (slotNumber & 1) == 1 ? Color.Olive : Color.Teal;
@@ -161,6 +169,26 @@ namespace SkyRoof
       Graphics.FromImage(WaterfallBmp).DrawLine(new Pen(color), 0, WriteRow, WaterfallBmp.Width, WriteRow);
 
       if (--WriteRow < 0) WriteRow = WaterfallBmp.Height - 1;
+    }
+
+    private void AudioWaterfallWidget_MouseDown(object sender, MouseEventArgs e)
+    {
+      if (e.Button != MouseButtons.Left) return;
+      if (e.X <= LEFT_BAR_WIDTH) return;
+
+      int WaterfallWidth = ClientRectangle.Width - LEFT_BAR_WIDTH;
+      float HzPerPixel = WATERFALL_BANDWIDTH / (float)WaterfallWidth;
+      int audioFrequency = (int)((e.X - LEFT_BAR_WIDTH) * HzPerPixel);
+
+      if ((ModifierKeys & Keys.Control) != Keys.None)
+        { 
+        RxAudioFrequency = audioFrequency;
+        TxAudioFrequency = audioFrequency;
+      }
+      else if ((ModifierKeys & Keys.Shift) != Keys.None)
+        TxAudioFrequency = audioFrequency;
+      else
+        RxAudioFrequency = audioFrequency;
     }
   }
 }
