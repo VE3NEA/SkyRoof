@@ -317,7 +317,7 @@
       // 
       WaterfallMNU.Name = "WaterfallMNU";
       WaterfallMNU.Size = new Size(194, 22);
-      WaterfallMNU.Text = "Waterfall";
+      WaterfallMNU.Text = "Wideband Waterfall";
       WaterfallMNU.Click += WaterfallMNU_Click;
       // 
       // TimelineMNU

@@ -1,20 +1,17 @@
-﻿using MathNet.Numerics;
-using MathNet.Numerics.Statistics;
+﻿using MathNet.Numerics.Statistics;
 using VE3NEA;
 
 namespace SkyRoof
 {
-  internal class WidebandSpectrumAnalyzer : ThreadedProcessor<Complex32>
+  public class SpectrumAnalyzer<T> : ThreadedProcessor<T>
   {
+    public Spectrum<T>? Spectrum;
     public float Median;
     public event EventHandler<DataEventArgs<float>>? SpectrumAvailable;
 
-    internal Spectrum<Complex32>? Spectrum;
-
-
-    internal WidebandSpectrumAnalyzer(int size, int step)
+    public SpectrumAnalyzer(int size, int step, int outputSize = 0) : base()
     {
-      Spectrum = new(size, step, 4);
+      Spectrum = new(size, step, 3, outputSize);
       Spectrum.SpectrumAvailable += Spectrum_SpectrumAvailable;
     }
 
@@ -25,7 +22,7 @@ namespace SkyRoof
       Spectrum = null;
     }
 
-    protected override void Process(DataEventArgs<Complex32> args)    
+    protected override void Process(DataEventArgs<T> args)    
     {
       Spectrum?.Process(args);
     }

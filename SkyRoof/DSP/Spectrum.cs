@@ -4,7 +4,7 @@ using VE3NEA;
 
 namespace SkyRoof
 {
-  internal class Spectrum<T> : IDisposable
+  public class Spectrum<T> : IDisposable
   {
     private readonly int FftSize;
     private double step;
@@ -28,20 +28,23 @@ namespace SkyRoof
     public event EventHandler<DataEventArgs<float>>? SpectrumAvailable;
 
 
-    public Spectrum(int size, int step, int polyhpaseSegmentCount)
+    public Spectrum(int size, int step, int polyhpaseSegmentCount, int outputSize)
     {
       FftSize = size;
       PolyphaseSegmentCount = polyhpaseSegmentCount;
-      Step = step;
-
+      
       Fft = new(size);
       BufferLength = Fft.InputData.Length * PolyphaseSegmentCount;
       Buffer = new T[BufferLength];
-      PowerSpectrum = new float[FftSize];
-      AverageSpectrum = new float[FftSize];
-      MedianComputationBuffer = new float[FftSize / 2];
+
+      if (outputSize == 0) outputSize = Fft.OutputData.Length;
+      PowerSpectrum = new float[outputSize];
+      AverageSpectrum = new float[outputSize];
+      MedianComputationBuffer = new float[outputSize];
       Window = Dsp.BlackmanWindow(BufferLength);
       Dsp.Normalize(Window);
+      
+      SetStep(step);
     }
 
     public void Dispose()
@@ -91,13 +94,13 @@ namespace SkyRoof
       Fft.Execute();
 
       if (typeof(T) == typeof(float))
-        for (int i = 0; i < FftSize; i++)
+        for (int i = 0; i < PowerSpectrum.Length; i++)
           PowerSpectrum[i] = Fft.OutputData[i].MagnitudeSquared;
       else
       {
         // compute power
         int mid = FftSize / 2;
-        for (int i = 0; i < mid; i++)
+        for (int i = 0; i < PowerSpectrum.Length / 2; i++)
         {
           PowerSpectrum[i] = Fft.OutputData[mid + i].MagnitudeSquared;
           PowerSpectrum[mid + i] = Fft.OutputData[i].MagnitudeSquared;
@@ -108,9 +111,9 @@ namespace SkyRoof
     private void AverageSpectra()
     {
       if (SpectraSinceStep == 0)
-        Array.Copy(PowerSpectrum, AverageSpectrum, FftSize);
+        Array.Copy(PowerSpectrum, AverageSpectrum, PowerSpectrum.Length);
       else
-        for (int i = 0; i < FftSize; i++)
+        for (int i = 0; i < PowerSpectrum.Length; i++)
           AverageSpectrum[i] += PowerSpectrum[i];
 
       SpectraSinceStep++;
@@ -132,14 +135,14 @@ namespace SkyRoof
       var offset = FastMedian = ComputeMedian(AverageSpectrum);
       if (offset > 0) offset = (float)Math.Log(offset);
 
-      for (int i = 0; i < FftSize; i++)
+      for (int i = 0; i < PowerSpectrum.Length; i++)
         AverageSpectrum[i] = (float)(Math.Log(AverageSpectrum[i] + 1e-30) - offset);
     }
 
     private float ComputeMedian(float[] data)
     {
-      Array.Copy(data, FftSize / 4, MedianComputationBuffer, 0, FftSize / 2);
-      return ArrayStatistics.PercentileInplace(MedianComputationBuffer, 20);
+      Array.Copy(data, MedianComputationBuffer, data.Length);
+      return ArrayStatistics.PercentileInplace(MedianComputationBuffer, 50);
     }
 
     // generic arithmetic is a pain. originally it was one line:
@@ -157,14 +160,14 @@ namespace SkyRoof
           for (int src = 0; src < BufferLength; src++)
           {
             ((float*)pOutBuffer)[dst] += ((float*)pInBuffer)[src] * pWindow[src];
-            if (++dst == FftSize) dst = 0;
+            if (++dst == Fft.InputData.Length) dst = 0;
           }
 
         else if (typeof(T) == typeof(Complex32))
           for (int i = 0; i < BufferLength; i++)
           {
             ((Complex32*)pOutBuffer)[dst] += ((Complex32*)pInBuffer)[i] * pWindow[i];
-            if (++dst == FftSize) dst = 0;
+            if (++dst == Fft.InputData.Length) dst = 0;
           }
 #pragma warning restore CS8500
       }

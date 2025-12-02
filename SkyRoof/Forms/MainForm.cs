@@ -119,21 +119,21 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     //                                        sdr
     //----------------------------------------------------------------------------------------------
-    internal WidebandSpectrumAnalyzer? SpectrumAnalyzer;
+    internal SpectrumAnalyzer<Complex32>? WidebandSpectrumAnalyzer;
 
     public void CreateSpectrumAnalyzer()
     {
       Fft<Complex32>.LoadWisdom(Path.Combine(Utils.GetUserDataFolder(), "wsjtx_wisdom.dat"));
 
-      SpectrumAnalyzer = new(ctx.WaterfallPanel!.WaterfallControl.SpectraWidth, 6_000_000);
-      SpectrumAnalyzer.SpectrumAvailable += Spect_SpectrumAvailable;
+      WidebandSpectrumAnalyzer = new(ctx.WaterfallPanel!.WaterfallControl.SpectraWidth, 6_000_000);
+      WidebandSpectrumAnalyzer.SpectrumAvailable += Spect_SpectrumAvailable;
     }
 
     public void DestroySpectrumAnalyzer()
     {
-      SpectrumAnalyzer!.SpectrumAvailable -= Spect_SpectrumAvailable;
-      SpectrumAnalyzer.Dispose();
-      SpectrumAnalyzer = null;
+      WidebandSpectrumAnalyzer!.SpectrumAvailable -= Spect_SpectrumAvailable;
+      WidebandSpectrumAnalyzer.Dispose();
+      WidebandSpectrumAnalyzer = null;
     }
 
     private void Spect_SpectrumAvailable(object? sender, DataEventArgs<float> e)
@@ -182,13 +182,13 @@ namespace SkyRoof
 
     private void Sdr_DataAvailable(object? sender, DataEventArgs<Complex32> e)
     {
-      SpectrumAnalyzer?.StartProcessing(e);
+      WidebandSpectrumAnalyzer?.StartProcessing(e);
       ctx.Slicer?.StartProcessing(e);
     }
 
     internal void ConfigureWaterfall()
     {
-      if (ctx.WaterfallPanel == null || ctx.Sdr?.Info == null || SpectrumAnalyzer == null)
+      if (ctx.WaterfallPanel == null || ctx.Sdr?.Info == null || WidebandSpectrumAnalyzer == null)
         return;
 
       SetWaterfallSpeed();
@@ -281,7 +281,7 @@ namespace SkyRoof
       bool change = ctx.Settings.Waterfall.Speed != ctx.WaterfallPanel.WaterfallControl.ScrollSpeed;
 
       if (ctx.Sdr != null)
-        SpectrumAnalyzer.Spectrum.Step = ctx.Sdr.Info.SampleRate / ctx.Settings.Waterfall.Speed;
+        WidebandSpectrumAnalyzer.Spectrum.Step = ctx.Sdr.Info.SampleRate / ctx.Settings.Waterfall.Speed;
 
       if (ctx.WaterfallPanel?.WaterfallControl != null)
       {

@@ -8,8 +8,8 @@ namespace SkyRoof
   public partial class Ft4ConsolePanel : DockContent
   {
     private readonly Context ctx;
-    private readonly InputSoundcard<float> Soundcard = new();
-    private readonly Ft4Decoder Ft4Decoder = new();
+    private InputSoundcard<float> Soundcard = new();
+    public Ft4Decoder Ft4Decoder = new();
 
     public Ft4ConsolePanel()
     {
@@ -18,15 +18,18 @@ namespace SkyRoof
 
     public Ft4ConsolePanel(Context ctx)
     {
+      InitializeComponent();
+
       this.ctx = ctx;
       Log.Information("Creating Ft4ConsolePanel");
-      InitializeComponent();
 
       ctx.Ft4ConsolePanel = this;
       ctx.MainForm.Ft4ConsoleMNU.Checked = true;
 
       Ft4Decoder.SlotDecoded += Ft4Decoder_SlotDecoded;
       Soundcard.SamplesAvailable += (s,a) => AddSamplesFromSoundcard(a);
+
+      AudioWaterfall.Ft4Decoder = Ft4Decoder;
 
       ApplySettings();
     }
@@ -37,8 +40,10 @@ namespace SkyRoof
       ctx.Ft4ConsolePanel = null;
       ctx.MainForm.Ft4ConsoleMNU.Checked = false;
 
-      Soundcard.Dispose();
-      Ft4Decoder.Dispose();
+      Soundcard?.Dispose();
+      Soundcard = null;
+      Ft4Decoder?.Dispose();
+      Ft4Decoder = null;
     }
 
     public void ApplySettings()
@@ -50,18 +55,27 @@ namespace SkyRoof
       Soundcard.Enabled = sett.AudioSource == Ft4AudioSource.Soundcard;
 
       Ft4Decoder.MyCall = ctx.Settings.User.Call;
+
+      AudioWaterfall.Brightness = sett.WaterfallBrightness;
+      AudioWaterfall.Contrast = sett.WaterfallContrast;
     }
 
     public void AddSamplesFromSdr(DataEventArgs<float> e)
     {
       if (ctx.Settings.Ft4Console.AudioSource == Ft4AudioSource.SDR)
+      {
         Ft4Decoder.StartProcessing(e);
+        AudioWaterfall.SpectrumAnalyzer.StartProcessing(e);
+      }
     }
 
     public void AddSamplesFromSoundcard(DataEventArgs<float> e)
     {
       if (ctx.Settings.Ft4Console.AudioSource == Ft4AudioSource.Soundcard)
+      {
         Ft4Decoder.StartProcessing(e);
+        AudioWaterfall.SpectrumAnalyzer.StartProcessing(e);
+      }
     }
 
     private void Ft4Decoder_SlotDecoded(object? sender, DecodeEventArgs e)

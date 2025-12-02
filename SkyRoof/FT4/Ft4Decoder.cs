@@ -6,13 +6,17 @@ namespace SkyRoof
 {
   public unsafe class Ft4Decoder : ThreadedProcessor<float>
   {
-    private int CurrentSlotNumber, DecodedSlotNumber;
+    private int CurrentSlotNumber;
     private float[] Samples = [];
     private int SampleCount = 0;
     DateTime DataUtc;
+
+    public int DecodedSlotNumber { get; private set; }
+    public int RxAudioFrequency = 1500;
+    public int TxAudioFrequency = 1500;
     public string MyCall = "";
     public string TheirCall = "";
-
+    
     public event EventHandler<DecodeEventArgs>? SlotDecoded;
 
     protected override void Process(DataEventArgs<float> args)
@@ -42,7 +46,10 @@ namespace SkyRoof
       var secondsIntoSlot = secondsSinceMidnight - (CurrentSlotNumber * NativeFT4Coder.TIMESLOT_SECONDS);
       int samplesIntoSlot = (int)(secondsIntoSlot * NativeFT4Coder.SAMPLING_RATE);
 
-      return CurrentSlotNumber != DecodedSlotNumber && samplesIntoSlot >= NativeFT4Coder.DECODE_SAMPLE_COUNT;
+      bool samplesAvailable = SampleCount >= NativeFT4Coder.DECODE_SAMPLE_COUNT;
+      bool slotEnded = samplesIntoSlot >= NativeFT4Coder.DECODE_SAMPLE_COUNT; ;
+      bool slotNotYetDecoded = CurrentSlotNumber != DecodedSlotNumber;
+      return samplesAvailable && slotEnded && slotNotYetDecoded;
     }
 
     private void DecodeSlot()
@@ -57,10 +64,9 @@ namespace SkyRoof
       StringBuilder decodedMessages = new StringBuilder();
       decodedMessages.Append(' ', NativeFT4Coder.DECODE_MAX_CHARS);
       NativeFT4Coder.QsoStage stage = NativeFT4Coder.QsoStage.CALLING;
-      int rx_audioFrequency = 1500;
       
 
-      NativeFT4Coder.decode(samples, ref stage, ref rx_audioFrequency, MyCall, TheirCall, decodedMessages);
+      NativeFT4Coder.decode(samples, ref stage, ref RxAudioFrequency, MyCall, TheirCall, decodedMessages);
 
 
       string messages = decodedMessages.ToString().Trim();

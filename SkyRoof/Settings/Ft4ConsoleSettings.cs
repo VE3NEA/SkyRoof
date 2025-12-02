@@ -32,7 +32,13 @@ namespace SkyRoof
     [DefaultValue(false)]
     public bool EnableTransmit { get; set; } = false;
 
+    [DisplayName("Waterfall Brightness")]
+    [DefaultValue(50)]
+    public int WaterfallBrightness { get; set; } = 50;
 
+    [DisplayName("Waterfall Contrast")]
+    [DefaultValue(50)]
+    public int WaterfallContrast { get; set; } = 50;
 
     public override string ToString() { return string.Empty; }
   }

@@ -11,7 +11,7 @@ namespace SkyRoof
   {
     public enum Mode { USB, LSB, USB_D, LSB_D, CW, FM, FM_D }
     //300..3000, 100..4000, 350..850, -8000..8000 Hz
-    private static readonly int[] Bandwidths = [2800, 2800, 3900, 3900, 500, 16000, 48000];
+    private static readonly int[] Bandwidths = [2800, 2800, 4000, 4000, 500, 16000, 48000];
     private static readonly int[] ModeOffsets = [1600, -1600, 2050, -2050, 600, 0, 0];
 
     private const int STOPBAND_REJECTION_DB = 80;
