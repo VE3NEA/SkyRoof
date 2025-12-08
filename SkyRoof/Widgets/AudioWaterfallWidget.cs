@@ -10,7 +10,6 @@ namespace SkyRoof
     private const int LEFT_BAR_WIDTH = 15;
     private const int SPECTRUM_SIZE = 4096;
     private const int WATERFALL_BANDWIDTH = 4100;
-    private const int FT4_SIGNAL_BANDWIDTH = 83; //Hz
     private const int BmpWidth = (int)(SPECTRUM_SIZE * WATERFALL_BANDWIDTH / (SdrConst.AUDIO_SAMPLING_RATE / 2));
     private const int BmpHeight = 1024;
 
@@ -64,7 +63,7 @@ namespace SkyRoof
       e.Graphics.FillRectangle(SystemBrushes.Control, rect);
 
       // rx and tx marks
-      float dx = FT4_SIGNAL_BANDWIDTH * pixelsPerHz;
+      float dx = Ft4Decoder.FT4_SIGNAL_BANDWIDTH * pixelsPerHz;
 
       float x = LEFT_BAR_WIDTH + TxAudioFrequency * pixelsPerHz;
       rect = new Rectangle((int)x, 0, (int)dx, TOP_BAR_HEIGHT / 2 - 1);
@@ -171,7 +170,7 @@ namespace SkyRoof
       if (--WriteRow < 0) WriteRow = WaterfallBmp.Height - 1;
     }
 
-    private void AudioWaterfallWidget_MouseDown(object sender, MouseEventArgs e)
+    public void SetFrequenciesFromMouseClick(MouseEventArgs e)
     {
       if (e.Button != MouseButtons.Left) return;
       if (e.X <= LEFT_BAR_WIDTH) return;

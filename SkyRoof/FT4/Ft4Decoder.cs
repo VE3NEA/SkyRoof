@@ -11,13 +11,14 @@ namespace SkyRoof
     private int SampleCount = 0;
     DateTime DataUtc;
 
+    public const int FT4_SIGNAL_BANDWIDTH = 83; // Hz
     public int DecodedSlotNumber { get; private set; }
     public int RxAudioFrequency = 1500;
     public int TxAudioFrequency = 1500;
     public string MyCall = "";
     public string TheirCall = "";
     
-    public event EventHandler<DecodeEventArgs>? SlotDecoded;
+    public event EventHandler<DataEventArgs<string>>? SlotDecoded;
 
     protected override void Process(DataEventArgs<float> args)
     {
@@ -63,18 +64,17 @@ namespace SkyRoof
 
       StringBuilder decodedMessages = new StringBuilder();
       decodedMessages.Append(' ', NativeFT4Coder.DECODE_MAX_CHARS);
-      NativeFT4Coder.QsoStage stage = NativeFT4Coder.QsoStage.CALLING;
-      
+      NativeFT4Coder.QsoStage stage = NativeFT4Coder.QsoStage.CALLING;      
 
       NativeFT4Coder.decode(samples, ref stage, ref RxAudioFrequency, MyCall, TheirCall, decodedMessages);
 
+      string messagesStr = decodedMessages.ToString().Trim();
+      string[] messages = messagesStr.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
-      string messages = decodedMessages.ToString().Trim();
+      SlotDecoded?.Invoke(this, new DataEventArgs<string>(messages, DataUtc - TimeSpan.FromSeconds(NativeFT4Coder.DECODE_SECONDS)));
 
       SampleCount = 0;
       DecodedSlotNumber = CurrentSlotNumber;
-
-      SlotDecoded?.Invoke(this, new DecodeEventArgs(messages, DataUtc - TimeSpan.FromSeconds(NativeFT4Coder.DECODE_SECONDS)));
     }
   }
 }

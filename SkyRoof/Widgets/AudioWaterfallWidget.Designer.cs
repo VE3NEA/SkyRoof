@@ -38,7 +38,6 @@
       DoubleBuffered = true;
       Name = "AudioWaterfallWidget";
       Size = new Size(471, 161);
-      MouseDown += AudioWaterfallWidget_MouseDown;
       Resize += AudioWaterfallWidget_Resize;
       ResumeLayout(false);
     }

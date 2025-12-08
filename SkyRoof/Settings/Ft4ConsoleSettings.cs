@@ -23,23 +23,94 @@ namespace SkyRoof
     [TypeConverter(typeof(OutputSoundcardNameConverter))]
     public string? TxSoundcard { get; set; } = Soundcard.GetDefaultSoundcardId(DataFlow.Render);
 
-    [DisplayName("TX Gain")]
-    [Description(" Amplify or attenuate TX data, dB")]
-    [DefaultValue(0)]
-    public int TxGain { get; set; } = 0;
+    [TypeConverter(typeof(OutputSoundcardNameConverter))]
+    public Ft4WaterfallSettings Waterfall { get; set; } = new ();
+
+    [TypeConverter(typeof(OutputSoundcardNameConverter))]
+    public Ft4MessagesSettings Messages { get; set; } = new ();
 
     [DisplayName("Enable Transmit")]
     [DefaultValue(false)]
     public bool EnableTransmit { get; set; } = false;
 
+    [DisplayName("TX Gain")]
+    [Description(" Amplify or attenuate TX data, dB")]
+    [DefaultValue(0)]
+    public int TxGain { get; set; } = 0;
+
+    public override string ToString() { return string.Empty; }
+  }
+
+  public class Ft4WaterfallSettings
+  {
     [DisplayName("Waterfall Brightness")]
     [DefaultValue(50)]
-    public int WaterfallBrightness { get; set; } = 50;
+    public int Brightness { get; set; } = 50;
 
     [DisplayName("Waterfall Contrast")]
     [DefaultValue(50)]
-    public int WaterfallContrast { get; set; } = 50;
+    public int Contrast { get; set; } = 50;
 
-    public override string ToString() { return string.Empty; }
+    public override string ToString() { return ""; }
+  }
+
+  public class Ft4MessagesSettings
+  {
+    [DisplayName("Text Color")]
+    public Color TextColor { get; set; } = SystemColors.WindowText;
+
+    [DisplayName("Font Size")]
+    public float FontSize { get; set; } = 9f;
+
+    [DisplayName("Background Colors")]
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public Ft4BackgroundColors BkColors { get; set; } = new();
+
+    [DisplayName("SNR Colors")]
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public Ft4SnrColors SnrColors { get; set; } = new();
+
+    public override string ToString() { return ""; }
+  }
+
+  public class Ft4BackgroundColors
+  {
+    [DisplayName("Window")]
+    [DefaultValue(typeof(Color), "White")]
+    public Color Window { get; set; } = Color.White; // SystemColors.Window;
+
+    [DisplayName("Separator")]
+    [DefaultValue(typeof(Color), "233, 233, 233")]
+    public Color Separator { get; set; } = Color.FromArgb(233, 233, 233);
+
+    [DisplayName("Transmitted Message")]
+    [DefaultValue(typeof(Color), "Red")]
+    public Color TxMessage { get; set; } = Color.Red;
+
+    [DisplayName("Message To Me")]
+    [DefaultValue(typeof(Color), "255, 175, 175")]
+    public Color ToMe { get; set; } = Color.FromArgb(255, 175, 175);
+
+    [DisplayName("Hot Item")]
+    [DefaultValue(typeof(Color), "20, 0, 0, 255")]
+    public Color Hot { get; set; } = Color.FromArgb(20, 0, 0, 255);
+
+
+    public override string ToString() { return ""; }
+  }
+
+  public class Ft4SnrColors
+  {
+    [DisplayName("RX")]
+    [Description("Shades of this color will represent the SNR of the received signals")]
+    [DefaultValue(typeof(Color), "Red")]
+    public Color Rx { get; set; } = Color.Red;
+
+    [DisplayName("TX")]
+    [Description("Shades of this color will represent our SNR reported by another station")]
+    [DefaultValue(typeof(Color), "Blue")]
+    public Color Tx { get; set; } = Color.Blue;
+
+    public override string ToString() { return ""; }
   }
 }

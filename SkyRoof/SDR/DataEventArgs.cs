@@ -14,5 +14,11 @@
       Count = count;
       Utc = DateTime.UtcNow;
     }
+    public DataEventArgs(T[] data, DateTime utc)
+    {
+      Data = data;
+      Count = Data.Length;
+      Utc = utc;
+    }
   }
 }

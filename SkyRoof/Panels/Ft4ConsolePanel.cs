@@ -2,6 +2,7 @@
 using Serilog;
 using VE3NEA;
 using WeifenLuo.WinFormsUI.Docking;
+using static SkyRoof.Ft4MessageListWidget;
 
 namespace SkyRoof
 {
@@ -27,7 +28,7 @@ namespace SkyRoof
       ctx.MainForm.Ft4ConsoleMNU.Checked = true;
 
       Ft4Decoder.SlotDecoded += Ft4Decoder_SlotDecoded;
-      Soundcard.SamplesAvailable += (s,a) => AddSamplesFromSoundcard(a);
+      Soundcard.SamplesAvailable += (s, a) => AddSamplesFromSoundcard(a);
 
       AudioWaterfall.MouseDown += AudioWaterfall_MouseDown;
 
@@ -38,6 +39,7 @@ namespace SkyRoof
 
     private void AudioWaterfall_MouseDown(object? sender, MouseEventArgs e)
     {
+      AudioWaterfall.SetFrequenciesFromMouseClick(e);
       Ft4Decoder.RxAudioFrequency = AudioWaterfall.RxAudioFrequency;
       Ft4Decoder.TxAudioFrequency = AudioWaterfall.TxAudioFrequency;
     }
@@ -64,8 +66,10 @@ namespace SkyRoof
 
       Ft4Decoder.MyCall = ctx.Settings.User.Call;
 
-      AudioWaterfall.Brightness = sett.WaterfallBrightness;
-      AudioWaterfall.Contrast = sett.WaterfallContrast;
+      AudioWaterfall.Brightness = sett.Waterfall.Brightness;
+      AudioWaterfall.Contrast = sett.Waterfall.Contrast;
+
+      MessageListWidget.ApplySettings(ctx.Settings.Ft4Console.Messages);
     }
 
     public void AddSamplesFromSdr(DataEventArgs<float> e)
@@ -86,12 +90,31 @@ namespace SkyRoof
       }
     }
 
-    private void Ft4Decoder_SlotDecoded(object? sender, DecodeEventArgs e)
+    private void Ft4Decoder_SlotDecoded(object? sender, DataEventArgs<string> e)
     {
-        richTextBox1.BeginInvoke(() => {
-          richTextBox1.AppendText($"{e.Utc:HH:mm:ss.f}--------------------------------------\n");
-          if (e.Messages.Length > 0) richTextBox1.AppendText($"{e.Messages}\n");
-        });
+      richTextBox1.BeginInvoke(() =>
+      {
+        richTextBox1.AppendText($"{e.Utc:HH:mm:ss.f}-------------------------------\n");
+        if (e.Data.Length > 0) richTextBox1.AppendText($"{string.Join("\n", e.Data)}\n");
+                
+        if (e.Data.Length == 0) return;
+        MessageListWidget.BeginUpdateItems();
+
+
+        foreach (string message in e.Data)
+        {
+          DecodedItem item = new();
+          item.Type = DecodedItemType.RxMessage;
+          item.Utc = e.Utc;
+          item.SlotNumber = Ft4Decoder.DecodedSlotNumber;
+          item.ParseMessage(message, e.Utc);
+          item.SetColors();
+
+          MessageListWidget.AddItem(item);
+        }
+
+        MessageListWidget.EndUpdateItems();
+      });
     }
   }
 }

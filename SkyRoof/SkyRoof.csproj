@@ -37,6 +37,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\Vendor\ColorSpace\CIELab.cs" Link="ControlsEx\ColorSpace\CIELab.cs" />
+    <Compile Include="..\Vendor\ColorSpace\CIEXYZ.cs" Link="ControlsEx\ColorSpace\CIEXYZ.cs" />
+    <Compile Include="..\Vendor\ColorSpace\CMYK.cs" Link="ControlsEx\ColorSpace\CMYK.cs" />
+    <Compile Include="..\Vendor\ColorSpace\ColorSpaceHelper.cs" Link="ControlsEx\ColorSpace\ColorSpaceHelper.cs" />
+    <Compile Include="..\Vendor\ColorSpace\HSB.cs" Link="ControlsEx\ColorSpace\HSB.cs" />
+    <Compile Include="..\Vendor\ColorSpace\HSL.cs" Link="ControlsEx\ColorSpace\HSL.cs" />
+    <Compile Include="..\Vendor\ColorSpace\RGB.cs" Link="ControlsEx\ColorSpace\RGB.cs" />
+    <Compile Include="..\Vendor\ColorSpace\YUV.cs" Link="ControlsEx\ColorSpace\YUV.cs" />
     <Compile Include="..\Vendor\fa2cs\FontAwesomeIcons.cs" Link="ControlsEx\FontAwesomeIcons.cs" />
     <Compile Include="..\Vendor\FlagEditor\STUP.ComponentModel.Design\FlagsEditor.cs" Link="FlagsEditor.cs" />
   </ItemGroup>
@@ -132,6 +140,7 @@
     <PackageReference Include="SharpGL.WinForms" Version="3.1.1" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.1" />
     <PackageReference Include="System.Speech" Version="9.0.3" />
+    <PackageReference Include="WsjtxUtils.WsjtxMessages" Version="1.0.0.69" />
   </ItemGroup>
 
   <ItemGroup>
@@ -169,6 +178,10 @@
 
   <ItemGroup>
     <EditorConfigFiles Remove="C:\Proj\DSP\SkyRoof\SkyRoof\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ControlsEx\ColorSpace\" />
   </ItemGroup>
 
 </Project>
