@@ -111,7 +111,8 @@ namespace SkyRoof
 
     private RectangleF GetPassbandRect(bool includeRit = false)
     {
-      double centerFrequency = (double)ctx.FrequencyControl.RadioLink.CorrectedDownlinkFrequency!;
+      double centerFrequency = (double)ctx.FrequencyControl.RadioLink.CorrectedDownlinkFrequency! + (ctx.Slicer?.GetModeoffset() ?? 0);
+
       if (ctx.FrequencyControl.RadioLink.RitEnabled && !includeRit) 
         centerFrequency -= ctx.FrequencyControl.RadioLink.RitOffset;
 
@@ -140,6 +141,13 @@ namespace SkyRoof
         rect = GetPassbandRect(true);
         g.DrawRectangle(Pens.Green, rect);
       }
+
+      // carrier frequency
+      double carrierFrequency = (double)ctx.FrequencyControl.RadioLink.CorrectedDownlinkFrequency!;
+      float x = (float)Math.Round(FreqToPixel(carrierFrequency));
+      float y = height - 62;
+      g.DrawLine(Pens.Red, x, y, x, height);
+      g.FillEllipse(Brushes.Red, x - 3, y - 3, 6, 6);
     }
 
     private void DrawTicks(Graphics g)
