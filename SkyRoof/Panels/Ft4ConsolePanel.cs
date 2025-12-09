@@ -1,4 +1,5 @@
-﻿using MathNet.Numerics;
+﻿using System.Windows.Forms;
+using MathNet.Numerics;
 using Serilog;
 using VE3NEA;
 using WeifenLuo.WinFormsUI.Docking;
@@ -70,6 +71,9 @@ namespace SkyRoof
       AudioWaterfall.Contrast = sett.Waterfall.Contrast;
 
       MessageListWidget.ApplySettings(ctx.Settings.Ft4Console.Messages);
+      foreach (DecodedItem item in MessageListWidget.listBox.Items) 
+        item.SetColors(ctx.Settings.Ft4Console.Messages);
+      MessageListWidget.listBox.Refresh();
     }
 
     public void AddSamplesFromSdr(DataEventArgs<float> e)
@@ -93,22 +97,27 @@ namespace SkyRoof
     private void Ft4Decoder_SlotDecoded(object? sender, DataEventArgs<string> e)
     {
       MessageListWidget.BeginInvoke(() =>
-      {                
-        if (e.Data.Length == 0) return;
-       
+      {
         MessageListWidget.BeginUpdateItems();
 
-        foreach (string message in e.Data)
-        {
-          DecodedItem item = new();
-          item.Type = DecodedItemType.RxMessage;
-          item.Utc = e.Utc;
-          item.SlotNumber = Ft4Decoder.DecodedSlotNumber;
-          item.ParseMessage(message, e.Utc);
-          item.SetColors();
+        MessageListWidget.CheckAddSeparator(Ft4Decoder.DecodedSlotNumber,
+          ctx.SatelliteSelector.SelectedSatellite.name, ctx.FrequencyControl.GetBandName(false));
+        
+        if (e.Data.Length > 0)        
+          foreach (string message in e.Data)
+          {
+            DecodedItem item = new();
+            item.ParseMessage(message, e.Utc);
 
-          MessageListWidget.AddItem(item);
-        }
+            item.Type = DecodedItemType.RxMessage;
+            item.Utc = e.Utc;
+            item.SlotNumber = Ft4Decoder.DecodedSlotNumber;
+            item.ToMe = item.Parse.DXCallsign == ctx.Settings.User.Call;
+            item.FromMe = item.Parse.DECallsign == ctx.Settings.User.Call;
+            item.SetColors(ctx.Settings.Ft4Console.Messages);
+
+            MessageListWidget.AddItem(item);
+          }
 
         MessageListWidget.EndUpdateItems();
       });

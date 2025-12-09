@@ -146,16 +146,10 @@ namespace SkyRoof
 
     internal void SetBand()
     {
-      var freq = ctx.FrequencyControl.RadioLink.CorrectedUplinkFrequency;
-      if (SatnogsDbTransmitter.IsUhfFrequency(freq))
-        BandComboBox.Text = "70cm";
-      else if (SatnogsDbTransmitter.IsVhfFrequency(freq))
-        BandComboBox.Text = "2m";
-      else
-      {
-        BandComboBox.SelectedIndex = -1;
-        BandComboBox.Text = string.Empty;
-      }
+      string bandName = ctx.FrequencyControl.GetBandName(true);
+      BandComboBox.Text = bandName;
+
+      if (string.IsNullOrEmpty(bandName)) BandComboBox.SelectedIndex = -1;
 
       BandFrame.BackColor = Color.LightSkyBlue;
     }

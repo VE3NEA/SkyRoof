@@ -43,6 +43,11 @@ namespace SkyRoof
 
   public class Ft4WaterfallSettings
   {
+    [DisplayName("Bandwidth")]
+    [Description("Waterfall Bandwidth, Hz")]
+    [DefaultValue(4000)]
+    public int Bandwidth { get; set; } = 4000;
+
     [DisplayName("Waterfall Brightness")]
     [DefaultValue(50)]
     public int Brightness { get; set; } = 50;
@@ -67,10 +72,6 @@ namespace SkyRoof
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public Ft4BackgroundColors BkColors { get; set; } = new();
 
-    [DisplayName("SNR Colors")]
-    [TypeConverter(typeof(ExpandableObjectConverter))]
-    public Ft4SnrColors SnrColors { get; set; } = new();
-
     public override string ToString() { return ""; }
   }
 
@@ -92,25 +93,27 @@ namespace SkyRoof
     [DefaultValue(typeof(Color), "255, 175, 175")]
     public Color ToMe { get; set; } = Color.FromArgb(255, 175, 175);
 
+    [DisplayName("Message From Me")]
+    [DefaultValue(typeof(Color), "175, 255, 175")]
+    public Color FromMe { get; set; } = Color.FromArgb(175, 255, 175);
+
+    [DisplayName("CQ Word")]
+    [DefaultValue(typeof(Color), "Yellow")]
+    public Color CqWord { get; set; } = Color.Yellow;
+
+    [DisplayName("Ap")]
+    [Description("Ap mark (a priori information used by decoder")]
+    [DefaultValue(typeof(Color), "Orange")]
+    public Color Ap { get; set; } = Color.Orange;
+
     [DisplayName("Hot Item")]
     [DefaultValue(typeof(Color), "20, 0, 0, 255")]
     public Color Hot { get; set; } = Color.FromArgb(20, 0, 0, 255);
 
-
-    public override string ToString() { return ""; }
-  }
-
-  public class Ft4SnrColors
-  {
-    [DisplayName("RX")]
+    [DisplayName("SNR")]
     [Description("Shades of this color will represent the SNR of the received signals")]
     [DefaultValue(typeof(Color), "Red")]
-    public Color Rx { get; set; } = Color.Red;
-
-    [DisplayName("TX")]
-    [Description("Shades of this color will represent our SNR reported by another station")]
-    [DefaultValue(typeof(Color), "Blue")]
-    public Color Tx { get; set; } = Color.Blue;
+    public Color Snr { get; set; } = Color.Red;
 
     public override string ToString() { return ""; }
   }

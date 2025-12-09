@@ -1,4 +1,6 @@
-﻿using System.Timers;
+﻿using System.Security.Cryptography;
+using System.Timers;
+using CSCore.Win32;
 using FontAwesome;
 using VE3NEA;
 
@@ -28,9 +30,9 @@ namespace SkyRoof
     private Brush TxBkBrush;
     private Brush RxBkBrush;
     private Brush ToMeBkBrush;
+    private Brush FromMeBkBrush;
     private Brush HotBkBrush;
 
-    private DateTime lastSlotStart;
     private Font fontAwesome11;
 
     public event EventHandler<Ft4MessageEventArgs?>? MessageHover;
@@ -63,12 +65,10 @@ namespace SkyRoof
       TxBkBrush = new SolidBrush(settings.BkColors.TxMessage);
       RxBkBrush = new SolidBrush(settings.BkColors.Window);
       ToMeBkBrush = new SolidBrush(settings.BkColors.ToMe);
+      FromMeBkBrush = new SolidBrush(settings.BkColors.FromMe);
       HotBkBrush = new SolidBrush(settings.BkColors.Hot);
 
       fontAwesome11 = FontAwesomeFactory.Create(11);
-
-      // callsign colors
-      foreach (DecodedItem item in listBox.Items) item.SetColors();
     }
 
 
@@ -185,6 +185,8 @@ namespace SkyRoof
         freezeTimer.Start();
       else if (AutoScrollMode)
         Invoke(listBox.ScrollToBottom);
+
+      BackColor = Frozen ? Color.Blue : SystemColors.Control;
     }
 
     private void FreezeTimer_Elapsed(object? sender, ElapsedEventArgs e)
@@ -235,17 +237,27 @@ namespace SkyRoof
     {
       if (!Visible) return;
 
-      CheckAndAddSeparator(item);
       listBox.Items.Add(item);
     }
 
-    protected virtual void CheckAndAddSeparator(DecodedItem item)
+    internal void CheckAddSeparator(int slot, string satelliteName, string bandName)
     {
-      if (item.Utc == lastSlotStart) return;
-      lastSlotStart = item.Utc;
+      DateTime slotTime = DateTime.MinValue + TimeSpan.FromSeconds(slot * NativeFT4Coder.TIMESLOT_SECONDS);
 
-//      var separator = ctx.DecodedMessages.CreateSeparatorItem(lastSlotStart, item.Odd);
-//      listBox.Items.Add(separator);
+      var separator = new DecodedItem();
+      separator.Type = DecodedItemType.Separator;
+      separator.SlotNumber = slot;
+      separator.Utc = slotTime;
+      separator.Tokens = [new(FontAwesomeIcons.Circle), new($"{slotTime:HH:mm:ss.f}"), new(satelliteName), new(bandName)];
+      separator.Tokens[0].fgBrush = separator.Odd ? Brushes.Olive : Brushes.Teal;
+
+      int count = listBox.Items.Count;
+      if (count >= 2 &&
+        ((DecodedItem)listBox.Items[count - 1]).Type == DecodedItemType.Separator &&
+        ((DecodedItem)listBox.Items[count - 2]).Type == DecodedItemType.Separator)
+          listBox.Items[count - 1] = separator;
+      else
+        listBox.Items.Add(separator);
     }
 
     internal DecodedItem? FindMessage(int slotNumber, int audioFrequency)
@@ -279,13 +291,16 @@ namespace SkyRoof
 
       // background
       Brush bgBrush = RxBkBrush;
-      if (item.ToMe == true) bgBrush = ToMeBkBrush;
+      if (item.ToMe) bgBrush = ToMeBkBrush;
+      else if (item.FromMe) bgBrush = FromMeBkBrush;
+      else if (item.Type == DecodedItemType.RxMessage) bgBrush = RxBkBrush;
       else if (item.Type == DecodedItemType.Separator) bgBrush = SeparatorBkBrush;
       else if (item.Type == DecodedItemType.TxMessage) bgBrush = TxBkBrush;
       e.Graphics.FillRectangle(bgBrush, e.Bounds);
 
       // hot item
-      if (item == HotItem) e.Graphics.FillRectangle(HotBkBrush, e.Bounds);
+      if (item == HotItem) 
+        e.Graphics.FillRectangle(HotBkBrush, e.Bounds);
 
       // print each token
       foreach(var token in item.Tokens)

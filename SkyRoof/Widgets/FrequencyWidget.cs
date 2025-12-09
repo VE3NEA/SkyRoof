@@ -32,6 +32,17 @@ namespace SkyRoof
       Changing = false;
     }
 
+    internal string GetBandName(bool uplink)
+    {
+      var freq = uplink ? RadioLink.CorrectedUplinkFrequency : RadioLink.CorrectedDownlinkFrequency;
+      if (SatnogsDbTransmitter.IsUhfFrequency(freq))
+        return "70cm";
+      else if (SatnogsDbTransmitter.IsVhfFrequency(freq))
+        return "2m";
+      else
+        return string.Empty;
+    }
+
 
 
 

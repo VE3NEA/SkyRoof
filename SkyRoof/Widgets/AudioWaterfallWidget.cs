@@ -26,8 +26,8 @@ namespace SkyRoof
     private int LastSlot;
 
     public Ft4Decoder? Ft4Decoder;
-    internal int Brightness = 50;
-    internal int Contrast = 50;
+    public int Brightness = 50;
+    public int Contrast = 50;
 
     public AudioWaterfallWidget()
     {

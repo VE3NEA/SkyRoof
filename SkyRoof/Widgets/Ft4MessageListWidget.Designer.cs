@@ -41,10 +41,10 @@
       listBox.FormattingEnabled = true;
       listBox.IntegralHeight = false;
       listBox.ItemHeight = 13;
-      listBox.Location = new Point(0, 0);
+      listBox.Location = new Point(1, 1);
       listBox.Name = "listBox";
       listBox.SelectionMode = SelectionMode.None;
-      listBox.Size = new Size(405, 514);
+      listBox.Size = new Size(403, 512);
       listBox.TabIndex = 4;
       listBox.Scroll += ListBox_Scroll;
       listBox.DrawItem += listBox_DrawItem;
@@ -59,13 +59,13 @@
       AutoScaleMode = AutoScaleMode.Font;
       Controls.Add(listBox);
       Name = "Ft4MessageListWidget";
+      Padding = new Padding(1);
       Size = new Size(405, 514);
       ResumeLayout(false);
     }
 
     #endregion
-
-    private VE3NEA.ListBoxEx listBox;
     private ToolTip toolTip1;
+    public VE3NEA.ListBoxEx listBox;
   }
 }

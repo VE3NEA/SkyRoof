@@ -26,6 +26,8 @@ namespace SkyRoof
 
   public class DecodedItem
   {
+    private static readonly string[] CqWords = ["CQ", "73", "RR73"];
+
     public class DisplayToken
     {
       public readonly string text;
@@ -42,10 +44,11 @@ namespace SkyRoof
 
     public DecodedItemType Type;
     public int SlotNumber;
+    public bool Odd => SlotNumber % 2 == 1;
 
     public WkdStatus WkdStatus;
     public bool ToMe;
-    public bool Odd => SlotNumber % 2 == 1;
+    public bool FromMe;
 
     public Decode Decode;
     public WsjtxQso Parse;
@@ -106,32 +109,26 @@ namespace SkyRoof
        ]);
 
       var s = string.Join("", Tokens.Select(t => t.text));
-
-      SetColors();
     }
 
-    public void SetColors()
+    public void SetColors(Ft4MessagesSettings settings)
     {
-      Tokens[0].bgBrush = BrushFromSnr(Decode.Snr, Color.Red);
+      if (Type == DecodedItemType.RxMessage)
+      {
+        // the first token is SNR
+        Tokens[0].bgBrush = BrushFromSnr(Decode.Snr, settings.BkColors.Snr);
 
-      HighlightWords();
+        // the last two tokens are "?" and Ap
+        Tokens[Tokens.Count - 2].bgBrush = Decode.LowConfidence ?
+          new SolidBrush(settings.BkColors.Ap) : Brushes.Transparent;
+        Tokens[Tokens.Count - 1].bgBrush = Tokens[Tokens.Count - 1].text == "  " ?
+          Brushes.Transparent : new SolidBrush(settings.BkColors.Ap);
 
-      Tokens[Tokens.Count - 2].bgBrush = Decode.LowConfidence ? 
-        Brushes.LightBlue : Brushes.Transparent;
-      Tokens[Tokens.Count - 1].bgBrush = Tokens[Tokens.Count - 1].text == "  " ? 
-        Brushes.Transparent : Brushes.Orange;
-      
-      foreach (var token in Tokens)
-        ;
-    }
-
-    private readonly string[] CqWords = new string[] { "CQ", "73", "RR73" };
-
-    private void HighlightWords()
-    {
-      for (int i = 2; i < Tokens.Count; i++)
-        if (CqWords.Contains(Tokens[i].text))
-          Tokens[i].bgBrush = Brushes.Yellow;
+        // CQ words
+        for (int i = 2; i < Tokens.Count; i++)
+          if (CqWords.Contains(Tokens[i].text))
+            Tokens[i].bgBrush = new SolidBrush(settings.BkColors.CqWord);
+      }
     }
 
     private static Brush BrushFromSnr(int? snr, Color color)

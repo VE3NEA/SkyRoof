@@ -165,10 +165,13 @@ namespace SkyRoof
       if (ChangedFields.Exists(s => s.StartsWith("SkyRoof.QsoEntrySettings.")))
         ctx.QsoEntryPanel?.ApplySettings();
 
-      if (ChangedFields.Exists(s => s.StartsWith("SkyRoof.Ft4ConsoleSettings")) ||
-        ChangedFields.Contains("SkyRoof.UserSettings.Call"))
-        ctx.Ft4ConsolePanel?.ApplySettings();
-
+      if (ChangedFields.Exists(s => 
+        s.StartsWith("SkyRoof.Ft4ConsoleSettings") ||
+        s.StartsWith("SkyRoof.Ft4WaterfallSettings.") ||
+        s.StartsWith("SkyRoof.Ft4MessagesSettings.") ||
+        s.StartsWith("SkyRoof.Ft4BackgroundColors.") || 
+        s.Contains("SkyRoof.UserSettings.Call")))
+          ctx.Ft4ConsolePanel?.ApplySettings();
 
       ChangedFields.Clear();
     }

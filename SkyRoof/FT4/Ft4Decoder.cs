@@ -12,12 +12,13 @@ namespace SkyRoof
     DateTime DataUtc;
 
     public const int FT4_SIGNAL_BANDWIDTH = 83; // Hz
-    public int DecodedSlotNumber { get; private set; }
     public int RxAudioFrequency = 1500;
     public int TxAudioFrequency = 1500;
     public string MyCall = "";
     public string TheirCall = "";
-    
+
+    public int DecodedSlotNumber { get; private set; }
+
     public event EventHandler<DataEventArgs<string>>? SlotDecoded;
 
     protected override void Process(DataEventArgs<float> args)
@@ -49,8 +50,8 @@ namespace SkyRoof
 
       bool samplesAvailable = SampleCount >= NativeFT4Coder.DECODE_SAMPLE_COUNT;
       bool slotEnded = samplesIntoSlot >= NativeFT4Coder.DECODE_SAMPLE_COUNT; ;
-      bool slotNotYetDecoded = CurrentSlotNumber != DecodedSlotNumber;
-      return samplesAvailable && slotEnded && slotNotYetDecoded;
+      bool slotDecoded = CurrentSlotNumber == DecodedSlotNumber;
+      return samplesAvailable && slotEnded && !slotDecoded;
     }
 
     private void DecodeSlot()
