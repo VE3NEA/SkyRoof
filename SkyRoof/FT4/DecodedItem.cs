@@ -32,7 +32,7 @@ namespace SkyRoof
       public bool Underlined;
       public Brush bgBrush = Brushes.Transparent;
       public Brush fgBrush = Brushes.Black;
-      public bool AppendSpace;
+      public bool AppendSpace = true;
 
       public DisplayToken(string text)
       {
@@ -88,29 +88,24 @@ namespace SkyRoof
       return decode;
     }
 
-    /*
-       -15  0.1 2229 ~  CQ AC3DH FM29                       ? a1
-000000  -7  0.2 2397 +  CQ SM/UA1CBX
-000000 -11  0.1 1531 +  CQ VE3NEA FN03
-<     >< ><        >    <                                  >^ <>  
-    */
-
     private void TokenizeMessage()
-    {      
-      // FIX BUG: Decode.Message is just message, all other params are properties of Decode
+    {
+      Tokens =
+      [
+        new DisplayToken($"{Decode.Snr,3:D}"),
+        new DisplayToken($"{Decode.OffsetTimeSeconds,4:F1}"),
+        new DisplayToken($"{Decode.OffsetFrequencyHz,4:D}"),
+      ];
 
-      Tokens = new List<DisplayToken>();
-      string text = Decode.Message.PadRight(64);
+      string text = Decode.Message.PadRight(40);
+      Tokens.AddRange(text[..35].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(s => new DisplayToken(s)).ToList());
 
-      Tokens.Add(new DisplayToken(text[7..9]));
-      Tokens.Add(new DisplayToken(text[10..19]));
-      Tokens.AddRange(text[24..60].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(s => new DisplayToken(s)).ToList());
-      Tokens.Add(new DisplayToken(text[60..60]));
-      Tokens.Add(new DisplayToken(text[62..63]));
+      Tokens.AddRange([
+        new DisplayToken(text[36..37]),
+        new DisplayToken(text[38..40])
+       ]);
 
-      //text[64] = '?', text[66-67] = 'a1'
-
-      //Tokens[1].bgBrush = BrushFromSnr(msg.Tokens[1].text, Color.Red);
+      var s = string.Join("", Tokens.Select(t => t.text));
 
       SetColors();
     }
@@ -121,9 +116,10 @@ namespace SkyRoof
 
       HighlightWords();
 
-      Tokens[Tokens.Count - 1].bgBrush = Decode.LowConfidence ? Brushes.Orange : Brushes.Transparent;
-      Tokens[Tokens.Count - 2].bgBrush = Tokens[Tokens.Count - 2].text == "  " ?
-        Brushes.Transparent : Brushes.LightBlue;
+      Tokens[Tokens.Count - 2].bgBrush = Decode.LowConfidence ? 
+        Brushes.LightBlue : Brushes.Transparent;
+      Tokens[Tokens.Count - 1].bgBrush = Tokens[Tokens.Count - 1].text == "  " ? 
+        Brushes.Transparent : Brushes.Orange;
       
       foreach (var token in Tokens)
         ;

@@ -288,11 +288,8 @@ namespace SkyRoof
       if (item == HotItem) e.Graphics.FillRectangle(HotBkBrush, e.Bounds);
 
       // print each token
-      int firstToken = IsFirstTokenVisible(item) ? 0 : 1;
-      for (int i = firstToken; i < item.Tokens.Count; i++)
+      foreach(var token in item.Tokens)
       {
-        var token = item.Tokens[i];
-
         Font font = e.Font;
         if (token.Underlined) font = underlinedFont;
         else if (token.text == FontAwesomeIcons.Circle || token.text == FontAwesomeIcons.CircleQuestion) font = fontAwesome11;
@@ -307,16 +304,6 @@ namespace SkyRoof
         if (token.AppendSpace) p.X += spaceWidth;
       }
     }
-
-    // tokens[0] is utc in all tokens except separators
-    // utc is not printed in this class, but may be printed in the descendants
-    protected virtual bool IsFirstTokenVisible(DecodedItem item)
-    {
-      return item.Type == DecodedItemType.Separator;
-    }
-
-
-
 
     private void ShowTooltip(string? title, string? tooltip)
     {

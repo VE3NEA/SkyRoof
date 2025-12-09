@@ -37,7 +37,7 @@
       // 
       listBox.Dock = DockStyle.Fill;
       listBox.DrawMode = DrawMode.OwnerDrawFixed;
-      listBox.Font = new Font("Courier New", 9F);
+      listBox.Font = new Font("Courier New", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
       listBox.FormattingEnabled = true;
       listBox.IntegralHeight = false;
       listBox.ItemHeight = 13;

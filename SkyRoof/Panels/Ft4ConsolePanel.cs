@@ -92,14 +92,11 @@ namespace SkyRoof
 
     private void Ft4Decoder_SlotDecoded(object? sender, DataEventArgs<string> e)
     {
-      richTextBox1.BeginInvoke(() =>
-      {
-        richTextBox1.AppendText($"{e.Utc:HH:mm:ss.f}-------------------------------\n");
-        if (e.Data.Length > 0) richTextBox1.AppendText($"{string.Join("\n", e.Data)}\n");
-                
+      MessageListWidget.BeginInvoke(() =>
+      {                
         if (e.Data.Length == 0) return;
+       
         MessageListWidget.BeginUpdateItems();
-
 
         foreach (string message in e.Data)
         {

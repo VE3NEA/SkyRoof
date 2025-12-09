@@ -31,7 +31,7 @@
       splitContainer1 = new SplitContainer();
       AudioWaterfall = new AudioWaterfallWidget();
       MessageListWidget = new Ft4MessageListWidget();
-      richTextBox1 = new RichTextBox();
+      panel1 = new Panel();
       ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
       splitContainer1.Panel2.SuspendLayout();
       splitContainer1.SuspendLayout();
@@ -51,12 +51,12 @@
       // 
       // splitContainer1.Panel2
       // 
+      splitContainer1.Panel2.Controls.Add(panel1);
       splitContainer1.Panel2.Controls.Add(MessageListWidget);
-      splitContainer1.Panel2.Controls.Add(richTextBox1);
       splitContainer1.Size = new Size(800, 450);
       splitContainer1.SplitterDistance = 241;
       splitContainer1.TabIndex = 2;
-      //
+      // 
       // AudioWaterfal
       // 
       AudioWaterfall.Dock = DockStyle.Fill;
@@ -65,23 +65,23 @@
       AudioWaterfall.Size = new Size(800, 241);
       AudioWaterfall.TabIndex = 2;
       // 
-      // ft4MessageListWidget1
+      // MessageListWidget
       // 
       MessageListWidget.Dock = DockStyle.Fill;
-      MessageListWidget.Location = new Point(392, 0);
-      MessageListWidget.Name = "ft4MessageListWidget1";
-      MessageListWidget.Size = new Size(408, 205);
+      MessageListWidget.Font = new Font("Courier New", 11.25F);
+      MessageListWidget.Location = new Point(0, 0);
+      MessageListWidget.Margin = new Padding(4, 3, 4, 3);
+      MessageListWidget.Name = "MessageListWidget";
+      MessageListWidget.Size = new Size(800, 205);
       MessageListWidget.TabIndex = 3;
       // 
-      // richTextBox1
+      // panel1
       // 
-      richTextBox1.Dock = DockStyle.Left;
-      richTextBox1.Font = new Font("Courier New", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
-      richTextBox1.Location = new Point(0, 0);
-      richTextBox1.Name = "richTextBox1";
-      richTextBox1.Size = new Size(392, 205);
-      richTextBox1.TabIndex = 2;
-      richTextBox1.Text = "";
+      panel1.Dock = DockStyle.Right;
+      panel1.Location = new Point(549, 0);
+      panel1.Name = "panel1";
+      panel1.Size = new Size(251, 205);
+      panel1.TabIndex = 4;
       // 
       // Ft4ConsolePanel
       // 
@@ -102,7 +102,7 @@
 
     private SplitContainer splitContainer1;
     private AudioWaterfallWidget AudioWaterfall;
-    private RichTextBox richTextBox1;
     private Ft4MessageListWidget MessageListWidget;
+    private Panel panel1;
   }
 }

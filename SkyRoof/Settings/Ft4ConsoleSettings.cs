@@ -23,10 +23,10 @@ namespace SkyRoof
     [TypeConverter(typeof(OutputSoundcardNameConverter))]
     public string? TxSoundcard { get; set; } = Soundcard.GetDefaultSoundcardId(DataFlow.Render);
 
-    [TypeConverter(typeof(OutputSoundcardNameConverter))]
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public Ft4WaterfallSettings Waterfall { get; set; } = new ();
 
-    [TypeConverter(typeof(OutputSoundcardNameConverter))]
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public Ft4MessagesSettings Messages { get; set; } = new ();
 
     [DisplayName("Enable Transmit")]
@@ -60,7 +60,8 @@ namespace SkyRoof
     public Color TextColor { get; set; } = SystemColors.WindowText;
 
     [DisplayName("Font Size")]
-    public float FontSize { get; set; } = 9f;
+    [DefaultValue(11f)]
+    public float FontSize { get; set; } = 11f;
 
     [DisplayName("Background Colors")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
