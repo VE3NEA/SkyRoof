@@ -20,7 +20,7 @@ namespace SkyRoof
 
 
     private readonly System.Timers.Timer freezeTimer = new System.Timers.Timer();
-    private DecodedItem HotItem, ClickedItem;
+    public DecodedItem HotItem, ClickedItem;
     private Point lastMouseLocation;
     private bool AutoScrollMode = true;
     private bool Frozen;
@@ -244,6 +244,7 @@ namespace SkyRoof
     {
       DateTime slotTime = DateTime.MinValue + TimeSpan.FromSeconds(slot * NativeFT4Coder.TIMESLOT_SECONDS);
 
+      // create new separator token
       var separator = new DecodedItem();
       separator.Type = DecodedItemType.Separator;
       separator.SlotNumber = slot;
@@ -251,16 +252,25 @@ namespace SkyRoof
       separator.Tokens = [new(FontAwesomeIcons.Circle), new($"{slotTime:HH:mm:ss.f}"), new(satelliteName), new(bandName)];
       separator.Tokens[0].fgBrush = separator.Odd ? Brushes.Olive : Brushes.Teal;
 
+      //
       int count = listBox.Items.Count;
       if (count >= 2 &&
         ((DecodedItem)listBox.Items[count - 1]).Type == DecodedItemType.Separator &&
         ((DecodedItem)listBox.Items[count - 2]).Type == DecodedItemType.Separator)
+
+        if (((DecodedItem)listBox.Items[count - 2]).Tokens[0].text == "···")
           listBox.Items[count - 1] = separator;
+        else
+        {
+          ((DecodedItem)listBox.Items[count - 1]).Tokens = [new("···")];
+          listBox.Items.Add(separator);
+        }
+
       else
         listBox.Items.Add(separator);
     }
 
-    internal DecodedItem? FindMessage(int slotNumber, int audioFrequency)
+    internal DecodedItem? FindItem(int slotNumber, int audioFrequency)
     {
       foreach (DecodedItem item in listBox.Items)
       {
@@ -338,7 +348,7 @@ namespace SkyRoof
     private void ShowSeparatorTooltip(DecodedItem hotItem)
     {
       string title = (hotItem.Odd ? "Odd (2-nd)" : "Even (1-st)");
-      string tooltip = string.Format("{0:%h} hours {0:%m} minutes ago", DateTime.UtcNow - hotItem.Utc);
+      string tooltip = string.Format("slot {0} {1:%h} hours {1:%m} minutes ago", hotItem.SlotNumber, DateTime.UtcNow - hotItem.Utc);
       ShowTooltip(title, tooltip);
     }
 
@@ -351,7 +361,6 @@ namespace SkyRoof
     {
       MessageClick?.Invoke(this, new Ft4MessageEventArgs(item));
     }
-
   }
 }
 

@@ -6,7 +6,6 @@ namespace SkyRoof
 {
   public unsafe class Ft4Decoder : ThreadedProcessor<float>
   {
-    private int CurrentSlotNumber;
     private float[] Samples = [];
     private int SampleCount = 0;
     DateTime DataUtc;
@@ -14,9 +13,10 @@ namespace SkyRoof
     public const int FT4_SIGNAL_BANDWIDTH = 83; // Hz
     public int RxAudioFrequency = 1500;
     public int TxAudioFrequency = 1500;
-    public string MyCall = "";
-    public string TheirCall = "";
+    public string MyCall = " ";
+    public string TheirCall = " ";
 
+    public int CurrentSlotNumber { get; private set; }
     public int DecodedSlotNumber { get; private set; }
 
     public event EventHandler<DataEventArgs<string>>? SlotDecoded;
@@ -70,7 +70,7 @@ namespace SkyRoof
       NativeFT4Coder.decode(samples, ref stage, ref RxAudioFrequency, MyCall, TheirCall, decodedMessages);
 
       string messagesStr = decodedMessages.ToString().Trim();
-      string[] messages = messagesStr.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+      string[] messages = messagesStr.Split(['\n'], StringSplitOptions.RemoveEmptyEntries);
 
       SlotDecoded?.Invoke(this, new DataEventArgs<string>(messages, DataUtc - TimeSpan.FromSeconds(NativeFT4Coder.DECODE_SECONDS)));
 

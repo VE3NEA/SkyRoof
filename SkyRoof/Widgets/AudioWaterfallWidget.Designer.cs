@@ -28,6 +28,8 @@
     /// </summary>
     private void InitializeComponent()
     {
+      components = new System.ComponentModel.Container();
+      toolTip1 = new ToolTip(components);
       SuspendLayout();
       // 
       // AudioWaterfallWidget
@@ -43,5 +45,7 @@
     }
 
     #endregion
+
+    private ToolTip toolTip1;
   }
 }

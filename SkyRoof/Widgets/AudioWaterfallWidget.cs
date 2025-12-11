@@ -1,14 +1,17 @@
-﻿using System.Drawing.Drawing2D;
+﻿using System.ComponentModel;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Windows.Forms;
 using VE3NEA;
+using WsjtxUtils.WsjtxMessages.Messages;
 
 namespace SkyRoof
 {
   public partial class AudioWaterfallWidget : UserControl
   {
     private const int TOP_BAR_HEIGHT = 31;
-    private const int LEFT_BAR_WIDTH = 15;
-    private const int SPECTRUM_SIZE = 4096;
+    public const int LEFT_BAR_WIDTH = 15;
+    private const int SPECTRUM_SIZE = 8192;
     private const int WATERFALL_BANDWIDTH = 4100;
     private const int BmpWidth = (int)(SPECTRUM_SIZE * WATERFALL_BANDWIDTH / (SdrConst.AUDIO_SAMPLING_RATE / 2));
     private const int BmpHeight = 1024;
@@ -17,8 +20,9 @@ namespace SkyRoof
     private readonly Bitmap WaterfallBmp = new Bitmap(BmpWidth, BmpHeight, PixelFormat.Format32bppRgb);
     private readonly Bitmap LeftBmp = new Bitmap(2, BmpHeight, PixelFormat.Format32bppRgb);
     private readonly int[] leftBarSlots = new int[BmpHeight];
+    private DecodedItem? HotItem;
 
-    public readonly SpectrumAnalyzer<float> SpectrumAnalyzer = new(SPECTRUM_SIZE, 12000, BmpWidth); //{!}
+    public SpectrumAnalyzer<float> SpectrumAnalyzer;
     public int RxAudioFrequency = 1500;
     public int TxAudioFrequency = 1500;
 
@@ -32,8 +36,30 @@ namespace SkyRoof
     public AudioWaterfallWidget()
     {
       InitializeComponent();
+    }
 
-      SpectrumAnalyzer.SpectrumAvailable += (s, e) => BeginInvoke(() => AppendSpectrum(e.Data));      
+    // SpeftrumAnalyzer cannot be created in the design mode, otherwise
+    // user control is silently deleted from the form.
+    // Design mode can be detected only in OnHandleCreated
+    protected override void OnHandleCreated(EventArgs e)
+    {
+      base.OnHandleCreated(e);
+
+
+      if (!IsInDesignMode())
+      {
+        SpectrumAnalyzer = new SpectrumAnalyzer<float>(SPECTRUM_SIZE, 6000, BmpWidth);
+        SpectrumAnalyzer.SpectrumAvailable += (s, ev) => BeginInvoke(() => AppendSpectrum(ev.Data));
+      }
+    }
+
+    private bool IsInDesignMode()
+    {
+      Control? c = this;
+      while (c != null)
+        if (c.Site?.DesignMode == true) return true; 
+        else c = c.Parent;
+      return false;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -87,7 +113,27 @@ namespace SkyRoof
       }
 
       // callsign
+      if (HotItem?.Type == Ft4MessageListWidget.DecodedItemType.RxMessage)
+      {
+        x = LEFT_BAR_WIDTH + pixelsPerHz * HotItem.Decode.OffsetFrequencyHz; 
+        DrawTriangle(e.Graphics, (int)x, Pens.Green, Brushes.Lime);
 
+        var bgBrush = Brushes.White;
+        var fgBrush = Brushes.Black;
+        var token = HotItem.Tokens.FirstOrDefault(t => t.text == HotItem.Parse.DECallsign);
+        if (token != null)
+        {
+          if ((token.bgBrush as SolidBrush)?.Color != Color.Transparent) bgBrush = token.bgBrush;
+          if ((token.fgBrush as SolidBrush)?.Color != Color.Silver) fgBrush = token.fgBrush;
+        }
+
+        var size = e.Graphics.MeasureString(HotItem.Parse.DECallsign, Font);
+        var textRect = new RectangleF(x + 14, 5, size.Width, size.Height);
+        var borderRect = textRect; borderRect.Inflate(1, 1);
+        e.Graphics.FillRectangle(Brushes.Green, borderRect);
+        e.Graphics.FillRectangle(bgBrush, textRect);
+        e.Graphics.DrawString(HotItem.Parse.DECallsign, Font, fgBrush, textRect.Left, textRect.Top);
+      }
 
       // waterfall
       e.Graphics.CompositingMode = CompositingMode.SourceCopy;
@@ -115,6 +161,17 @@ namespace SkyRoof
       }
     }
 
+    const int TRI_SIZE = 7;
+    private void DrawTriangle(Graphics g, int x, Pen pen, Brush brush)
+    {
+      var p = new Point(x, TOP_BAR_HEIGHT - 2);
+      Point[] points = { p, new Point(p.X - TRI_SIZE, p.Y - TRI_SIZE), new Point(p.X + TRI_SIZE, p.Y - TRI_SIZE), p };
+      g.FillPolygon(brush, points);
+      g.DrawLines(pen, points);
+    }
+
+
+
 
     //----------------------------------------------------------------------------------------------
     //                                      spectra
@@ -126,19 +183,19 @@ namespace SkyRoof
       if (--WriteRow < 0) WriteRow = WaterfallBmp.Height - 1;
 
       // left bar slot number
-      int slotNumber = Ft4Decoder?.DecodedSlotNumber ?? 0;
-      leftBarSlots[WriteRow] = slotNumber;
+      int currentSlotNumber = Ft4Decoder?.CurrentSlotNumber ?? 0;
+      leftBarSlots[WriteRow] = currentSlotNumber;
 
 
       // separator
-      if (slotNumber != LastSlot)
+      if (currentSlotNumber != LastSlot)
       {
         AddSeparator(Color.Lime);
-        LastSlot = slotNumber;
+        LastSlot = currentSlotNumber;
       }
 
       // left bar
-      Color leftColor = (slotNumber & 1) == 1 ? Color.Olive : Color.Teal;
+      Color leftColor = (currentSlotNumber & 1) == 1 ? Color.Olive : Color.Teal;
       LeftBmp.SetPixel(0, WriteRow, leftColor);
       LeftBmp.SetPixel(1, WriteRow, leftColor);
 
@@ -175,9 +232,7 @@ namespace SkyRoof
       if (e.Button != MouseButtons.Left) return;
       if (e.X <= LEFT_BAR_WIDTH) return;
 
-      int WaterfallWidth = ClientRectangle.Width - LEFT_BAR_WIDTH;
-      float HzPerPixel = WATERFALL_BANDWIDTH / (float)WaterfallWidth;
-      int audioFrequency = (int)((e.X - LEFT_BAR_WIDTH) * HzPerPixel);
+      int audioFrequency = PixelToFrequency(e.X);
 
       if ((ModifierKeys & Keys.Control) != Keys.None)
         { 
@@ -188,6 +243,46 @@ namespace SkyRoof
         TxAudioFrequency = audioFrequency;
       else
         RxAudioFrequency = audioFrequency;
+    }
+
+    public int PixelToFrequency(int x)
+    {
+      if (x <= LEFT_BAR_WIDTH) return 0;
+      int WaterfallWidth = ClientRectangle.Width - LEFT_BAR_WIDTH;
+      float HzPerPixel = WATERFALL_BANDWIDTH / (float)WaterfallWidth;
+      return (int)((x - LEFT_BAR_WIDTH) * HzPerPixel);
+    }
+
+    internal void ShowCallsign(DecodedItem hotItem)
+    {
+      HotItem = hotItem;
+      Refresh();
+    }
+
+    internal (int slotNumber, int audioFreq) GetSlotAndFreq(Point location)
+    {
+      int index = WriteRow + location.Y - TOP_BAR_HEIGHT;
+      if (index >= BmpHeight) index -= BmpHeight;
+      int slot = leftBarSlots[index];
+
+      int frequency = PixelToFrequency(location.X);
+      return (slot, frequency);
+    }
+
+    public void ShowLeftBarTooltip(Point p)
+    {
+      if (p.X > LEFT_BAR_WIDTH)
+      {
+        toolTip1.SetToolTip(this, "");
+        return;
+      }
+
+      (int slot, float freq) = GetSlotAndFreq(p);
+      string odd = (slot & 1) == 1 ? "Odd (2-nd)" : "Even (1-st)";
+      DateTime start = DateTime.Today + TimeSpan.FromSeconds(slot * NativeFT4Coder.TIMESLOT_SECONDS);
+
+      string tooltip = $"slot {slot}\n{start:HH:mm:ss.f} Z\n{odd}";
+      toolTip1.SetToolTip(this, tooltip);
     }
   }
 }

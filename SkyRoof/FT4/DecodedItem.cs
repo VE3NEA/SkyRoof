@@ -7,22 +7,6 @@ using static SkyRoof.Ft4MessageListWidget;
 
 namespace SkyRoof
 {
-  public enum WkdStatus
-  {
-    Dupe,
-    NotNeeded,
-    Unknown,
-    DxMarathonDupe,
-    DxMarathon,
-    UnconfirmedSquare6m,
-    UnconfirmedDxcc6m,
-    NewSquare6m,
-    NewDxcc6m,
-    NeededBandCountry,
-    NeededModeCountry,
-    NewDxcc,
-    WatchList
-  }
 
   public class DecodedItem
   {
@@ -30,7 +14,7 @@ namespace SkyRoof
 
     public class DisplayToken
     {
-      public readonly string text;
+      public string text;
       public bool Underlined;
       public Brush bgBrush = Brushes.Transparent;
       public Brush fgBrush = Brushes.Black;
@@ -46,7 +30,7 @@ namespace SkyRoof
     public int SlotNumber;
     public bool Odd => SlotNumber % 2 == 1;
 
-    public WkdStatus WkdStatus;
+    public string WkdStatus = "";
     public bool ToMe;
     public bool FromMe;
 
@@ -57,12 +41,12 @@ namespace SkyRoof
 
     public bool IsClickable()
     {
-      return false;
+      return Type == DecodedItemType.RxMessage && !string.IsNullOrEmpty(Parse.DECallsign);
     }
 
     public string? GetTooltip()
     {
-      return "tooltip!";
+      return WkdStatus;
     }
 
     public void ParseMessage(string message, DateTime receivedAt)
@@ -93,6 +77,8 @@ namespace SkyRoof
 
     private void TokenizeMessage()
     {
+      string text = Decode.Message.PadRight(40);
+
       Tokens =
       [
         new DisplayToken($"{Decode.Snr,3:D}"),
@@ -100,8 +86,7 @@ namespace SkyRoof
         new DisplayToken($"{Decode.OffsetFrequencyHz,4:D}"),
       ];
 
-      string text = Decode.Message.PadRight(40);
-      Tokens.AddRange(text[..35].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(s => new DisplayToken(s)).ToList());
+      Tokens.AddRange(SplitWords(text[..35]));
 
       Tokens.AddRange([
         new DisplayToken(text[36..37]),
@@ -109,6 +94,22 @@ namespace SkyRoof
        ]);
 
       var s = string.Join("", Tokens.Select(t => t.text));
+    }
+
+    private static IEnumerable<DisplayToken> SplitWords(string text)
+    {
+      var tokens = text[..35].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(s => new DisplayToken(s)).ToList();
+
+      // handle "<CALL>"
+      for (int i = tokens.Count - 1; i >= 0; i--)
+        if (tokens[i].text[..1] == "<" && tokens[i].text[^1..] == ">")
+        {
+          tokens.Insert(i, new DisplayToken(tokens[i].text[1..^1]) { AppendSpace = false });
+          tokens.Insert(i, new DisplayToken("<") { AppendSpace = false });
+          tokens[i+2].text = ">";
+        }
+
+      return tokens;
     }
 
     public void SetColors(Ft4MessagesSettings settings)
@@ -129,6 +130,28 @@ namespace SkyRoof
           if (CqWords.Contains(Tokens[i].text))
             Tokens[i].bgBrush = new SolidBrush(settings.BkColors.CqWord);
       }
+    }
+
+    public void SetCallsignColors(LoggerInterface logger)
+    {
+      if (string.IsNullOrEmpty(Parse.DECallsign)) return;
+
+      var callToken = Tokens.First(t => t.text == Parse.DECallsign);
+
+      var qso = new QsoInfo();
+      qso.Call = Parse.DECallsign;
+      qso.Grid = Parse.GridSquare;
+      logger.Augment(qso);
+      logger.GetStatus(qso);
+
+      if (!string.IsNullOrEmpty(qso.StatusString))
+        WkdStatus = qso.StatusString;
+
+      if (!string.IsNullOrEmpty(qso.BackColor))
+        callToken.bgBrush = new SolidBrush(ColorTranslator.FromHtml(qso.BackColor));
+
+      if (!string.IsNullOrEmpty(qso.ForeColor))
+        callToken.fgBrush = new SolidBrush(ColorTranslator.FromHtml(qso.ForeColor));
     }
 
     private static Brush BrushFromSnr(int? snr, Color color)

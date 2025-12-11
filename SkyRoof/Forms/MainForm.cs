@@ -40,6 +40,7 @@ namespace SkyRoof
       ctx.GroupPasses = new(ctx);
       ctx.HamPasses = new(ctx);
       ctx.SdrPasses = new(ctx);
+      ctx.LoggerInterface = new(ctx);
 
       timer.Interval = 1000 / TICKS_PER_SECOND;
 

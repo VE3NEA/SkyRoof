@@ -20,7 +20,6 @@ namespace SkyRoof
   {
     private const string States = "AL,AK,AZ,AR,CA,CO,CT,DE,FL,GA,HI,ID,IL,IN,IA,KS,KY,LA,ME,MD,MA,MI,MN,MS,MO,MT,NE,NV,NH,NJ,NM,NY,NC,ND,OH,OK,OR,PA,RI,SC,SD,TN,TX,UT,VT,VA,WA,WV,WI,WY";
     private Context ctx;
-    private readonly LoggerInterface LoggerInterface;
     private bool Changing;
 
     public Slicer.Mode? LastSetMode = null;
@@ -35,8 +34,6 @@ namespace SkyRoof
       this.ctx = ctx;
       Log.Information("Creating QsoEntryPanel");
       InitializeComponent();
-
-      LoggerInterface = new(ctx);
 
       ApplySettings();
 
@@ -213,12 +210,12 @@ namespace SkyRoof
       // call changed, look up grid and state
       if (sender == CallEdit)
       {
-        qso = LoggerInterface.Augment(qso);
+        qso = ctx.LoggerInterface.Augment(qso);
         QsoInfoToFields(qso);
       }
 
       // any field changed, update status
-      qso = LoggerInterface.GetStatus(qso);
+      qso = ctx.LoggerInterface.GetStatus(qso);
       QsoInfoToStatus(qso);
     }
 
@@ -235,7 +232,7 @@ namespace SkyRoof
       if (qso.Sent == string.Empty && !Ask("Sent report not specified")) return;
       if (qso.Recv == string.Empty && !Ask("Received report not specified")) return;
 
-      LoggerInterface.SaveQso(qso);
+      ctx.LoggerInterface.SaveQso(qso);
       ClearFields();
     }
 
@@ -244,7 +241,7 @@ namespace SkyRoof
     {
       QsoInfo info = new();
       info.StationCallsign = ctx.Settings.User.Call;
-      info.MyuGridSquare = ctx.Settings.User.Square;
+      info.MyGridSquare = ctx.Settings.User.Square;
 
       if (onlyEdited)
       {

@@ -10,13 +10,15 @@ namespace SkyRoof
     internal readonly Font AwesomeFont14 = FontAwesomeFactory.Create(14);
     internal readonly PaletteManager PaletteManager = new PaletteManager();
 
-    // satellite data
+    // data
     public Settings Settings = new();
     public SatnogsDb SatnogsDb;
     public GroupSatellitePasses GroupPasses;
     public HamSatellitePasses HamPasses;
     public SdrSatellitePasses SdrPasses;
     public AmsatStatusLoader AmsatStatusLoader = new();
+    public LoggerInterface LoggerInterface;
+
 
     // main form
     public MainForm MainForm;

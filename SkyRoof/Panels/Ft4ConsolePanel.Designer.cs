@@ -57,13 +57,14 @@
       splitContainer1.SplitterDistance = 241;
       splitContainer1.TabIndex = 2;
       // 
-      // panel1
+      // AudioWaterfall
       // 
       AudioWaterfall.Dock = DockStyle.Fill;
       AudioWaterfall.Location = new Point(0, 0);
       AudioWaterfall.Name = "AudioWaterfal";
       AudioWaterfall.Size = new Size(800, 241);
       AudioWaterfall.TabIndex = 2;
+      AudioWaterfall.MouseMove += AudioWaterfall_MouseMove;
       // 
       // panel1
       // 

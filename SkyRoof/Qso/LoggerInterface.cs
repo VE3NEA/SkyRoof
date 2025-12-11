@@ -7,7 +7,7 @@ namespace SkyRoof
   public class QsoInfo
   {
     public string StationCallsign { get; set; } = string.Empty;
-    public string MyuGridSquare{ get; set; } = string.Empty;
+    public string MyGridSquare{ get; set; } = string.Empty;
     public DateTime Utc { get; set; } = DateTime.UtcNow;
     public string Call { get; set; } = string.Empty;
     public string Band { get; set; } = string.Empty;
@@ -30,7 +30,7 @@ namespace SkyRoof
     {
       AdifEntry entry = new() {
         ["STATION_CALLSIGN"] = StationCallsign,
-        ["MY_GRIDSQUARE"] = MyuGridSquare,
+        ["MY_GRIDSQUARE"] = MyGridSquare,
         ["QSO_DATE"] = Utc.ToString("yyyyMMdd"),
         ["TIME_ON"] = Utc.ToString("HHmmss"),
         ["CALL"] = Call,
