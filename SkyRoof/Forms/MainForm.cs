@@ -370,16 +370,16 @@ namespace SkyRoof
     {
       if (!ctx.SpeakerSoundcard.Enabled)
         SoundcardLedLabel.ForeColor = Color.Gray;
-      else if (!ctx.SpeakerSoundcard.IsRunning())
+      else if (!ctx.SpeakerSoundcard.IsRunning)
         SoundcardLedLabel.ForeColor = Color.Red;
       else
         SoundcardLedLabel.ForeColor = Color.Lime;
 
       if (!ctx.Settings.OutputStream.Enabled)
         VacLedLabel.ForeColor = Color.Gray;
-      else if (ctx.Settings.OutputStream.Type == DataStreamType.AudioToVac && !ctx.AudioVacSoundcard.IsRunning())
+      else if (ctx.Settings.OutputStream.Type == DataStreamType.AudioToVac && !ctx.AudioVacSoundcard.IsRunning)
         VacLedLabel.ForeColor = Color.Red;
-      else if (ctx.Settings.OutputStream.Type == DataStreamType.IqToVac && !ctx.IqVacSoundcard.IsRunning())
+      else if (ctx.Settings.OutputStream.Type == DataStreamType.IqToVac && !ctx.IqVacSoundcard.IsRunning)
         VacLedLabel.ForeColor = Color.Red;
       else
         VacLedLabel.ForeColor = Color.Lime;

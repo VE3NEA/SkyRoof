@@ -34,12 +34,14 @@
       // 
       // AudioWaterfallWidget
       // 
-      AutoScaleDimensions = new SizeF(7F, 15F);
+      AutoScaleDimensions = new SizeF(9F, 17F);
       AutoScaleMode = AutoScaleMode.Font;
       Cursor = Cursors.Cross;
       DoubleBuffered = true;
+      Font = new Font("Courier New", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
+      Margin = new Padding(4, 3, 4, 3);
       Name = "AudioWaterfallWidget";
-      Size = new Size(471, 161);
+      Size = new Size(606, 182);
       Resize += AudioWaterfallWidget_Resize;
       ResumeLayout(false);
     }

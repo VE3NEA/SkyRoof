@@ -9,9 +9,10 @@ namespace SkyRoof
 {
   public partial class AudioWaterfallWidget : UserControl
   {
-    private const int TOP_BAR_HEIGHT = 31;
+    public const int TOP_BAR_HEIGHT = 31;
     public const int LEFT_BAR_WIDTH = 15;
     private const int SPECTRUM_SIZE = 8192;
+    private const int SPECTRA_PER_SECOND = 4;
     private const int WATERFALL_BANDWIDTH = 4100;
     private const int BmpWidth = (int)(SPECTRUM_SIZE * WATERFALL_BANDWIDTH / (SdrConst.AUDIO_SAMPLING_RATE / 2));
     private const int BmpHeight = 1024;
@@ -48,7 +49,7 @@ namespace SkyRoof
 
       if (!IsInDesignMode())
       {
-        SpectrumAnalyzer = new SpectrumAnalyzer<float>(SPECTRUM_SIZE, 6000, BmpWidth);
+        SpectrumAnalyzer = new SpectrumAnalyzer<float>(SPECTRUM_SIZE, SdrConst.AUDIO_SAMPLING_RATE / SPECTRA_PER_SECOND, BmpWidth);
         SpectrumAnalyzer.SpectrumAvailable += (s, ev) => BeginInvoke(() => AppendSpectrum(ev.Data));
       }
     }
@@ -128,7 +129,7 @@ namespace SkyRoof
         }
 
         var size = e.Graphics.MeasureString(HotItem.Parse.DECallsign, Font);
-        var textRect = new RectangleF(x + 14, 5, size.Width, size.Height);
+        var textRect = new RectangleF(x + 13, 4, size.Width, size.Height);
         var borderRect = textRect; borderRect.Inflate(1, 1);
         e.Graphics.FillRectangle(Brushes.Green, borderRect);
         e.Graphics.FillRectangle(bgBrush, textRect);
@@ -261,7 +262,7 @@ namespace SkyRoof
 
     internal (int slotNumber, int audioFreq) GetSlotAndFreq(Point location)
     {
-      int index = WriteRow + location.Y - TOP_BAR_HEIGHT;
+      int index = WriteRow + (location.Y - TOP_BAR_HEIGHT);
       if (index >= BmpHeight) index -= BmpHeight;
       int slot = leftBarSlots[index];
 

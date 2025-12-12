@@ -13,7 +13,6 @@ namespace VE3NEA
 
     public Palette()
     {
-      //Interpolate(MakeMonochromePalette(Color.Black));
       Interpolate(DefaultPalette);
     }
 
@@ -98,17 +97,31 @@ namespace VE3NEA
     //      Color.FromArgb(0xFF0000)
     //    };
 
-    public static readonly Color[] DefaultPalette = new Color[] {
-      Color.FromArgb(0x000d4e),
-      Color.FromArgb(0x00d8ff),
-      Color.FromArgb(0xb3ff46),
-      Color.FromArgb(0xffe900),
-      Color.FromArgb(0xff0000),
-    };
+    // SkyRoof palette
+    //public static readonly Color[] DefaultPalette = new Color[] {
+    //  Color.FromArgb(0x000d4e),
+    //  Color.FromArgb(0x00d8ff),
+    //  Color.FromArgb(0xb3ff46),
+    //  Color.FromArgb(0xffe900),
+    //  Color.FromArgb(0xff0000),
+    //};
+
+    // FLDIgi palette
+    public static readonly Color[] DefaultPalette = [
+      Color.FromArgb(0x000000),
+      Color.FromArgb(0x0000b1),
+      Color.FromArgb(0x036ee3),
+      Color.FromArgb(0x00cccc),
+      Color.FromArgb(0xdfdfdf),
+      Color.FromArgb(0x00ea00),
+      Color.FromArgb(0xf4f400),
+      Color.FromArgb(0xfa7e00),
+      Color.FromArgb(0xf40000),
+];
 
     public static Color[] MakeMonochromePalette(Color color)
     {
-      return new Color[] { color, Color.White };
+      return [color, Color.White];
     }
   }
 }

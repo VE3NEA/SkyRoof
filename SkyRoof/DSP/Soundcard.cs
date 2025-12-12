@@ -28,8 +28,11 @@ namespace VE3NEA
     protected readonly int SamplingRate;
     protected MMDevice? mmDevice;
     protected bool enabled;
+    private System.Timers.Timer? Timer;
 
+    public bool Retry;
     public bool Enabled { get => enabled; set => SetEnabled(value); }
+    public bool IsRunning { get; private set; }
 
     public event EventHandler? StateChanged;
 
@@ -39,13 +42,33 @@ namespace VE3NEA
       SamplingRate = samplingRate ?? DEFAULT_SAMPLING_RATE;
     }
 
-
     private void SetEnabled(bool value)
     {
       if (value == Enabled) return;
       enabled = value;
 
+      // will call OnStateChanged
       if (value) Start(); else Stop();
+    }
+
+    private void EnableRetry(bool value)
+    {
+      Timer?.Stop();
+      Timer = null;
+
+      if (value)
+      {
+        Timer = new();
+        Timer.Interval = 3000;
+        Timer.Elapsed += (s, a) => RunRetry();
+        Timer.Start();
+      }
+    }
+
+    private void RunRetry()
+    {
+      Start();
+      EnableRetry(!IsRunning);
     }
 
     public void SetDeviceId(string? deviceId)
@@ -75,9 +98,13 @@ namespace VE3NEA
       }
     }
 
-    protected void OnStateChanged()
+    protected void OnStateChanged(bool running)
     {
+      IsRunning = running;
+
       StateChanged?.Invoke(this, EventArgs.Empty);
+
+      EnableRetry(Enabled && Retry && !running);
     } 
 
     public static Entry[] ListDevices(DataFlow direction)
@@ -105,7 +132,6 @@ namespace VE3NEA
       Enabled = false;
     }
 
-    public abstract bool IsRunning();
     protected abstract void Start();
     protected abstract void Stop();
   }
@@ -131,7 +157,7 @@ namespace VE3NEA
 
     protected override void Start()
     {
-      if (mmDevice == null) return;
+      if (mmDevice?.DeviceState != DeviceState.Active) throw new Exception();
 
       try
       {
@@ -141,10 +167,10 @@ namespace VE3NEA
         wasapiOut.Device = mmDevice;
         wasapiOut.Initialize(waveSource);
         wasapiOut.Volume = volume;
-        wasapiOut.Stopped += (s,a) => OnStateChanged();
+        wasapiOut.Stopped += (s,a) => OnStateChanged(false);
         wasapiOut.Play();
 
-        OnStateChanged();
+        OnStateChanged(true);
       }
       catch
       {
@@ -158,12 +184,7 @@ namespace VE3NEA
       wasapiOut?.Dispose();
       wasapiOut = null;
 
-      OnStateChanged();
-    }
-
-    public override bool IsRunning()
-    {
-      return wasapiOut?.PlaybackState == PlaybackState.Playing;
+      OnStateChanged(false);
     }
 
     private void SetVolume(float value)
@@ -202,7 +223,7 @@ namespace VE3NEA
     {
       try
       {
-        if (mmDevice?.DeviceState != DeviceState.Active) return;
+        if (mmDevice?.DeviceState != DeviceState.Active) throw new Exception();
 
         // init audio device
         int channelCount = typeof(T) == typeof(Complex32) ? 2 : 1;
@@ -211,7 +232,7 @@ namespace VE3NEA
         soundIn = new WasapiCapture(false, AudioClientShareMode.Shared, 100, format);
         soundIn.Device = mmDevice;
         soundIn.Initialize();
-        soundIn.Stopped += (s,a) => OnStateChanged();
+        soundIn.Stopped += (s,a) => OnStateChanged(false);
         soundIn.DataAvailable += SoundIn_DataAvailable;
 
         // create sample source wrapper
@@ -219,6 +240,8 @@ namespace VE3NEA
         SampleSource = SampleSource.ChangeSampleRate(SamplingRate);
 
         soundIn.Start();
+
+        OnStateChanged(true);
       }
       catch
       {
@@ -228,16 +251,12 @@ namespace VE3NEA
 
     protected override void Stop()
     {
-      if (IsRunning()) soundIn!.Stop();
+      if (IsRunning) soundIn!.Stop();
       soundIn?.Dispose();
       soundIn = null;
       SampleSource = null;
 
-    }
-
-    public override bool IsRunning()
-    {
-      return soundIn?.RecordingState == RecordingState.Recording;
+      OnStateChanged(false);
     }
 
     private void SoundIn_DataAvailable(object? sender, DataAvailableEventArgs e)

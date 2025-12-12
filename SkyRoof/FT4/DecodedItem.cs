@@ -46,7 +46,7 @@ namespace SkyRoof
 
     public string? GetTooltip()
     {
-      return WkdStatus;
+      return WkdStatus + " " + Parse.DECallsign;
     }
 
     public void ParseMessage(string message, DateTime receivedAt)
@@ -58,10 +58,11 @@ namespace SkyRoof
       TokenizeMessage();
     }
 
-    public static Decode ParseMessageString(string message, DateTime receivedAt)
+    int messageId = 0;
+    public Decode ParseMessageString(string message, DateTime receivedAt)
     {
       var decode = new Decode();
-      decode.Id = "id???"; //{!}
+      decode.Id = $"{++messageId:D4}";
       decode.New = true;
       decode.Time = (uint)((receivedAt - DateTime.UtcNow.Date).TotalMilliseconds);
       decode.Snr = int.Parse(message.Substring(7, 3));

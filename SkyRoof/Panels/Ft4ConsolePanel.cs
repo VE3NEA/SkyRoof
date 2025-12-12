@@ -30,6 +30,7 @@ namespace SkyRoof
 
       Ft4Decoder.SlotDecoded += Ft4Decoder_SlotDecoded;
       Soundcard.SamplesAvailable += (s, a) => AddSamplesFromSoundcard(a);
+      Soundcard.Retry = true;
 
       AudioWaterfall.MouseDown += AudioWaterfall_MouseDown;
 
@@ -130,7 +131,7 @@ namespace SkyRoof
     {
       AudioWaterfall.ShowLeftBarTooltip(e.Location);
 
-      if (e.X >= AudioWaterfallWidget.LEFT_BAR_WIDTH)
+      if (e.X >= AudioWaterfallWidget.LEFT_BAR_WIDTH && e.Y > AudioWaterfallWidget.TOP_BAR_HEIGHT)
       {
         (int slotNumber, int audioFreq) = AudioWaterfall.GetSlotAndFreq(e.Location);
         var item = MessageListWidget.FindItem(slotNumber, audioFreq);
