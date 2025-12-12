@@ -31,6 +31,7 @@ namespace VE3NEA
       stopping = true;
       wakeupEvent.Set();
       processingThread.Join();
+      Queue.Clear();
       wakeupEvent.Dispose();
     }
 

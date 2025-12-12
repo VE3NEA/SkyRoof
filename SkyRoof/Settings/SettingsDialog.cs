@@ -97,6 +97,10 @@ namespace SkyRoof
         case "SkyRoof.OutputStreamSettings.Gain":
           ValidateInt(e, 60, -60);
           break;
+
+        case "SkyRoof.Ft4WaterfallSettings.Bandwidth":
+          ValidateInt(e, 6000, 2000);
+          break;
       }
 
       if (canChange) ChangedFields.Add(label);
@@ -158,7 +162,7 @@ namespace SkyRoof
 
       if (ChangedFields.Exists(s => s.StartsWith("SkyRoof.AmsatSettings.")))
         if (ctx.Settings.Amsat.Enabled)
-          ctx.AmsatStatusLoader.GetStatusesAsync();
+          ctx.AmsatStatusLoader.GetStatusesAsync().DoNotAwait();
         else
           ctx.GroupViewPanel?.ShowAmsatStatuses();
 

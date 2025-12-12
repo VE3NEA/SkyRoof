@@ -77,6 +77,10 @@ namespace SkyRoof
       foreach (DecodedItem item in MessageListWidget.listBox.Items)
         item.SetColors(ctx.Settings.Ft4Console.Messages);
       MessageListWidget.listBox.Refresh();
+
+      Ft4Decoder.CutoffFrequency = sett.Waterfall.Bandwidth - 100;
+      AudioWaterfall.Bandwidth = sett.Waterfall.Bandwidth;
+      AudioWaterfall.SetBandwidth(); // {!} do not call in design mode
     }
 
     public void AddSamplesFromSdr(DataEventArgs<float> e)
@@ -93,7 +97,7 @@ namespace SkyRoof
       if (ctx.Settings.Ft4Console.AudioSource == Ft4AudioSource.Soundcard)
       {
         Ft4Decoder.StartProcessing(e);
-        AudioWaterfall.SpectrumAnalyzer?.StartProcessing(e);
+        if (AudioWaterfall.CanProcess) AudioWaterfall.SpectrumAnalyzer?.StartProcessing(e);
       }
     }
 

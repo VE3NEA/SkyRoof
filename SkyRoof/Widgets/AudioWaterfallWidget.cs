@@ -13,23 +13,22 @@ namespace SkyRoof
     public const int LEFT_BAR_WIDTH = 15;
     private const int SPECTRUM_SIZE = 8192;
     private const int SPECTRA_PER_SECOND = 4;
-    private const int WATERFALL_BANDWIDTH = 4100;
-    private const int BmpWidth = (int)(SPECTRUM_SIZE * WATERFALL_BANDWIDTH / (SdrConst.AUDIO_SAMPLING_RATE / 2));
     private const int BmpHeight = 1024;
 
     private readonly Palette Palette = new Palette();
-    private readonly Bitmap WaterfallBmp = new Bitmap(BmpWidth, BmpHeight, PixelFormat.Format32bppRgb);
+    private Bitmap WaterfallBmp;
     private readonly Bitmap LeftBmp = new Bitmap(2, BmpHeight, PixelFormat.Format32bppRgb);
     private readonly int[] leftBarSlots = new int[BmpHeight];
     private DecodedItem? HotItem;
+    private int BmpWidth;
+    private int WriteRow;
+    private int LastSlot;
 
     public SpectrumAnalyzer<float> SpectrumAnalyzer;
     public int RxAudioFrequency = 1500;
     public int TxAudioFrequency = 1500;
-
-    private int WriteRow;
-    private int LastSlot;
-
+    public int Bandwidth = 0;
+    public bool CanProcess = false;
     public Ft4Decoder? Ft4Decoder;
     public int Brightness = 50;
     public int Contrast = 50;
@@ -46,12 +45,25 @@ namespace SkyRoof
     {
       base.OnHandleCreated(e);
 
+      if (!IsInDesignMode()) SetBandwidth();
+    }
 
-      if (!IsInDesignMode())
-      {
-        SpectrumAnalyzer = new SpectrumAnalyzer<float>(SPECTRUM_SIZE, SdrConst.AUDIO_SAMPLING_RATE / SPECTRA_PER_SECOND, BmpWidth);
-        SpectrumAnalyzer.SpectrumAvailable += (s, ev) => BeginInvoke(() => AppendSpectrum(ev.Data));
-      }
+    public void SetBandwidth()
+    {
+      if (Handle == IntPtr.Zero) return;
+
+      CanProcess = false;
+
+      BmpWidth = SPECTRUM_SIZE * Bandwidth / (SdrConst.AUDIO_SAMPLING_RATE / 2);
+
+      WaterfallBmp?.Dispose();
+      WaterfallBmp = new Bitmap(BmpWidth, BmpHeight, PixelFormat.Format32bppRgb);
+
+      SpectrumAnalyzer?.Dispose();
+      SpectrumAnalyzer = new SpectrumAnalyzer<float>(SPECTRUM_SIZE, SdrConst.AUDIO_SAMPLING_RATE / SPECTRA_PER_SECOND, BmpWidth);
+      SpectrumAnalyzer.SpectrumAvailable += (s, ev) => BeginInvoke(() => AppendSpectrum(ev.Data));
+
+      CanProcess = true;
     }
 
     private bool IsInDesignMode()
@@ -82,8 +94,13 @@ namespace SkyRoof
 
       int WaterfallHeight = ClientRectangle.Height - TOP_BAR_HEIGHT;
       int WaterfallWidth = ClientRectangle.Width - LEFT_BAR_WIDTH;
-      float pixelsPerHz = WaterfallWidth / (float)WATERFALL_BANDWIDTH;
+      float pixelsPerHz = WaterfallWidth / (float)Bandwidth;
 
+      if (WaterfallBmp == null)
+      {
+        e.Graphics.FillRectangle(SystemBrushes.Control, ClientRectangle);
+        return;
+      }
 
       // top bar bg
       var rect = new Rectangle(0, 0, ClientRectangle.Width, TOP_BAR_HEIGHT);
@@ -101,16 +118,19 @@ namespace SkyRoof
       e.Graphics.FillRectangle(Brushes.LightGreen, rect);
 
       // scale
-      for (float f = 0; f <= WATERFALL_BANDWIDTH; f += 100)
+      for (float f = 0; f <= Bandwidth; f += 100)
       {
         x = LEFT_BAR_WIDTH + f * pixelsPerHz;
-        e.Graphics.DrawLine(Pens.Black, x, TOP_BAR_HEIGHT - 12, x, TOP_BAR_HEIGHT);
+
         if (f % 500 == 0)
         {
+          e.Graphics.DrawLine(Pens.Black, x, TOP_BAR_HEIGHT - 12, x, TOP_BAR_HEIGHT);
           string freqText = f.ToString();
           x -= e.Graphics.MeasureString(freqText, Font).Width / 2;
           e.Graphics.DrawString(freqText, Font, Brushes.Black, x, 0);
         }
+        else
+          e.Graphics.DrawLine(Pens.Black, x, TOP_BAR_HEIGHT - 7, x, TOP_BAR_HEIGHT);
       }
 
       // callsign
@@ -179,7 +199,7 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     private unsafe void AppendSpectrum(float[] spectrum)
     {
-      if (WaterfallBmp == null || WaterfallBmp.Width != spectrum.Length) return;
+      if (!CanProcess || WaterfallBmp == null || WaterfallBmp.Width != spectrum.Length) return;
 
       if (--WriteRow < 0) WriteRow = WaterfallBmp.Height - 1;
 
@@ -201,7 +221,7 @@ namespace SkyRoof
       LeftBmp.SetPixel(1, WriteRow, leftColor);
 
       // waterfall
-      var brightness = -80 + Brightness;
+      var brightness = -60 + Brightness;
       var contrast = Contrast;
       var rect = new Rectangle(0, WriteRow, WaterfallBmp.Size.Width, 1);
       var data = WaterfallBmp.LockBits(rect, ImageLockMode.ReadWrite, WaterfallBmp.PixelFormat);
@@ -250,7 +270,7 @@ namespace SkyRoof
     {
       if (x <= LEFT_BAR_WIDTH) return 0;
       int WaterfallWidth = ClientRectangle.Width - LEFT_BAR_WIDTH;
-      float HzPerPixel = WATERFALL_BANDWIDTH / (float)WaterfallWidth;
+      float HzPerPixel = Bandwidth / (float)WaterfallWidth;
       return (int)((x - LEFT_BAR_WIDTH) * HzPerPixel);
     }
 

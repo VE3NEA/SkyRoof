@@ -13,6 +13,7 @@ namespace SkyRoof
     public const int FT4_SIGNAL_BANDWIDTH = 83; // Hz
     public int RxAudioFrequency = 1500;
     public int TxAudioFrequency = 1500;
+    public int CutoffFrequency = 4000;
     public string MyCall = " ";
     public string TheirCall = " ";
 
@@ -65,9 +66,9 @@ namespace SkyRoof
 
       StringBuilder decodedMessages = new StringBuilder();
       decodedMessages.Append(' ', NativeFT4Coder.DECODE_MAX_CHARS);
-      NativeFT4Coder.QsoStage stage = NativeFT4Coder.QsoStage.CALLING;      
+      NativeFT4Coder.QsoStage stage = NativeFT4Coder.QsoStage.CALLING;
 
-      NativeFT4Coder.decode(samples, ref stage, ref RxAudioFrequency, MyCall, TheirCall, decodedMessages);
+      NativeFT4Coder.decode(samples, ref stage, ref RxAudioFrequency, MyCall, TheirCall, ref CutoffFrequency, decodedMessages);
 
       string messagesStr = decodedMessages.ToString().Trim();
       string[] messages = messagesStr.Split(['\n'], StringSplitOptions.RemoveEmptyEntries);
