@@ -99,7 +99,8 @@ namespace SkyRoof
           break;
 
         case "SkyRoof.Ft4WaterfallSettings.Bandwidth":
-          ValidateInt(e, 6000, 2000);
+          // 4,990 Hz decoding BW limit is hardcoded in wsjtx
+          ValidateInt(e, 5000, 2000);
           break;
       }
 

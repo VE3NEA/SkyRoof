@@ -88,7 +88,7 @@ namespace SkyRoof
       if (ctx.Settings.Ft4Console.AudioSource == Ft4AudioSource.SDR)
       {
         Ft4Decoder.StartProcessing(e);
-        AudioWaterfall.SpectrumAnalyzer.StartProcessing(e);
+        if (AudioWaterfall.CanProcess) AudioWaterfall.SpectrumAnalyzer.StartProcessing(e);
       }
     }
 

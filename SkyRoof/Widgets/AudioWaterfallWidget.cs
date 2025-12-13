@@ -1,9 +1,6 @@
-﻿using System.ComponentModel;
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Windows.Forms;
 using VE3NEA;
-using WsjtxUtils.WsjtxMessages.Messages;
 
 namespace SkyRoof
 {
@@ -163,6 +160,7 @@ namespace SkyRoof
       int segmentHeight = Math.Min(WaterfallHeight, WaterfallBmp.Height - WriteRow);
       var SrcRect = new Rectangle(0, WriteRow, WaterfallBmp.Width, segmentHeight);
       var DstRect = new Rectangle(LEFT_BAR_WIDTH, TOP_BAR_HEIGHT, WaterfallWidth, segmentHeight);
+      e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
       e.Graphics.DrawImage(WaterfallBmp, DstRect, SrcRect, GraphicsUnit.Pixel);
 
       // left bar bg

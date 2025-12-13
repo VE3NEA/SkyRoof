@@ -68,7 +68,7 @@ namespace SkyRoof
       decodedMessages.Append(' ', NativeFT4Coder.DECODE_MAX_CHARS);
       NativeFT4Coder.QsoStage stage = NativeFT4Coder.QsoStage.CALLING;
 
-      NativeFT4Coder.decode(samples, ref stage, ref RxAudioFrequency, MyCall, TheirCall, ref CutoffFrequency, decodedMessages);
+      NativeFT4Coder.decode(samples, ref stage, ref RxAudioFrequency, ref CutoffFrequency, MyCall, TheirCall, decodedMessages);
 
       string messagesStr = decodedMessages.ToString().Trim();
       string[] messages = messagesStr.Split(['\n'], StringSplitOptions.RemoveEmptyEntries);
