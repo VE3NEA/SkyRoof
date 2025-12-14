@@ -12,6 +12,7 @@ namespace SkyRoof
     private readonly Context ctx;
     private InputSoundcard<float> Soundcard = new();
     public Ft4Decoder Ft4Decoder = new();
+    public WsjtxUdpSender WsjtxUdpSender;
 
     public Ft4ConsolePanel()
     {
@@ -38,7 +39,16 @@ namespace SkyRoof
 
       MessageListWidget.MessageHover += MessageListWidget_MessageHover;
 
+      WsjtxUdpSender = new(ctx);
+      WsjtxUdpSender.HighlightCallsignReceived += WsjtxUdpSender_HighlightCallsignReceived;
+
       ApplySettings();
+    }
+
+    private void WsjtxUdpSender_HighlightCallsignReceived(object? sender, HighlightCallsignEventArgs e)
+    {
+      Console.Beep();
+      MessageListWidget.HighlightCallsign(e);
     }
 
     private void AudioWaterfall_MouseDown(object? sender, MouseEventArgs e)
@@ -58,6 +68,8 @@ namespace SkyRoof
       Soundcard = null;
       Ft4Decoder?.Dispose();
       Ft4Decoder = null;
+      WsjtxUdpSender?.Dispose();
+      WsjtxUdpSender = null;
     }
 
     public void ApplySettings()
@@ -81,6 +93,10 @@ namespace SkyRoof
       Ft4Decoder.CutoffFrequency = sett.Waterfall.Bandwidth - 100;
       AudioWaterfall.Bandwidth = sett.Waterfall.Bandwidth;
       AudioWaterfall.SetBandwidth(); // {!} do not call in design mode
+
+      WsjtxUdpSender.Port = ctx.Settings.Ft4Console.UdpSender.Port;
+      WsjtxUdpSender.Host = ctx.Settings.Ft4Console.UdpSender.Host;
+      WsjtxUdpSender.SetEnabled(ctx.Settings.Ft4Console.UdpSender.Enabled);
     }
 
     public void AddSamplesFromSdr(DataEventArgs<float> e)
@@ -109,26 +125,32 @@ namespace SkyRoof
 
         MessageListWidget.CheckAddSeparator(Ft4Decoder.DecodedSlotNumber,
           ctx.SatelliteSelector.SelectedSatellite.name, ctx.FrequencyControl.GetBandName(false));
-
-        if (e.Data.Length > 0)
-          foreach (string message in e.Data)
-          {
-            DecodedItem item = new();
-            item.ParseMessage(message, e.Utc);
-
-            item.Type = DecodedItemType.RxMessage;
-            item.Utc = e.Utc;
-            item.SlotNumber = Ft4Decoder.DecodedSlotNumber;
-            item.ToMe = item.Parse.DXCallsign == ctx.Settings.User.Call;
-            item.FromMe = item.Parse.DECallsign == ctx.Settings.User.Call;
-            item.SetColors(ctx.Settings.Ft4Console.Messages);
-            item.SetCallsignColors(ctx.LoggerInterface);
-
-            MessageListWidget.AddItem(item);
-          }
+        var messages = e.Data.Select(s => MakeDecodedItem(s, e.Utc));
+        MessageListWidget.AddItems(messages);
 
         MessageListWidget.EndUpdateItems();
+
+        WsjtxUdpSender.SendDecodedMessages(messages, (ulong)ctx.FrequencyControl.RadioLink.CorrectedDownlinkFrequency);
       });
+    }
+
+    private DecodedItem MakeDecodedItem(string s, DateTime utc)
+    {
+      DecodedItem item = new();
+      item.ParseMessage(s, utc);
+
+      item.Type = DecodedItemType.RxMessage;
+      item.Utc = utc;
+      item.SlotNumber = Ft4Decoder.DecodedSlotNumber;
+      item.ToMe = item.Parse.DXCallsign == ctx.Settings.User.Call;
+      item.FromMe = item.Parse.DECallsign == ctx.Settings.User.Call;
+      item.SetColors(ctx.Settings.Ft4Console.Messages);
+
+      // callsign color from logger if not receiving wsjtx colors
+      if (!WsjtxUdpSender.Active)      
+        item.SetCallsignColors(ctx.LoggerInterface);
+     
+      return item;
     }
 
     private void AudioWaterfall_MouseMove(object sender, MouseEventArgs e)

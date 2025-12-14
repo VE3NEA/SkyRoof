@@ -219,7 +219,7 @@ namespace SkyRoof
       LeftBmp.SetPixel(1, WriteRow, leftColor);
 
       // waterfall
-      var brightness = -60 + Brightness;
+      var brightness = -40 + Brightness;
       var contrast = Contrast;
       var rect = new Rectangle(0, WriteRow, WaterfallBmp.Size.Width, 1);
       var data = WaterfallBmp.LockBits(rect, ImageLockMode.ReadWrite, WaterfallBmp.PixelFormat);

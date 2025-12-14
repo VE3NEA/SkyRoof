@@ -26,6 +26,11 @@ namespace SkyRoof
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public Ft4WaterfallSettings Waterfall { get; set; } = new ();
 
+    [DisplayName("WSJT-X UDP Packets")]
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public UdpSenderSettings UdpSender { get; set; } = new();
+
+    [DisplayName("Decoded Messages")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public Ft4MessagesSettings Messages { get; set; } = new ();
 
@@ -57,6 +62,22 @@ namespace SkyRoof
     public int Contrast { get; set; } = 50;
 
     public override string ToString() { return ""; }
+  }
+
+  public class UdpSenderSettings
+  {
+    [DefaultValue(false)]
+    [Description("Send decoded messages as UDP packets in the WSJT-X format")]
+    public bool Enabled { get; set; }
+
+    [DisplayName("UDP Port")]
+    [DefaultValue((ushort)7311)]
+    public ushort Port { get; set; } = 7311;
+
+    [DefaultValue("127.0.0.1")]
+    public string Host { get; set; } = "127.0.0.1";
+
+    public override string ToString() { return string.Empty; }
   }
 
   public class Ft4MessagesSettings

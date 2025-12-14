@@ -141,8 +141,8 @@ namespace SkyRoof
     private void ListBox_MouseDown(object sender, MouseEventArgs e)
     {
       ClickedItem = GetItemUnderCursor();
-//      callsignMenuStrip1.ClickedCallsign = ClickedItem?.Call ?? "";
-//      callsignMenuStrip1.ClickedMessage = ClickedItem?.GetText() ?? "";
+      //      callsignMenuStrip1.ClickedCallsign = ClickedItem?.Call ?? "";
+      //      callsignMenuStrip1.ClickedMessage = ClickedItem?.GetText() ?? "";
 
       if (ClickedItem == null) return;
       if (e.Button != MouseButtons.Left) return;
@@ -233,11 +233,11 @@ namespace SkyRoof
         listBox.Items.RemoveAt(0);
     }
 
-    internal void AddItem(DecodedItem item)
+    internal void AddItems(IEnumerable<DecodedItem> items)
     {
       if (!Visible) return;
 
-      listBox.Items.Add(item);
+      foreach (var item in items) listBox.Items.Add(item);
     }
 
     internal void CheckAddSeparator(int slot, string satelliteName, string bandName)
@@ -309,11 +309,11 @@ namespace SkyRoof
       e.Graphics.FillRectangle(bgBrush, e.Bounds);
 
       // hot item
-      if (item == HotItem) 
+      if (item == HotItem)
         e.Graphics.FillRectangle(HotBkBrush, e.Bounds);
 
       // print each token
-      foreach(var token in item.Tokens)
+      foreach (var token in item.Tokens)
       {
         Font font = e.Font;
         if (token.Underlined) font = underlinedFont;
@@ -361,9 +361,29 @@ namespace SkyRoof
     {
       MessageClick?.Invoke(this, new Ft4MessageEventArgs(item));
     }
+
+    internal void HighlightCallsign(HighlightCallsignEventArgs e)
+    {
+      for (int i = listBox.Items.Count - 1; i >= 0; i--)
+      {
+        var item = (DecodedItem)listBox.Items[i];
+
+        if (item.Type != DecodedItemType.RxMessage)
+          break;
+        else if (item.Parse.DECallsign != e.Callsign)
+          continue;
+        else
+        {
+          var token = item.Tokens.FirstOrDefault(t => t.text == e.Callsign);
+          if (token == null) continue;
+          token.bgBrush = new SolidBrush(e.BackColor);
+          token.fgBrush = new SolidBrush(e.ForeColor);
+          listBox.Invalidate();
+        }
+      }
+    }
   }
 }
-
 
 /*
 000000  -7  0.2 2397 +  CQ SM/UA1CBX
