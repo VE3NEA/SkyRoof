@@ -78,14 +78,14 @@ namespace SkyRoof
       UdpClient?.Send(HeartbeatBytes, EndPoint);
     }
 
-    public void SendDecodedMessages(IEnumerable<DecodedItem> items, ulong frequency)
+    public void SendDecodedMessages(IEnumerable<DecodedItem> items, double frequency)
     {
       if (!Active) return;
 
       // status datagram with receiver frequency and mode
       var status = new WritableStatus();
       status.Id = UniqueId;
-      status.DialFrequencyInHz = frequency;
+      status.DialFrequencyInHz = (ulong)frequency;
       status.DECall = ctx.Settings.User.Call;
       status.DEGrid = ctx.Settings.User.Square;
       status.Mode = "+";

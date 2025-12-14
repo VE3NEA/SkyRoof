@@ -47,7 +47,6 @@ namespace SkyRoof
 
     private void WsjtxUdpSender_HighlightCallsignReceived(object? sender, HighlightCallsignEventArgs e)
     {
-      Console.Beep();
       MessageListWidget.HighlightCallsign(e);
     }
 
@@ -125,13 +124,33 @@ namespace SkyRoof
 
         MessageListWidget.CheckAddSeparator(Ft4Decoder.DecodedSlotNumber,
           ctx.SatelliteSelector.SelectedSatellite.name, ctx.FrequencyControl.GetBandName(false));
-        var messages = e.Data.Select(s => MakeDecodedItem(s, e.Utc));
+
+        if (e.Data.Length == 0) return;
+
+        var messages = e.Data.Select(s => MakeDecodedItem(s, e.Utc)).ToList();
         MessageListWidget.AddItems(messages);
 
         MessageListWidget.EndUpdateItems();
 
-        WsjtxUdpSender.SendDecodedMessages(messages, (ulong)ctx.FrequencyControl.RadioLink.CorrectedDownlinkFrequency);
+        double frequency = ctx.FrequencyControl.RadioLink.CorrectedDownlinkFrequency;
+        string satellite = ctx.SatelliteSelector.SelectedSatellite.name;
+        WsjtxUdpSender.SendDecodedMessages(messages, frequency);
+        SaveToFile(messages, frequency, satellite);
       });
+    }
+
+    private void SaveToFile(IEnumerable<DecodedItem> messages, double frequency, string satellite)
+    {
+      //if (!ctx.Settings.Ft4Console.ArchiveToFile) return;
+
+      string archiveFolder = Path.Combine(Utils.GetUserDataFolder(), "FT4");
+      Directory.CreateDirectory(archiveFolder);
+      string filePath = Path.Combine(archiveFolder, DateTime.Today.ToString("yyyy") + ".txt");
+
+      string text = string.Join('\n', messages.Select(msg => msg.ToArchiveString(frequency, satellite)).ToArray());
+
+      using (StreamWriter writer = File.AppendText(filePath)) writer.WriteLine(text);
+    
     }
 
     private DecodedItem MakeDecodedItem(string s, DateTime utc)

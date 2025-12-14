@@ -4,6 +4,7 @@ using Devcorp.Controls.Design;
 using WsjtxUtils.WsjtxMessages.Messages;
 using WsjtxUtils.WsjtxMessages.QsoParsing;
 using static SkyRoof.Ft4MessageListWidget;
+using static SkyRoof.Slicer;
 
 namespace SkyRoof
 {
@@ -34,6 +35,7 @@ namespace SkyRoof
     public bool ToMe;
     public bool FromMe;
 
+    public string RawText;
     public Decode Decode;
     public WsjtxQso Parse;
     public List<DisplayToken> Tokens;
@@ -51,6 +53,8 @@ namespace SkyRoof
 
     public void ParseMessage(string message, DateTime receivedAt)
     {
+      RawText = message;
+
       var decode = new Decode();
 
       Decode = ParseMessageString(message, receivedAt);
@@ -59,6 +63,7 @@ namespace SkyRoof
     }
 
     int messageId = 0;
+
     public Decode ParseMessageString(string message, DateTime receivedAt)
     {
       var decode = new Decode();
@@ -165,6 +170,16 @@ namespace SkyRoof
       var hsl = ColorSpaceHelper.RGBtoHSL(color);
       hsl = new HSL(hsl.Hue, hsl.Saturation, snrFraction);
       return new SolidBrush(ColorSpaceHelper.HSLtoColor(hsl));
+    }
+
+    public string ToArchiveString(double frequency, string satellite)
+    {
+      string s =
+        $"{Utc:yyyy-MM-dd HH:mm:ss}  " +
+        $"{frequency / 1000,9:N1}  FT4 " +
+        $"{RawText.Substring(7)}";
+
+      return $"{s.PadRight(94)} # {satellite}";
     }
   }
 }
