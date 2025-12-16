@@ -102,9 +102,6 @@
     <None Include="..\Vendor\SoapySDR\SDR\libiio.dll" Link="lib\SoapySDR\modules0.8\libiio.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\Vendor\SoapySDR\SDR\PlutoSDRSupport.dll" Link="lib\SoapySDR\modules0.8\PlutoSDRSupport.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="..\Vendor\SoapySDR\SDR\remoteSupport.dll" Link="lib\SoapySDR\modules0.8\remoteSupport.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
