@@ -90,15 +90,8 @@ namespace VE3NEA
 
       Args.Count = sampleCount;
       for (int i = 0; i < Args.Count; i++)
-      {
         Args.Data[i] = new Complex32(Floats[i * 2], Floats[i * 2 + 1]);
-        phase *= phasor;
-      }
     }
-
-    Complex phasor = Complex.FromPolarCoordinates(1, 2 * Math.PI / 1024);
-    Complex phase = 1;
-
 
     public void Dispose()
     {

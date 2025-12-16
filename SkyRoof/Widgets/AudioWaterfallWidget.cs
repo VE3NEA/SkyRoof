@@ -290,7 +290,7 @@ namespace SkyRoof
 
     public void ShowLeftBarTooltip(Point p)
     {
-      if (p.X > LEFT_BAR_WIDTH)
+      if (p.X > LEFT_BAR_WIDTH || p.Y < TOP_BAR_HEIGHT)
       {
         toolTip1.SetToolTip(this, "");
         return;

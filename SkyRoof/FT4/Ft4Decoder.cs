@@ -1,5 +1,6 @@
-﻿using System.Security.Policy;
+﻿using System.Diagnostics;
 using System.Text;
+using NAudio.Wave;
 using VE3NEA;
 
 namespace SkyRoof
@@ -25,8 +26,8 @@ namespace SkyRoof
     protected override void Process(DataEventArgs<float> args)
     {
       AppendData(args);
-      if (IsSlotDataAvailable() && SampleCount > 0)
-        DecodeSlot();
+
+      if (IsSlotDataAvailable()) DecodeSlot();
     }
 
     private void AppendData(DataEventArgs<float> args)
@@ -50,7 +51,7 @@ namespace SkyRoof
       int samplesIntoSlot = (int)(secondsIntoSlot * NativeFT4Coder.SAMPLING_RATE);
 
       bool samplesAvailable = SampleCount >= NativeFT4Coder.DECODE_SAMPLE_COUNT;
-      bool slotEnded = samplesIntoSlot >= NativeFT4Coder.DECODE_SAMPLE_COUNT; ;
+      bool slotEnded = samplesIntoSlot >= NativeFT4Coder.DECODE_SAMPLE_COUNT;
       bool slotDecoded = CurrentSlotNumber == DecodedSlotNumber;
       return samplesAvailable && slotEnded && !slotDecoded;
     }
@@ -58,10 +59,17 @@ namespace SkyRoof
     private void DecodeSlot()
     {
       var samples = Samples.Skip(SampleCount - NativeFT4Coder.DECODE_SAMPLE_COUNT).Take(NativeFT4Coder.DECODE_SAMPLE_COUNT).ToArray();
+      SamplesForTest = samples;
+      SampleCount = 0;
 
+      Decode(samples);
+    }
+
+    private void Decode(float[] samples)
+    {
       float max = samples.Max(Math.Abs);
       if (max > 0)
-        for (int i = 0; i < samples.Length; i++) 
+        for (int i = 0; i < samples.Length; i++)
           samples[i] /= max;
 
       StringBuilder decodedMessages = new StringBuilder();
@@ -75,8 +83,54 @@ namespace SkyRoof
 
       SlotDecoded?.Invoke(this, new DataEventArgs<string>(messages, DataUtc - TimeSpan.FromSeconds(NativeFT4Coder.DECODE_SECONDS)));
 
-      SampleCount = 0;
       DecodedSlotNumber = CurrentSlotNumber;
+    }
+
+
+
+    private float[] SamplesForTest = new float[NativeFT4Coder.DECODE_SAMPLE_COUNT];
+    public void SaveSamples()
+    {
+      WriteWav(SamplesForTest);
+    }
+
+    public void PlayBackSamples()
+    {
+      Decode(ReadWav());
+    }
+
+    private static float[] ReadWav()
+    {
+      float[] samples;
+      string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "samples.wav");
+
+      using (var reader = new WaveFileReader(filePath))
+      {
+        Debug.Assert(reader.WaveFormat.Encoding == WaveFormatEncoding.IeeeFloat);
+        Debug.Assert(reader.WaveFormat.SampleRate == NativeFT4Coder.SAMPLING_RATE);
+        Debug.Assert(reader.WaveFormat.Channels == 1);
+        Debug.Assert(reader.Length == NativeFT4Coder.DECODE_SAMPLE_COUNT * sizeof(float));
+
+        var buffer = new byte[reader.Length];
+        int bytesRead = reader.Read(buffer, 0, buffer.Length);
+        samples = new float[bytesRead / 4];
+        Buffer.BlockCopy(buffer, 0, samples, 0, bytesRead);
+      }
+
+      return samples;
+    }
+
+    private static void WriteWav(float[] samples)
+    {
+      // float to bytes
+      byte[] buffer = new byte[samples.Length * 4];
+      Buffer.BlockCopy(samples, 0, buffer, 0, buffer.Length);
+
+      string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "samples.wav");
+      var format = WaveFormat.CreateIeeeFloatWaveFormat(NativeFT4Coder.SAMPLING_RATE, 1);
+
+      using var writer = new WaveFileWriter(filePath, format);
+      writer.Write(buffer, 0, buffer.Length);
     }
   }
 }

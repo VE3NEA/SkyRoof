@@ -194,5 +194,15 @@ namespace SkyRoof
     {
       AudioWaterfall.ShowCallsign(MessageListWidget.HotItem);
     }
+
+    private void button1_Click(object sender, EventArgs e)
+    {
+      Ft4Decoder.SaveSamples();
+    }
+
+    private void button2_Click(object sender, EventArgs e)
+    {
+      Ft4Decoder.PlayBackSamples();
+    }
   }
 }

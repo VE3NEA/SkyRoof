@@ -32,8 +32,8 @@
       AudioWaterfall = new AudioWaterfallWidget();
       MessageListWidget = new Ft4MessageListWidget();
       panel1 = new Panel();
-      button1 = new Button();
       button2 = new Button();
+      button1 = new Button();
       ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
       splitContainer1.Panel1.SuspendLayout();
       splitContainer1.Panel2.SuspendLayout();
@@ -93,6 +93,16 @@
       panel1.Size = new Size(251, 205);
       panel1.TabIndex = 4;
       // 
+      // button2
+      // 
+      button2.Location = new Point(55, 60);
+      button2.Name = "button2";
+      button2.Size = new Size(75, 23);
+      button2.TabIndex = 1;
+      button2.Text = "Play Back";
+      button2.UseVisualStyleBackColor = true;
+      button2.Click += button2_Click;
+      // 
       // button1
       // 
       button1.Location = new Point(55, 14);
@@ -102,15 +112,6 @@
       button1.Text = "Save";
       button1.UseVisualStyleBackColor = true;
       button1.Click += button1_Click;
-      // 
-      // button2
-      // 
-      button2.Location = new Point(55, 60);
-      button2.Name = "button2";
-      button2.Size = new Size(75, 23);
-      button2.TabIndex = 1;
-      button2.Text = "Play Back";
-      button2.UseVisualStyleBackColor = true;
       // 
       // Ft4ConsolePanel
       // 
