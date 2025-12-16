@@ -240,7 +240,7 @@ namespace SkyRoof
       foreach (var item in items) listBox.Items.Add(item);
     }
 
-    internal void CheckAddSeparator(int slot, string satelliteName, string bandName)
+    internal void AddSeparator(int slot, string satelliteName, string bandName)
     {
       DateTime slotTime = DateTime.MinValue + TimeSpan.FromSeconds(slot * NativeFT4Coder.TIMESLOT_SECONDS);
 

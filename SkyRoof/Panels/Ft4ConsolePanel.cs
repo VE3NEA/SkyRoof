@@ -122,20 +122,26 @@ namespace SkyRoof
       {
         MessageListWidget.BeginUpdateItems();
 
-        MessageListWidget.CheckAddSeparator(Ft4Decoder.DecodedSlotNumber,
+        MessageListWidget.AddSeparator(Ft4Decoder.DecodedSlotNumber,
           ctx.SatelliteSelector.SelectedSatellite.name, ctx.FrequencyControl.GetBandName(false));
 
-        if (e.Data.Length == 0) return;
+        if (e.Data.Length >= 0)
+        {
+          double frequency = ctx.FrequencyControl.RadioLink.CorrectedDownlinkFrequency;
+          string satellite = ctx.SatelliteSelector.SelectedSatellite.name;
 
-        var messages = e.Data.Select(s => MakeDecodedItem(s, e.Utc)).ToList();
-        MessageListWidget.AddItems(messages);
+          // to listbox
+          var messages = e.Data.Select(s => MakeDecodedItem(s, e.Utc)).ToList();
+          MessageListWidget.AddItems(messages);
+
+          // to udp sender
+          WsjtxUdpSender.SendDecodedMessages(messages, frequency);
+
+          // to file
+          SaveToFile(messages, frequency, satellite);
+        }
 
         MessageListWidget.EndUpdateItems();
-
-        double frequency = ctx.FrequencyControl.RadioLink.CorrectedDownlinkFrequency;
-        string satellite = ctx.SatelliteSelector.SelectedSatellite.name;
-        WsjtxUdpSender.SendDecodedMessages(messages, frequency);
-        SaveToFile(messages, frequency, satellite);
       });
     }
 
@@ -150,7 +156,7 @@ namespace SkyRoof
       string text = string.Join('\n', messages.Select(msg => msg.ToArchiveString(frequency, satellite)).ToArray());
 
       using (StreamWriter writer = File.AppendText(filePath)) writer.WriteLine(text);
-    
+
     }
 
     private DecodedItem MakeDecodedItem(string s, DateTime utc)
@@ -166,9 +172,9 @@ namespace SkyRoof
       item.SetColors(ctx.Settings.Ft4Console.Messages);
 
       // callsign color from logger if not receiving wsjtx colors
-      if (!WsjtxUdpSender.Active)      
+      if (!WsjtxUdpSender.Active)
         item.SetCallsignColors(ctx.LoggerInterface);
-     
+
       return item;
     }
 

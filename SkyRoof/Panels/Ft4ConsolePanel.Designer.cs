@@ -30,11 +30,15 @@
     {
       splitContainer1 = new SplitContainer();
       AudioWaterfall = new AudioWaterfallWidget();
-      panel1 = new Panel();
       MessageListWidget = new Ft4MessageListWidget();
+      panel1 = new Panel();
+      button1 = new Button();
+      button2 = new Button();
       ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+      splitContainer1.Panel1.SuspendLayout();
       splitContainer1.Panel2.SuspendLayout();
       splitContainer1.SuspendLayout();
+      panel1.SuspendLayout();
       SuspendLayout();
       // 
       // splitContainer1
@@ -60,19 +64,13 @@
       // AudioWaterfall
       // 
       AudioWaterfall.Dock = DockStyle.Fill;
+      AudioWaterfall.Font = new Font("Courier New", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
       AudioWaterfall.Location = new Point(0, 0);
-      AudioWaterfall.Name = "AudioWaterfal";
+      AudioWaterfall.Margin = new Padding(4, 3, 4, 3);
+      AudioWaterfall.Name = "AudioWaterfall";
       AudioWaterfall.Size = new Size(800, 241);
       AudioWaterfall.TabIndex = 2;
       AudioWaterfall.MouseMove += AudioWaterfall_MouseMove;
-      // 
-      // panel1
-      // 
-      panel1.Dock = DockStyle.Right;
-      panel1.Location = new Point(549, 0);
-      panel1.Name = "panel1";
-      panel1.Size = new Size(251, 205);
-      panel1.TabIndex = 4;
       // 
       // MessageListWidget
       // 
@@ -85,6 +83,35 @@
       MessageListWidget.Size = new Size(549, 205);
       MessageListWidget.TabIndex = 3;
       // 
+      // panel1
+      // 
+      panel1.Controls.Add(button2);
+      panel1.Controls.Add(button1);
+      panel1.Dock = DockStyle.Right;
+      panel1.Location = new Point(549, 0);
+      panel1.Name = "panel1";
+      panel1.Size = new Size(251, 205);
+      panel1.TabIndex = 4;
+      // 
+      // button1
+      // 
+      button1.Location = new Point(55, 14);
+      button1.Name = "button1";
+      button1.Size = new Size(75, 23);
+      button1.TabIndex = 0;
+      button1.Text = "Save";
+      button1.UseVisualStyleBackColor = true;
+      button1.Click += button1_Click;
+      // 
+      // button2
+      // 
+      button2.Location = new Point(55, 60);
+      button2.Name = "button2";
+      button2.Size = new Size(75, 23);
+      button2.TabIndex = 1;
+      button2.Text = "Play Back";
+      button2.UseVisualStyleBackColor = true;
+      // 
       // Ft4ConsolePanel
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
@@ -94,9 +121,11 @@
       Name = "Ft4ConsolePanel";
       Text = "FT4 Console";
       FormClosing += Ft4ConsolePanel_FormClosing;
+      splitContainer1.Panel1.ResumeLayout(false);
       splitContainer1.Panel2.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
       splitContainer1.ResumeLayout(false);
+      panel1.ResumeLayout(false);
       ResumeLayout(false);
     }
 
@@ -106,5 +135,7 @@
     private AudioWaterfallWidget AudioWaterfall;
     private Ft4MessageListWidget MessageListWidget;
     private Panel panel1;
+    private Button button2;
+    private Button button1;
   }
 }
