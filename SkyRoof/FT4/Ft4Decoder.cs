@@ -10,6 +10,7 @@ namespace SkyRoof
     private float[] Samples = [];
     private int SampleCount = 0;
     DateTime DataUtc;
+    private float[]? Slot;
 
     public const int FT4_SIGNAL_BANDWIDTH = 83; // Hz
     public int RxAudioFrequency = 1500;
@@ -27,7 +28,12 @@ namespace SkyRoof
     {
       AppendData(args);
 
-      if (IsSlotDataAvailable()) DecodeSlot();
+      var slot = GetSlotToDecode();
+      if (slot != null)
+      {
+        Slot = slot;
+        Decode(Slot);
+      }
     }
 
     private void AppendData(DataEventArgs<float> args)
@@ -39,30 +45,39 @@ namespace SkyRoof
       Array.Copy(args.Data, 0, Samples, SampleCount, args.Data.Length);
       SampleCount += args.Data.Length;
 
+      //var delay = (args.Utc - DataUtc).TotalMilliseconds;
+      //int expectedCount = (int)(delay * NativeFT4Coder.SAMPLING_RATE / 1000);
+      //Debug.WriteLine($"Ft4Decoder: Appended {args.Data.Length} samples, delay{delay:F1}, diff {args.Data.Length - expectedCount}");
+
       DataUtc = args.Utc;
     }
 
-    private bool IsSlotDataAvailable()
+    private float[]? GetSlotToDecode()
     {
-      var secondsSinceMidnight = (DataUtc - DataUtc.Date).TotalSeconds;
+      // find slot boundaries
+      double secondsSinceMidnight = (DataUtc - DataUtc.Date).TotalSeconds;
       CurrentSlotNumber = (int)Math.Truncate(secondsSinceMidnight / NativeFT4Coder.TIMESLOT_SECONDS);
 
-      var secondsIntoSlot = secondsSinceMidnight - (CurrentSlotNumber * NativeFT4Coder.TIMESLOT_SECONDS);
+      double secondsIntoSlot = secondsSinceMidnight - (CurrentSlotNumber * NativeFT4Coder.TIMESLOT_SECONDS);
       int samplesIntoSlot = (int)(secondsIntoSlot * NativeFT4Coder.SAMPLING_RATE);
 
-      bool samplesAvailable = SampleCount >= NativeFT4Coder.DECODE_SAMPLE_COUNT;
-      bool slotEnded = samplesIntoSlot >= NativeFT4Coder.DECODE_SAMPLE_COUNT;
+      int slotStartIndex = SampleCount - samplesIntoSlot;
+      int slotEndIndex = slotStartIndex + NativeFT4Coder.DECODE_SAMPLE_COUNT;
+
+      // is new slot available?
+      bool slotAvailable = slotStartIndex >= 0 && slotEndIndex <= SampleCount;
       bool slotDecoded = CurrentSlotNumber == DecodedSlotNumber;
-      return samplesAvailable && slotEnded && !slotDecoded;
-    }
+      if (!slotAvailable || slotDecoded) return null;
 
-    private void DecodeSlot()
-    {
-      var samples = Samples.Skip(SampleCount - NativeFT4Coder.DECODE_SAMPLE_COUNT).Take(NativeFT4Coder.DECODE_SAMPLE_COUNT).ToArray();
-      SamplesForTest = samples;
-      SampleCount = 0;
+      // extract slot
+      var slot = Samples.Skip(slotStartIndex).Take(NativeFT4Coder.DECODE_SAMPLE_COUNT).ToArray();
 
-      Decode(samples);
+      // dump used samples
+      int samplesToKeep = SampleCount - slotEndIndex;
+      Array.Copy(Samples, slotEndIndex, Samples, 0, samplesToKeep);
+      SampleCount = samplesToKeep;
+
+      return slot;
     }
 
     private void Decode(float[] samples)
@@ -88,10 +103,9 @@ namespace SkyRoof
 
 
 
-    private float[] SamplesForTest = new float[NativeFT4Coder.DECODE_SAMPLE_COUNT];
     public void SaveSamples()
     {
-      WriteWav(SamplesForTest);
+      WriteWav(Slot);
     }
 
     public void PlayBackSamples()
@@ -102,7 +116,7 @@ namespace SkyRoof
     private static float[] ReadWav()
     {
       float[] samples;
-      string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "samples.wav");
+      string filePath = Path.Combine(Utils.GetUserDataFolder(), "samples.wav");
 
       using (var reader = new WaveFileReader(filePath))
       {
@@ -126,7 +140,7 @@ namespace SkyRoof
       byte[] buffer = new byte[samples.Length * 4];
       Buffer.BlockCopy(samples, 0, buffer, 0, buffer.Length);
 
-      string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "samples.wav");
+      string filePath = Path.Combine(Utils.GetUserDataFolder(), "samples.wav");
       var format = WaveFormat.CreateIeeeFloatWaveFormat(NativeFT4Coder.SAMPLING_RATE, 1);
 
       using var writer = new WaveFileWriter(filePath, format);
