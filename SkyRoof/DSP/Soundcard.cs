@@ -1,9 +1,11 @@
-﻿using CSCore;
+﻿using System.Diagnostics;
+using CSCore;
 using CSCore.CoreAudioAPI;
 using CSCore.SoundIn;
 using CSCore.SoundOut;
 using CSCore.Streams;
 using MathNet.Numerics;
+using Serilog;
 
 namespace VE3NEA
 {
@@ -172,8 +174,9 @@ namespace VE3NEA
 
         OnStateChanged(true);
       }
-      catch
+      catch (Exception e)
       {
+        Log.Error(e, "Error starting OutputSoundcard");
         Stop();
       }
     }
@@ -229,7 +232,7 @@ namespace VE3NEA
         int channelCount = typeof(T) == typeof(Complex32) ? 2 : 1;
         WaveFormat format = new WaveFormat(SamplingRate, 32, channelCount, AudioEncoding.IeeeFloat);
 
-        soundIn = new WasapiCapture(false, AudioClientShareMode.Shared, 100, format);
+        soundIn = new WasapiCapture(false, AudioClientShareMode.Shared, 1000, format);
         soundIn.Device = mmDevice;
         soundIn.Initialize();
         soundIn.Stopped += (s,a) => OnStateChanged(false);
@@ -243,8 +246,9 @@ namespace VE3NEA
 
         OnStateChanged(true);
       }
-      catch
+      catch (Exception e)
       {
+        Log.Error(e, "Error starting InputSoundcard");
         Stop();
       }
     }
@@ -259,17 +263,26 @@ namespace VE3NEA
       OnStateChanged(false);
     }
 
+    //{!}
+    public static long TotalSampleCount = 0;
+
     private void SoundIn_DataAvailable(object? sender, DataAvailableEventArgs e)
     {
+      //{!}
+      var sw = Stopwatch.StartNew();
+
       if (SampleSource == null) return;
 
       int bytesPerSample = sizeof(float) * (typeof(T) == typeof(Complex32) ? 2 : 1);
       int sampleCount = e.ByteCount / bytesPerSample;
 
       var args = ArgsPool.Rent(sampleCount);
-      SampleSource.Read(args.Data, 0, sampleCount);
+      args.Count = SampleSource.Read(args.Data, 0, sampleCount);
+      TotalSampleCount += args.Count; //{!}
       SamplesAvailable?.Invoke(this, args);
       ArgsPool.Return(args);
+
+      sw.Stop();
     }
   }
 }
