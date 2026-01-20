@@ -1125,6 +1125,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "users_guide/ft4_console_panel.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/ft4_console_panel.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "users_guide/gain_control.md",
       "output": {
         ".html": {
@@ -1305,6 +1315,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "users_guide/setting_up_ft4_console.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/setting_up_ft4_console.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "users_guide/setting_up_output_stream.md",
       "output": {
         ".html": {
@@ -1359,16 +1379,6 @@
       "output": {
         ".html": {
           "relative_path": "users_guide/sky_view_panel.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
-      "source_relative_path": "users_guide/skycat.md",
-      "output": {
-        ".html": {
-          "relative_path": "users_guide/skycat.html"
         }
       },
       "version": ""
