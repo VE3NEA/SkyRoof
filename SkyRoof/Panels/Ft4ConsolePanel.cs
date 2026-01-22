@@ -334,7 +334,6 @@ namespace SkyRoof
     private void TxToRxBtn_Click(object sender, EventArgs e)
     {
       RxSpinner.Value = TxSpinner.Value;
-      ctx.LoqFt4QsoDialog.PopUp(ctx, GetQsoInfo()); //{!}
     }
 
     private void RxToTxBtn_Click(object sender, EventArgs e)
@@ -440,7 +439,7 @@ namespace SkyRoof
 
       separator.Tokens = [
         new(FontAwesomeIcons.Circle),
-        new($"{slotTime:HH:mm:ss.f}"),
+        new($"{slotTime:HH:mm:ss}"),
         new(satelliteName),
         new(bandName),
         new(new string('-', 20)) // '̶'

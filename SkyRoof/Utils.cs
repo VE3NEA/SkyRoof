@@ -105,10 +105,15 @@ namespace VE3NEA
 
     public static string TimespanToString(TimeSpan timeSpan, bool showSeconds = true)
     {
+      // round to nearest second
+      //long seconds = (long)Math.Round(timeSpan.TotalSeconds);
+      //timeSpan = TimeSpan.FromSeconds(seconds);
+      timeSpan += TimeSpan.FromMilliseconds(100); // to avoid truncation issues
+
       string result = "";
-      if (timeSpan > TimeSpan.FromHours(1)) result += $"{(int)timeSpan.TotalHours:D}h ";
+      if (timeSpan >= TimeSpan.FromHours(1)) result += $"{(int)timeSpan.TotalHours:D}h ";
       string minutesLabel = showSeconds ? "m " : " min";
-      if (timeSpan > TimeSpan.FromMinutes(1) || !showSeconds) result += $"{timeSpan.Minutes}{minutesLabel}";
+      if (timeSpan >= TimeSpan.FromMinutes(1) || !showSeconds) result += $"{timeSpan.Minutes}{minutesLabel}";
       if (showSeconds) result += $"{timeSpan.Seconds,2:D2}s";
       return result;
     }

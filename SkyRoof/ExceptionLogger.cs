@@ -17,8 +17,9 @@ namespace VE3NEA
       Log.Logger = new LoggerConfiguration().MinimumLevel.Debug()
           .WriteTo.File(fileName, 
             rollingInterval: RollingInterval.Day, 
-            fileSizeLimitBytes: 1_000_000, 
-            retainedFileCountLimit: 10,
+            fileSizeLimitBytes: 3_000_000,
+            rollOnFileSizeLimit: true,
+            retainedFileCountLimit: 20,
             shared: true
            ).CreateLogger();
 

@@ -57,7 +57,6 @@
       DownlinkLabel = new Label();
       TxBtn = new Button();
       toolTip1 = new ToolTip(components);
-      label8 = new Label();
       ((System.ComponentModel.ISupportInitialize)RitSpinner).BeginInit();
       ((System.ComponentModel.ISupportInitialize)UplinkManualSpinner).BeginInit();
       contextMenuStrip1.SuspendLayout();
@@ -341,21 +340,11 @@
       TxBtn.UseVisualStyleBackColor = true;
       TxBtn.Click += TxBtn_Click;
       // 
-      // label8
-      // 
-      label8.AutoSize = true;
-      label8.Location = new Point(369, 24);
-      label8.Name = "label8";
-      label8.Size = new Size(38, 15);
-      label8.TabIndex = 50;
-      label8.Text = "label8";
-      // 
       // FrequencyWidget
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
       BorderStyle = BorderStyle.FixedSingle;
-      Controls.Add(label8);
       Controls.Add(TxBtn);
       Controls.Add(label7);
       Controls.Add(RitCheckbox);
