@@ -86,8 +86,8 @@ namespace SkyRoof
       var sett = ctx.Settings.Ft4Console;
 
       Soundcard.Enabled = false;
-      Soundcard.SetDeviceId(sett.RxSoundcard);
-      Soundcard.Enabled = sett.AudioSource == Ft4AudioSource.Soundcard;
+      Soundcard.SetDeviceId(sett.Receive.RxSoundcard);
+      Soundcard.Enabled = sett.Receive.AudioSource == Ft4AudioSource.Soundcard;
 
       AudioWaterfall.Brightness = sett.Waterfall.Brightness;
       AudioWaterfall.Contrast = sett.Waterfall.Contrast;
@@ -106,9 +106,9 @@ namespace SkyRoof
       Decoder.MyCall = ctx.Settings.User.Call;
       Decoder.CutoffFrequency = sett.Waterfall.Bandwidth - 50;
 
-      Sender.Soundcard.SetDeviceId(sett.TxSoundcard);
-      Sender.Soundcard.Volume = Dsp.FromDb2(sett.TxGain);
-      Sender.XitEnabled = sett.XitEnabled;
+      Sender.Soundcard.SetDeviceId(sett.Transmit.TxSoundcard);
+      Sender.Soundcard.Volume = Dsp.FromDb2(sett.Transmit.TxGain);
+      Sender.XitEnabled = sett.Transmit.XitEnabled;
 
       Sequencer.MyCall = ctx.Settings.User.Call;
       Sequencer.MySquare = ctx.Settings.User.Square;
@@ -127,7 +127,7 @@ namespace SkyRoof
     //--------------------------------------------------------------------------------------------------------------
     public void AddSamplesFromSdr(DataEventArgs<float> e)
     {
-      if (ctx.Settings.Ft4Console.AudioSource == Ft4AudioSource.SDR)
+      if (ctx.Settings.Ft4Console.Receive.AudioSource == Ft4AudioSource.SDR)
       {
         Decoder.StartProcessing(e);
         if (AudioWaterfall.CanProcess) AudioWaterfall.SpectrumAnalyzer.StartProcessing(e);
@@ -137,7 +137,7 @@ namespace SkyRoof
 
     public void AddSamplesFromSoundcard(DataEventArgs<float> e)
     {
-      if (ctx.Settings.Ft4Console.AudioSource == Ft4AudioSource.Soundcard)
+      if (ctx.Settings.Ft4Console.Receive.AudioSource == Ft4AudioSource.Soundcard)
       {
         Decoder?.StartProcessing(e);
         if (AudioWaterfall.CanProcess) AudioWaterfall.SpectrumAnalyzer?.StartProcessing(e);
@@ -244,7 +244,7 @@ namespace SkyRoof
       {
         Sender.StartSending();
         if (Sender.Mode == SenderMode.Sending) // no sending if was tuning 
-          TxCountdown = ctx.Settings.Ft4Console.TxWatchDog * 4;
+          TxCountdown = ctx.Settings.Ft4Console.Transmit.TxWatchDog * 4;
       }
 
       UpdateTxButtons();
@@ -309,7 +309,7 @@ namespace SkyRoof
 
     private bool CheckTxEnabled()
     {
-      if (ctx.Settings.Ft4Console.EnableTransmit) return true;
+      if (ctx.Settings.Ft4Console.Transmit.Enabled) return true;
 
       MessageBox.Show("FT4 transmit is not enabled in Settings.", "SkyRoof", MessageBoxButtons.OK, MessageBoxIcon.Information);
       return false;
@@ -583,7 +583,7 @@ namespace SkyRoof
 
       Sender.SetMessage(Sequencer.Message!);
       Sender.StartSending();
-      TxCountdown = ctx.Settings.Ft4Console.TxWatchDog * 4;
+      TxCountdown = ctx.Settings.Ft4Console.Transmit.TxWatchDog * 4;
 
       TxMessageLabel.Text = Sequencer.Message!;
       UpdateTxButtons();

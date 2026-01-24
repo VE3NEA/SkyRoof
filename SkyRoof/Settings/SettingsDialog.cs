@@ -20,8 +20,8 @@ namespace SkyRoof
       InitializeComponent();
       this.ctx = ctx;
       grid.SelectedObject = Utils.DeepClone(ctx.Settings);
-      grid.ExpandAllGridItems();
-      //grid.ExpandTopLevelProperties();
+      //grid.ExpandAllGridItems();
+      grid.ExpandTopLevelProperties(true);
       SelectSection(section);
     }
 
@@ -199,11 +199,13 @@ namespace SkyRoof
 
       if (ChangedFields.Exists(s => 
         s.StartsWith("SkyRoof.Ft4ConsoleSettings") ||
+        s.StartsWith("SkyRoof.Ft4ReceiveSettings..") ||
+        s.StartsWith("SkyRoof.Ft4TransmitSettings..") ||
         s.StartsWith("SkyRoof.Ft4WaterfallSettings.") ||
         s.StartsWith("SkyRoof.Ft4MessagesSettings.") ||
-        s.StartsWith("SkyRoof.Ft4BackgroundColors.") ||
-        s.StartsWith("SkyRoof.UserSettings.Call") ||
-        s.StartsWith("SkyRoof.UdpSenderSettings.")
+        s.StartsWith("SkyRoof.UdpSenderSettings.") ||
+        s.StartsWith("SkyRoof.Ft4BackgroundColors") ||
+        s.StartsWith("SkyRoof.UserSettings.Call")
         ))
         ctx.Ft4ConsolePanel?.ApplySettings();
 

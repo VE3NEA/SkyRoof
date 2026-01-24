@@ -265,7 +265,7 @@ namespace SkyRoof
 
         if (((DecodedItem)listBox.Items[index - 2]).Tokens[0].text[0] == '.')
         {
-          var interval = separator.Utc - ((DecodedItem)listBox.Items[index - 2]).Utc;// + TimeSpan.FromSeconds(NativeFT4Coder.TIMESLOT_SECONDS);
+          var interval = separator.Utc - ((DecodedItem)listBox.Items[index - 2]).Utc;// + 2 * TimeSpan.FromSeconds(NativeFT4Coder.TIMESLOT_SECONDS);
           var token = ((DecodedItem)listBox.Items[index - 2]).Tokens[0];
           token.text = $"... ({Utils.TimespanToString(interval)})";
           listBox.Items[index - 1] = separator;

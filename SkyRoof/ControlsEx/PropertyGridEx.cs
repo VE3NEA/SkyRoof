@@ -41,19 +41,25 @@ namespace VE3NEA
             return (string)item.GetType().GetProperty(propertyName, flags).GetValue(item);
         }
 
-        // https://stackoverflow.com/questions/4086105/
-        public void ExpandTopLevelProperties()
-        {
-            Invoke((System.Windows.Forms.MethodInvoker)delegate
-            {
-                GridItem root = GetRoot();
+    // https://stackoverflow.com/questions/4086105/
+    public void ExpandTopLevelProperties(bool twoLevels = false)
+    {
+      //Invoke((System.Windows.Forms.MethodInvoker)delegate
+      {
+        GridItem root = GetRoot();
 
-                if (root != null)
-                    foreach (GridItem item in root.GridItems)
-                        if (item.GridItemType == GridItemType.Property)
-                            item.Expanded = true;
-            });
-        }
+        if (root != null)
+          foreach (GridItem item in root.GridItems)
+            if (item.GridItemType == GridItemType.Property)
+            {
+              item.Expanded = true;
+              if (twoLevels && item.Expandable)
+                foreach (GridItem subitem in item.GridItems)
+                  subitem.Expanded = true;
+            }
+      }
+      //);
+    }
 
         private Control GetPropertyGridView()
         {

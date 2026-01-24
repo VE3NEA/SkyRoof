@@ -12,16 +12,11 @@ namespace SkyRoof
 {
   public class Ft4ConsoleSettings
   {
-    [DefaultValue(Ft4AudioSource.SDR)]
-    public Ft4AudioSource AudioSource { get; set; } = Ft4AudioSource.SDR;
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public Ft4ReceiveSettings Receive { get; set; } = new();
 
-    [DisplayName("RX Soundcard")]
-    [TypeConverter(typeof(InputSoundcardNameConverter))]
-    public string? RxSoundcard { get; set; } = Soundcard.GetDefaultSoundcardId(DataFlow.Capture);
-
-    [DisplayName("TX Soundcard")]
-    [TypeConverter(typeof(OutputSoundcardNameConverter))]
-    public string? TxSoundcard { get; set; } = Soundcard.GetDefaultSoundcardId(DataFlow.Render);
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public Ft4TransmitSettings Transmit { get; set; } = new();
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public Ft4WaterfallSettings Waterfall { get; set; } = new ();
@@ -34,27 +29,6 @@ namespace SkyRoof
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public Ft4MessagesSettings Messages { get; set; } = new ();
 
-    [DisplayName("Enable Transmit")]
-    [DefaultValue(false)]
-    public bool EnableTransmit { get; set; } = false;
-
-    [DisplayName("TX Gain")]
-    [Description("Amplify or attenuate TX data, dB")]
-    [DefaultValue(-30)]
-    public int TxGain { get; set; } = -30;
-
-    [DisplayName("TX Watchdog")]
-    [Description("Stop transmission after N minutes")]
-    [DefaultValue(6)]
-    public int TxWatchDog { get; set; } = 6;
-
-    [DisplayName("XIT")]
-    [Description("Enable transmitter offset when sending FT4")]
-    [DefaultValue(true)]
-    public bool XitEnabled{ get; set; } = true;
-
-
-
     [Browsable(false)]
     [DefaultValue(266)]
     public int SplitterDistance { get; set; } = 266;
@@ -63,18 +37,56 @@ namespace SkyRoof
     public override string ToString() { return string.Empty; }
   }
 
+
+  public class Ft4ReceiveSettings
+  {
+    [DisplayName("Audio Source")]
+    [DefaultValue(Ft4AudioSource.SDR)]
+    public Ft4AudioSource AudioSource { get; set; } = Ft4AudioSource.SDR;
+
+    [DisplayName("Soundcard")]
+    [TypeConverter(typeof(InputSoundcardNameConverter))]
+    public string? RxSoundcard { get; set; } = Soundcard.GetDefaultSoundcardId(DataFlow.Capture);
+
+    public override string ToString() { return ""; }
+  }
+
+  public class Ft4TransmitSettings
+  {
+    [DefaultValue(false)]
+    public bool Enabled { get; set; } = false;
+
+    [DisplayName("Soundcard")]
+    [TypeConverter(typeof(OutputSoundcardNameConverter))]
+    public string? TxSoundcard { get; set; } = Soundcard.GetDefaultSoundcardId(DataFlow.Render);
+
+    [DisplayName("Gain")]
+    [Description("Amplify or attenuate TX data, dB")]
+    [DefaultValue(-30)]
+    public int TxGain { get; set; } = -30;
+
+    [DisplayName("Watchdog")]
+    [Description("Stop transmission after N minutes")]
+    [DefaultValue(6)]
+    public int TxWatchDog { get; set; } = 6;
+
+    [DisplayName("Use XIT")]
+    [Description("Enable transmitter offset when sending FT4")]
+    [DefaultValue(true)]
+    public bool XitEnabled { get; set; } = true;
+
+    public override string ToString() { return ""; }
+  }
+
   public class Ft4WaterfallSettings
   {
-    [DisplayName("Bandwidth")]
-    [Description("Waterfall Bandwidth, Hz")]
+    [Description("Waterfall and decoder bandwidth, Hz")]
     [DefaultValue(4000)]
     public int Bandwidth { get; set; } = 4000;
 
-    [DisplayName("Waterfall Brightness")]
     [DefaultValue(50)]
     public int Brightness { get; set; } = 50;
 
-    [DisplayName("Waterfall Contrast")]
     [DefaultValue(50)]
     public int Contrast { get; set; } = 50;
 
