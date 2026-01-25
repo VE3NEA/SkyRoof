@@ -35,13 +35,6 @@
       panel1 = new Panel();
       AmplitudeBar = new Ft4AmplitudeBar();
       TxMessageLabel = new Label();
-      flowLayoutPanel1 = new FlowLayoutPanel();
-      button7 = new Button();
-      button8 = new Button();
-      button9 = new Button();
-      button10 = new Button();
-      button11 = new Button();
-      button12 = new Button();
       TxMessagesPanel = new FlowLayoutPanel();
       button1 = new Button();
       button2 = new Button();
@@ -71,7 +64,6 @@
       SplitContainer.Panel2.SuspendLayout();
       SplitContainer.SuspendLayout();
       panel1.SuspendLayout();
-      flowLayoutPanel1.SuspendLayout();
       TxMessagesPanel.SuspendLayout();
       groupBox2.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)RxSpinner).BeginInit();
@@ -102,6 +94,7 @@
       // AudioWaterfall
       // 
       AudioWaterfall.Dock = DockStyle.Fill;
+      AudioWaterfall.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
       AudioWaterfall.Location = new Point(0, 0);
       AudioWaterfall.Margin = new Padding(4, 3, 4, 3);
       AudioWaterfall.Name = "AudioWaterfall";
@@ -124,7 +117,6 @@
       // 
       panel1.Controls.Add(AmplitudeBar);
       panel1.Controls.Add(TxMessageLabel);
-      panel1.Controls.Add(flowLayoutPanel1);
       panel1.Controls.Add(TxMessagesPanel);
       panel1.Controls.Add(groupBox2);
       panel1.Controls.Add(OddEvenGroupBox);
@@ -156,85 +148,6 @@
       TxMessageLabel.Size = new Size(258, 21);
       TxMessageLabel.TabIndex = 32;
       TxMessageLabel.TextAlign = ContentAlignment.MiddleCenter;
-      // 
-      // flowLayoutPanel1
-      // 
-      flowLayoutPanel1.Controls.Add(button7);
-      flowLayoutPanel1.Controls.Add(button8);
-      flowLayoutPanel1.Controls.Add(button9);
-      flowLayoutPanel1.Controls.Add(button10);
-      flowLayoutPanel1.Controls.Add(button11);
-      flowLayoutPanel1.Controls.Add(button12);
-      flowLayoutPanel1.Location = new Point(14, 196);
-      flowLayoutPanel1.Name = "flowLayoutPanel1";
-      flowLayoutPanel1.Size = new Size(258, 59);
-      flowLayoutPanel1.TabIndex = 31;
-      // 
-      // button7
-      // 
-      button7.Location = new Point(3, 3);
-      button7.Name = "button7";
-      button7.Size = new Size(79, 23);
-      button7.TabIndex = 0;
-      button7.Tag = "6";
-      button7.Text = "CQ";
-      button7.UseVisualStyleBackColor = true;
-      button7.Click += MessageBtn_Click;
-      // 
-      // button8
-      // 
-      button8.Location = new Point(88, 3);
-      button8.Name = "button8";
-      button8.Size = new Size(79, 23);
-      button8.TabIndex = 1;
-      button8.Tag = "2";
-      button8.Text = "dB";
-      button8.UseVisualStyleBackColor = true;
-      button8.Click += MessageBtn_Click;
-      // 
-      // button9
-      // 
-      button9.Location = new Point(173, 3);
-      button9.Name = "button9";
-      button9.Size = new Size(79, 23);
-      button9.TabIndex = 2;
-      button9.Tag = "4";
-      button9.Text = "RR73";
-      button9.UseVisualStyleBackColor = true;
-      button9.Click += MessageBtn_Click;
-      // 
-      // button10
-      // 
-      button10.Location = new Point(3, 32);
-      button10.Name = "button10";
-      button10.Size = new Size(79, 23);
-      button10.TabIndex = 3;
-      button10.Tag = "1";
-      button10.Text = "DE";
-      button10.UseVisualStyleBackColor = true;
-      button10.Click += MessageBtn_Click;
-      // 
-      // button11
-      // 
-      button11.Location = new Point(88, 32);
-      button11.Name = "button11";
-      button11.Size = new Size(79, 23);
-      button11.TabIndex = 4;
-      button11.Tag = "3";
-      button11.Text = "R-dB";
-      button11.UseVisualStyleBackColor = true;
-      button11.Click += MessageBtn_Click;
-      // 
-      // button12
-      // 
-      button12.Location = new Point(173, 32);
-      button12.Name = "button12";
-      button12.Size = new Size(79, 23);
-      button12.TabIndex = 5;
-      button12.Tag = "5";
-      button12.Text = "73";
-      button12.UseVisualStyleBackColor = true;
-      button12.Click += MessageBtn_Click;
       // 
       // TxMessagesPanel
       // 
@@ -525,7 +438,6 @@
       ((System.ComponentModel.ISupportInitialize)SplitContainer).EndInit();
       SplitContainer.ResumeLayout(false);
       panel1.ResumeLayout(false);
-      flowLayoutPanel1.ResumeLayout(false);
       TxMessagesPanel.ResumeLayout(false);
       groupBox2.ResumeLayout(false);
       groupBox2.PerformLayout();
@@ -565,13 +477,6 @@
     private Button button6;
     private Label TxMessageLabel;
     public SplitContainer SplitContainer;
-    private FlowLayoutPanel flowLayoutPanel1;
-    private Button button7;
-    private Button button8;
-    private Button button9;
-    private Button button10;
-    private Button button11;
-    private Button button12;
     private Ft4AmplitudeBar AmplitudeBar;
     private ToolTip toolTip1;
   }
