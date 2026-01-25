@@ -48,6 +48,10 @@ namespace SkyRoof
     [TypeConverter(typeof(InputSoundcardNameConverter))]
     public string? RxSoundcard { get; set; } = Soundcard.GetDefaultSoundcardId(DataFlow.Capture);
 
+    [Description("Waterfall and decoder bandwidth, Hz")]
+    [DefaultValue(4000)]
+    public int Bandwidth { get; set; } = 4000;
+
     public override string ToString() { return ""; }
   }
 
@@ -80,10 +84,6 @@ namespace SkyRoof
 
   public class Ft4WaterfallSettings
   {
-    [Description("Waterfall and decoder bandwidth, Hz")]
-    [DefaultValue(4000)]
-    public int Bandwidth { get; set; } = 4000;
-
     [DefaultValue(50)]
     public int Brightness { get; set; } = 50;
 

@@ -91,7 +91,7 @@ namespace SkyRoof
 
       AudioWaterfall.Brightness = sett.Waterfall.Brightness;
       AudioWaterfall.Contrast = sett.Waterfall.Contrast;
-      AudioWaterfall.Bandwidth = sett.Waterfall.Bandwidth;
+      AudioWaterfall.Bandwidth = sett.Receive.Bandwidth;
       AudioWaterfall.SetBandwidth(); // {!} do not call in design mode
 
       MessageListWidget.ApplySettings(ctx.Settings);
@@ -104,7 +104,7 @@ namespace SkyRoof
       WsjtxUdpSender.SetEnabled(ctx.Settings.Ft4Console.UdpSender.Enabled);
 
       Decoder.MyCall = ctx.Settings.User.Call;
-      Decoder.CutoffFrequency = sett.Waterfall.Bandwidth - 50;
+      Decoder.CutoffFrequency = sett.Receive.Bandwidth - 50;
 
       Sender.Soundcard.SetDeviceId(sett.Transmit.TxSoundcard);
       Sender.Soundcard.Volume = Dsp.FromDb2(sett.Transmit.TxGain);
