@@ -311,6 +311,7 @@ namespace SkyRoof
       }
 
       (long slot, float freq) = GetSlotAndFreq(p);
+      slot %= NativeFT4Coder.SLOTS_PER_DAY;
       string odd = (slot & 1) == 1 ? "Odd (2-nd)" : "Even (1-st)";
       DateTime start = DateTime.Today + TimeSpan.FromSeconds(slot * NativeFT4Coder.TIMESLOT_SECONDS);
 

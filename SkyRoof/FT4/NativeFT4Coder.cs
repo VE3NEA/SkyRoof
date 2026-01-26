@@ -33,7 +33,7 @@ namespace VE3NEA
     public const double DECODE_SECONDS = DECODE_SAMPLE_COUNT / (double)SAMPLING_RATE;
 
     public const int MAX_CALL_LENGTH = 12;
-
+    public const long SLOTS_PER_DAY = 11520; // 86400 / 7.5
 
     [DllImport("ft4_coder", CallingConvention = CallingConvention.Cdecl)]
     public static extern void encode_ft4(byte[] message, ref float txAudioFrequency, float[] audioSamples);

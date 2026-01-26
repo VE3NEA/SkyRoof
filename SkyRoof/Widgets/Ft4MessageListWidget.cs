@@ -387,7 +387,8 @@ namespace SkyRoof
     private void ShowSeparatorTooltip(DecodedItem hotItem)
     {
       string title = (hotItem.Odd ? "Odd (2-nd)" : "Even (1-st)");
-      string tooltip = string.Format("slot {0} {1:%h} hours {1:%m} minutes ago", hotItem.SlotNumber, DateTime.UtcNow - hotItem.Utc);
+      string tooltip = string.Format("slot {0} {1:%h} hours {1:%m} minutes ago", 
+        hotItem.SlotNumber % NativeFT4Coder.SLOTS_PER_DAY, DateTime.UtcNow - hotItem.Utc);
       ShowTooltip(title, tooltip);
     }
 
