@@ -73,7 +73,7 @@ namespace SkyRoof
       VersionChecker.UpdateAvailable += UpdateAvailable_handler;
       VersionChecker.CheckVersionAsync().DoNotAwait();
 
-      ctx.AmsatStatusLoader.GetStatusesAsync();
+      ctx.AmsatStatusLoader.GetStatusesAsync().DoNotAwait();
     }
 
     private void UpdateAvailable_handler(object? sender, EventArgs e)
@@ -85,6 +85,7 @@ namespace SkyRoof
     private void MainForm_FormClosing(object sender, EventArgs e)
     {
       timer.Enabled = false;
+      if (ctx.Slicer != null) ctx.Slicer.Enabled = false;
 
       // save settings
       ctx.Settings.Ui.StoreDockingLayout(DockHost);

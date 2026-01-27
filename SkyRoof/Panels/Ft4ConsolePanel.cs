@@ -494,9 +494,10 @@ namespace SkyRoof
             TxCountdown = 0;
             Sender.Stop();
             QsoInfo qso = GetQsoInfo();
+            bool newQso = Sequencer.LastHisCall != Sequencer.HisCall;
+            if (newQso) ctx.LoqFt4QsoDialog.PopUp(ctx, qso);
             Sequencer.Reset();
             Sender.SetMessage(Sequencer.Message!);
-            ctx.LoqFt4QsoDialog.PopUp(ctx, qso);
           }
         }
 
@@ -537,6 +538,7 @@ namespace SkyRoof
     //--------------------------------------------------------------------------------------------------------------
     //                                             sequencer
     //--------------------------------------------------------------------------------------------------------------
+    // any received message
     private void RxMessageToSequencer(DecodedItem message)
     {
       if (Sender.Mode != SenderMode.Sending) return;
@@ -545,6 +547,7 @@ namespace SkyRoof
       if (Sequencer.ProcessMessage(message, false)) SetTxMessage(Sender.TxOdd);
     }
 
+    // click on someone's message
     private void MessageListWidget_MessageClick(object sender, Ft4MessageEventArgs e)
     {
       if (e.Item.FromMe && ModifierKeys == Keys.Control)
@@ -555,6 +558,7 @@ namespace SkyRoof
           SetTxMessage(!e.Item.Odd);
     }
 
+    // message selection buttons
     private void MessageBtn_Click(object sender, EventArgs e)
     {
       if (!CheckTxEnabled()) return;
@@ -566,6 +570,7 @@ namespace SkyRoof
     private void SetTxMessage(bool odd)
     {
       bool wasSending = Sender.SenderPhase == SendingStage.Sending;
+      bool oddChanged = Sender.TxOdd != odd;
 
       Sender.TxOdd = odd;
 
@@ -582,8 +587,9 @@ namespace SkyRoof
       }
 
       Sender.SetMessage(Sequencer.Message!);
+      if (wasSending && oddChanged) Sender.Stop();
       Sender.StartSending();
-      TxCountdown = ctx.Settings.Ft4Console.Transmit.TxWatchDog * 4;
+      TxCountdown = ctx.Settings.Ft4Console.Transmit.TxWatchDog * NativeFT4Coder.TIME_SLOTS_PER_MINUTE;
 
       TxMessageLabel.Text = Sequencer.Message!;
       UpdateTxButtons();
@@ -591,7 +597,8 @@ namespace SkyRoof
       UpdateControls();
       ctx.MainForm.FrequencyWidget.SetXit(Sender.XitOffset);
 
-      if (wasSending)
+      // changing the message on the fiy, show it in the list
+      if (wasSending && !oddChanged)
       {
         var item = MakeTxItem();
         AddTxMessageToList(item);
@@ -599,28 +606,28 @@ namespace SkyRoof
       }
     }
 
-    public void TestQDateTime()
-    {
-      for (int h = 0; h < 48; h += 6)
-      {
-        var utc = DateTime.UtcNow.Date + TimeSpan.FromHours(h);
+    //public void TestQDateTime()
+    //{
+    //  for (int h = 0; h < 48; h += 6)
+    //  {
+    //    var utc = DateTime.UtcNow.Date + TimeSpan.FromHours(h);
 
-        // c# write
-        long julianDay = (long)Math.Floor(utc.ToOADate()) + 2415019;
-        uint milliseconds = (uint)(utc.TimeOfDay.TotalMilliseconds);
+    //    // c# write
+    //    long julianDay = (long)Math.Floor(utc.ToOADate()) + 2415019;
+    //    uint milliseconds = (uint)(utc.TimeOfDay.TotalMilliseconds);
 
-        // c# original read
-        var date = DateTime.FromOADate(julianDay - 2415018.5).Date;
-        DateTime outUtc = date.AddMilliseconds(milliseconds);
+    //    // c# original read
+    //    var date = DateTime.FromOADate(julianDay - 2415018.5).Date;
+    //    DateTime outUtc = date.AddMilliseconds(milliseconds);
 
-        // Delphi read
-        double delphiDouble = julianDay - 2415019 + milliseconds / 86400000d;
-        DateTime delphiUtc = DateTime.SpecifyKind(DateTime.FromOADate(delphiDouble), DateTimeKind.Unspecified);
+    //    // Delphi read
+    //    double delphiDouble = julianDay - 2415019 + milliseconds / 86400000d;
+    //    DateTime delphiUtc = DateTime.SpecifyKind(DateTime.FromOADate(delphiDouble), DateTimeKind.Unspecified);
 
 
-        Debug.WriteLine($"{utc:yyyy-MM-dd HH:mm}  {julianDay,10}  {milliseconds / 86400000d:F3}  c#: {outUtc:yyyy-MM-dd HH:mm}  Delphi: {delphiDouble:F3}  {delphiUtc:yyyy-MM-dd HH:mm}");
-      }
-    }
+    //    Debug.WriteLine($"{utc:yyyy-MM-dd HH:mm}  {julianDay,10}  {milliseconds / 86400000d:F3}  c#: {outUtc:yyyy-MM-dd HH:mm}  Delphi: {delphiDouble:F3}  {delphiUtc:yyyy-MM-dd HH:mm}");
+    //  }
+    //}
 
 
 

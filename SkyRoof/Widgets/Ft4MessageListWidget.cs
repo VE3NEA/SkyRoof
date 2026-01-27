@@ -221,7 +221,7 @@ namespace SkyRoof
     public void AddMessage(DecodedItem item)
     {
       int index = FindInsertionPoint(item);
-        listBox.Items.Insert(index, item); // todo: remove IF
+      listBox.Items.Insert(index, item);
     }
 
     // sending message 
@@ -386,8 +386,8 @@ namespace SkyRoof
 
     private void ShowSeparatorTooltip(DecodedItem hotItem)
     {
-      string title = (hotItem.Odd ? "Odd (2-nd)" : "Even (1-st)");
-      string tooltip = string.Format("slot {0} {1:%h} hours {1:%m} minutes ago", 
+      string title = hotItem.Odd ? "Odd (2-nd)" : "Even (1-st)";
+      string tooltip = string.Format("slot {0}\n{1:%h} hours {1:%m} minutes ago", 
         hotItem.SlotNumber % NativeFT4Coder.SLOTS_PER_DAY, DateTime.UtcNow - hotItem.Utc);
       ShowTooltip(title, tooltip);
     }

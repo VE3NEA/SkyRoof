@@ -63,6 +63,7 @@ namespace SkyRoof
 
     public void SetOffset(double offset)
     {
+      if (!Enabled) return;
       this.offset = offset;
       if (CurrentMode != Mode.CW) offset += ModeOffsets[(int)CurrentMode];
       NativeLiquidDsp.nco_crcf_set_frequency(FirstMixer, (float)(Geo.TwoPi * offset / InputRate));

@@ -35,7 +35,7 @@ namespace SkyRoof
 
     public void Reset()
     {
-      LastHisCall = HisCall;
+      if (!string.IsNullOrEmpty(HisCall)) LastHisCall = HisCall;
 
       HisCall = null;
       HisSquare = null;
@@ -73,8 +73,6 @@ namespace SkyRoof
 
       GenerateMessages();
 
-      //var oldMessageType = MessageType; 
-
       // I am calling him
       if (item.Parse.DXCallsign != MyCall)
         MessageType = Ft4MessageType.DE;
@@ -86,7 +84,7 @@ namespace SkyRoof
         // the rest: reply with next message type
         MessageType = hisMessageType + 1;
 
-      return true; // MessageType != oldMessageType;
+      return true;
     }
 
     // user clicked on a message type button

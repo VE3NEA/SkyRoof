@@ -87,7 +87,7 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     //                                        paint
     //----------------------------------------------------------------------------------------------
-    // todo: simplied draw when only the green rect moves
+    // todo: simplify draw when only the green rect moves
     private void FrequencyScale_Paint(object sender, PaintEventArgs e)
     {
       var g = e.Graphics;
