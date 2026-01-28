@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.24](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.24/SkyRoofSetup-v.1.24.zip)
+[SkyRoof v.1.25](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.25/SkyRoofSetup-v.1.25.zip)
 
 <br>
 
@@ -15,6 +15,15 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.25
+
+- added FT4 Console;
+- added a work around a Wine 9 bug;
+- fixed announcement cutoff on Windows 11;
+- added an option to disable FM Squelch;
+- reduced audio drop-outs;
+- removed support of PlutoSDR (its dll breaks detection of other SDR's).
 
 #### v.1.24
 

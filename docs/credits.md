@@ -15,6 +15,8 @@ The following libraries, images and other resources were used in the SkyRoof pro
 - [Newtonsoft.Json](https://www.newtonsoft.com/json)
 - [Serilog](https://serilog.net/)
 - [AngleSharp](https://github.com/AngleSharp/AngleSharp)
+- [WSJT-X](https://wsjt.sourceforge.io/wsjtx.html)
+- [WsjtxUtils](https://github.com/KC3PIB/WsjtxUtils)
 
 - [airspy.dll](https://github.com/airspy/airspyone_host)
 - [rtlsdr.dll](https://github.com/merbanan/rtl-sdr)
