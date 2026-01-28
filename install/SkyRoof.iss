@@ -78,6 +78,7 @@ Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\SharpGL.SceneGraph.dll; De
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\AngleSharp.dll; DestDir: {app}; Flags: overwritereadonly ignoreversion
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\ft4_coder.dll; DestDir: {app}; Flags: overwritereadonly ignoreversion
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\ft4_coder.pdb; DestDir: {app}; Flags: overwritereadonly ignoreversion
+Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\libquadmath-0.dll; DestDir: {app}; Flags: overwritereadonly ignoreversion
 
 [Icons]
 Name: {commonprograms}\{#MyAppName}; Filename: {app}\{#MyAppExeName}
