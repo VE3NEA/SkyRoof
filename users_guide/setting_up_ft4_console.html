@@ -94,6 +94,105 @@
         <article data-uid="">
 <h1 id="setting-up-ft4-console">Setting Up FT4 Console</h1>
 
+<h2 id="ft4-console-settings">FT4 Console Settings</h2>
+<p>To configure FT4 Console, click on Tools / Settings to open the Settings dialog and scroll down to the FT4 Console section:</p>
+<p><img src="../images/ft4_console_settings.png" alt="FT4 settings"></p>
+<h3 id="receive">Receive</h3>
+<ul>
+<li><p><strong>Audio Source</strong> - either SDR or Soundcard. SDR is the default, but it is also possible to receive FT4 from the transceiver via a soundcard;</p>
+</li>
+<li><p><strong>Soundcard</strong> - if Soundcard is selected as audio source, this field should contain the soundcard to use. Windows allows you to rename the soundcards, so you can change the default name, such as &quot;USB Audio CODEC&quot; to something that is easy to recognize, &quot;IC-9700 RX&quot; in my case;</p>
+</li>
+<li><p><strong>Bandwidth</strong> - the receiver bandwidth, in Hertz. Affects both the waterfall display and decoding. See <strong>Receiver Bandwidth</strong> below.</p>
+</li>
+</ul>
+<h3 id="transmit">Transmit</h3>
+<ul>
+<li><p><strong>Enabled</strong> - by default, the transmit function is disabled. Set this field to true if you want to transmit FT4;</p>
+</li>
+<li><p><strong>Soundcard</strong> - the soundcard that sends the FT4 audio to the transmitter;</p>
+</li>
+<li><p><strong>Gain</strong> - the FT4 output audio is mutliplied by this factor (in dB). The default is -30 dB, see the <strong>TX Gain</strong> section below for the instructions how to find the correct value;</p>
+</li>
+<li><p><strong>Watchdog</strong> - the maximum transmit time. After the specified number of minutes, if the user has not performed any actions, the transmissions automatically stop;</p>
+</li>
+<li><p><strong>Use XIT</strong> - offset the transmitter frequency relative to the receiver depending on the transmitted audio tone. See <strong>Using XIT</strong> below for details.</p>
+</li>
+</ul>
+<h3 id="waterfall">Waterfall</h3>
+<ul>
+<li><p><strong>Brightness</strong> - waterfall brightness, 0 to 100;</p>
+</li>
+<li><p><strong>Contrast</strong> - waterfall contrast, 0 to 100;</p>
+</li>
+</ul>
+<h3 id="wsjt-x-udp-packets">WSJT-X UDP Packets</h3>
+<ul>
+<li><p><strong>Enabled</strong> - enable sending the UDP packets with information about decoded messages and QSO. The format of the messages is the same as in WSTT-X;</p>
+</li>
+<li><p><strong>UDP Port</strong> - the port to which the messages will be sent;</p>
+</li>
+<li><p><strong>Host</strong> - this could be a Unicast or Multicast address. See <strong>UDP Packets</strong> below.</p>
+</li>
+</ul>
+<h3 id="decoded-messages">Decoded Messages</h3>
+<ul>
+<li><p><strong>Save to File</strong> - when set to true, all received and transmitted messages will be saved to a file in the
+<a href="data_folder.html">Data folder</a>, FT4 sub-folder;</p>
+</li>
+<li><p><strong>Text Color</strong> - the text color in the Decoded Messages window;</p>
+</li>
+<li><p><strong>Font Size</strong> - the font size in the
+Decoded Messages window;</p>
+</li>
+<li><p><strong>Background Colors</strong> - the background colors of the messages of different types:</p>
+</li>
+</ul>
+<p><img src="../images/ft4_color_settings.png" alt="color settings"></p>
+<h2 id="rx-signal-strength">RX Signal Strength</h2>
+<p>When FT4 is decoded from the SDR, the signal strength is adjusted automatically, but when the signals are coming from a soundcard, the amplitude of the input audio must be adjusted so that the signal strength bar is at about 50%:</p>
+<p><img src="../images/ft4_amplitude_bar.png" alt="amplitude bar"></p>
+<p>This could be done in several ways.</p>
+<h3 id="option-1-transceiver-menu">Option 1: Transceiver Menu</h3>
+<p>In IC-9700 press <strong>Menu / Set / Connectors / USB AF/IF Output</strong> and adjust <strong>AF Output Level</strong>.</p>
+<h3 id="option-2-windows-audio-settings">Option 2: Windows Audio Settings</h3>
+<p>In Windows 11 open <strong>Settings / System / Sound</strong>, select your soundcard, and adjust the <strong>Input Volume</strong> setting:</p>
+<p><img src="../images/ft4_win_audio.png" alt="win audio"></p>
+<h2 id="tx-gain">TX Gain</h2>
+<p>The amplitude of FT4 audio output must be set carefully to ensure the desired output power and to prevent transmission of audio harmonics. To adjust the output amplitude, click on the <strong>Tune</strong> button in FT4 Console to start transmission and adjust <strong>Transmit / Gain</strong> in the Settings dialog. Use the meters in the transceiver to ensure that the radio delivers full output power, and that the ALC level is around zero.</p>
+<p>In IC-9700 you can display all meters in the satellite mode by pressing <strong>Menu / Meter</strong>, as shown in the screenshot below. <strong>S/Po</strong> must be at the maximum, and <strong>ALC</strong> at the minimum. For IC-9700 the optimal TX gain is about -32 dB.</p>
+<p><img src="../images/IC-9700-TX.png" alt="IC-9700 TX"></p>
+<p>Once the audio output level is set, adjust the output power of your radio according to your operating needs. In most cases only a few watts are required for satellite contacts if a good antenna is used.</p>
+<h2 id="receiver-bandwidth">Receiver Bandwidth</h2>
+<p>The <strong>FT4 Console / Receive / Bandwidth</strong> parameter in the Settings dialog controls the bandwidth of the FT4 decoder, as well as the frequency segment shown on the waterfall display.</p>
+<p>When decoding from an SDR, set it to 5000 Hz, the bandwidth of the SDR receiver in the USB-D and LSB-D modes;</p>
+<p>When decoding from a soundcard, set this parameter to match the receiver bandwidth of your radio. Make sure that the dark area on the waterfall is not wider than 200-300 Hz at each side, as in the screenshot below:</p>
+<p><img src="../images/ft4_waterfall.png" alt="ft4 waterfall"></p>
+<p>In most transceivers the RX bandwidth is around 3000 Hz, even in the Data mode. IC-9700 may we configured for a bandwidth of 3600 Hz in USB-D and LSB-D modes.</p>
+<h2 id="using-xit">Using XIT</h2>
+<p>Keep the <strong>Transmit / Use XIT</strong> option set to true unless unless your radio is unable change the TX frequency when transmitting.</p>
+<p>When this option is enabled, the audio tone sent to the transmitter is always in the range of 1000 Hz to 2000 Hz. To transmit signals outside of this range, the transmitter frequency is changed up or down. For example, to transmit on 3200 Hz, the transmitter is tuned 2000 Hz up (or down for inverting transponders), and the audio tone sent to the radio is 1200 Hz.</p>
+<p>The XIT mode serves two purposes:</p>
+<ul>
+<li>it prevents the odd audio harmonics from being transmitted since they are outside of the transmitter passband;</li>
+<li>it ensures that you can transmit on any audio frequency, even outside of the transmitter passband.</li>
+</ul>
+<h2 id="udp-packets">UDP Packets</h2>
+<p>SkyRoof can send UDP packets with information about decoded messages and completed QSO, in the same format as WSJT-X. There is a number of programs that listen to such messages and use them to write QSO to the log or to update Worked statistics. Some even reply to these messages with callsign status information, so that SkyRoof can color-highlight the callsigns according to their Needed status.</p>
+<p>This option is disabled by default. You can enable it in the Settings dialog.</p>
+<p>Both Unicast and Multicast messaging is supported.  In the Unicast mode the messages can be sent to only one program. If you start another program that listens on the same UDP port, that program fails with the Port in Use error. In the Multicust mode multiple programs can receive messages on the same port. Use the multicast mode if possible, or use unicast with older programs that do not support multicast.</p>
+<p>UDP packets are sent in the multicast mode if the IP address is in the range of 239.0.0.0 - 239.255.255.255, otherwise they are sent as unicast.</p>
+<p>The default settings are:</p>
+<p>Unicast:</p>
+<ul>
+<li>IP Address: 127.0.0.1</li>
+<li>Port: 7311</li>
+</ul>
+<p>Multicast:</p>
+<ul>
+<li>IP Address: 239.255.255.0</li>
+<li>Port: 2238</li>
+</ul>
 
 </article>
 

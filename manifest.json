@@ -32,6 +32,16 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/IC-9700-TX.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/IC-9700-TX.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/SkyRoof.ico",
       "output": {
         "resource": {
@@ -276,6 +286,86 @@
       "output": {
         "resource": {
           "relative_path": "images/frequency_scale.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/ft4_amplitude_bar.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/ft4_amplitude_bar.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/ft4_color_settings.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/ft4_color_settings.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/ft4_console.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/ft4_console.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/ft4_console_settings.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/ft4_console_settings.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/ft4_uplink_offset.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/ft4_uplink_offset.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/ft4_waterfall.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/ft4_waterfall.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/ft4_wide_waterfall.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/ft4_wide_waterfall.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/ft4_win_audio.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/ft4_win_audio.png"
         }
       },
       "version": ""
@@ -736,6 +826,16 @@
       "output": {
         "resource": {
           "relative_path": "images/satellites_and_groups.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/save_ft4_qso.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/save_ft4_qso.png"
         }
       },
       "version": ""
@@ -1389,16 +1489,6 @@
       "output": {
         ".html": {
           "relative_path": "users_guide/skycat_cat_notes.html"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Conceptual",
-      "source_relative_path": "users_guide/skycat_commandset_file_format.md",
-      "output": {
-        ".html": {
-          "relative_path": "users_guide/skycat_commandset_file_format.html"
         }
       },
       "version": ""

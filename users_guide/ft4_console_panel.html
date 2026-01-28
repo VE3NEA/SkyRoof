@@ -94,6 +94,115 @@
         <article data-uid="">
 <h1 id="ft4-console-panel">FT4 Console Panel</h1>
 
+<p>FT4 Console provides a streamlined, satellite‑optimized interface for conducting FT4 QSOs via satellites with linear transponders (e.g., RS‑44, AO‑73, JO‑97). While similar results can be obtained by running two instances of WSJT‑X side by side with SkyRoof, the Console removes the need for external programs and simplifies the workflow. It offers satellite‑specific features not available in general‑purpose FT4 software, and an intuitive user interface that improves efficiency and usability.</p>
+<p>Be sure to configure the <a href="setting_up_ft4_console.html">FT4 Console settings</a> before you start using the FT4 Console panel.</p>
+<h2 id="user-interface">User Interface</h2>
+<p><img src="../images/ft4_console.png" alt="FT4 Console"></p>
+<h3 id="audio-waterfall-diaplay">Audio Waterfall Diaplay</h3>
+<p>Click with the left mouse button on the waterfall or on the frequency scale to set RX and TX audio tones:</p>
+<ul>
+<li><strong>click</strong> - set the RX tone;</li>
+<li><strong>Shift-click</strong> - set the TX tone;</li>
+<li><strong>Ctrl-click</strong> - set the RX and TX tones.</li>
+</ul>
+<p>Move the mouse cursor over an FT4 signal trace on the waterfall to see sender's callsign.</p>
+<h3 id="message-list">Message List</h3>
+<p>The message list shows transmitted and received messages, including your own messages coming back from the satellite.</p>
+<p>The list auto scrolls as the new messages are added. To disable auto-scrolling, for example, when looking at the old messages, just scroll the list up manually. To resume auto-scrolling, scroll it down to the last entry.</p>
+<p>When the mouse cursor is moved over the list, auto-scrolling is temporarily disabled to prevent clicks on a wrong entry. The frozen status is indicated by a blue frame around the list panel. The list un-freezes when you click on an entry or move the cursor out of the list, and when the cursor has not been moving for 2 seconds.</p>
+<p>When the  mouse cursor is over a received message, a label on the waterfall display indicates the frequency of the decoded signal and sender's callsign.</p>
+<p>Right-click on the message list to open the popup menu. This menu has commands to clear the list and to scroll down to the bottom.</p>
+<p>The first column in the received messages is the SNR of the received signal. It is color-coded, with weak signals represented with pale colors and strong ones with bright colors.</p>
+<p>Sender's callsigns are color-highlighted based on their status from the logging interface. See
+<a href="qso_entry_panel.html">QSO Entry</a> for information about callsign colors.</p>
+<h3 id="control-area">Control Area</h3>
+<ul>
+<li><p><strong>Enable TX button</strong> - enable transmissions;</p>
+</li>
+<li><p><strong>Halt TX button</strong> - abort current transmission;</p>
+</li>
+<li><p><strong>Tune button</strong> - transmit a tone for tuning. This button works only when Enable TX is turned off. Similarly, the Enable TX works only when Tune is off;</p>
+</li>
+<li><p><strong>TX Odd/Even</strong> - select odd or even time slots for transmission;</p>
+</li>
+<li><p><strong>TX #### Hz</strong> - transmitted audio tone;</p>
+</li>
+<li><p><strong>RX #### Hz</strong> - primary received audio tone;</p>
+</li>
+<li><p><strong>up and down arrow buttons</strong> - set RX tone equal to TX tone or vice versa. The buttons are color-coded, e.g., if you click on a green arrow, the green maker on the frequency scale moves;</p>
+</li>
+<li><p><strong>amplitude bar</strong> - shows the peak amplitude of the input audio, see the <strong>FT4 Console Settings</strong> section for details;</p>
+</li>
+<li><p><strong>message text</strong> - the current message to be transmitted;</p>
+</li>
+<li><p><strong>message buttons</strong> - allow you to select the message to transmit. A single click on a button changes the message immediately, even during the transmission. Only the messages applicable in the current stage of the QSO are enabled. The currently selected message is shwon in pink.</p>
+</li>
+</ul>
+<p>Here are the examples of the messages:</p>
+<h4 id="run-sequence">Run Sequence</h4>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CQ</td>
+<td>CQ VE3NEA FN03</td>
+</tr>
+<tr>
+<td>dB</td>
+<td>AA0AA VE3NEA -10</td>
+</tr>
+<tr>
+<td>RR73</td>
+<td>AA0AA VE3NEA RR73</td>
+</tr>
+</tbody>
+</table>
+<h4 id="sp-sequence">S&amp;P Sequence</h4>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DE</td>
+<td>AA0AA VE3NEA FN03</td>
+</tr>
+<tr>
+<td>R-dB</td>
+<td>AA0AA VE3NEA R-10</td>
+</tr>
+<tr>
+<td>73</td>
+<td>AA0AA VE3NEA 73</td>
+</tr>
+</tbody>
+</table>
+<h2 id="making-contacts">Making Contacts</h2>
+<p>At the time of this writing RS-44 was the best choice for FT4 contacts, so we will use this satellite in the examples below.
+When the satellite rises above the horizon and you start receiving its signals, do a quick check:</p>
+<ul>
+<li><p>verify your Downlink Manual Correction. This is easy to do with an SDR receiver: the label of the RS-44 CW beacon, shown on the left hand side in the screenshot below, should be aligned with its signal trace on the wideband waterfall display. If there is a mismatch, you can correct it as described in the
+<a href="frequency_scale.html">Frequency Scale</a> and <a href="frequency_control.html">Frequency Control</a> sections;</p>
+</li>
+<li><p>check that the receiver (SDR or external) is tuned to the frequencies where the FT4 signals are present. Usually FT4 stations operate a few kHz above the lower end of the transponder passband. You can just drag your receiver passband (green rectangle) to the required frequency.</p>
+</li>
+</ul>
+<p><img src="../images/ft4_wide_waterfall.png" alt="wide waterfall"></p>
+<p>Now you can click on Tune or Enable TX to start transmitting. If all is good, you will receive your own signals back from the satellite:</p>
+<p><img src="../images/ft4_uplink_offset.png" alt="uplink offset"></p>
+<p>The received signals are often slightly offset from the intended frequency (the pink mark on the scale), as shown above. This should be corrected by adjusting Uplink Manual Correction. You can do this manually in the <a href="frequency_control.html">Frequency Control</a> widget, or automatically, by <strong>Ctrl-click</strong>'ing on your own received message (with red background by default) in the message list. Automatic correction works only if the error is less than 1 kHz. If it is greater than that, you have to find out the cause. Large frequency errors could be caused by bad SDR calibration, inaccurate system clock, old TLE data, wrong downlink offset correction, etc.</p>
+<p>Wait until someone answers your CQ, or call another station by clicking on their message. A single click is enough, no need to double-click. The QSO sequence is followed automatically, and the Save QSO dialog pops up when the QSO is completed:</p>
+<p><img src="../images/save_ft4_qso.png" alt="save qso"></p>
+<p>Click on <strong>Save</strong> to save the QSO , or click on <strong>Edit</strong> to load the QSO details in the QSO Entry form. See
+<a href="qso_entry_panel.html">QSO Entry</a> for information about editing and saving QSO.</p>
 
 </article>
 
