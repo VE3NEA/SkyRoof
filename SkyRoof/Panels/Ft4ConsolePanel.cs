@@ -93,7 +93,7 @@ namespace SkyRoof
       AudioWaterfall.Brightness = sett.Waterfall.Brightness;
       AudioWaterfall.Contrast = sett.Waterfall.Contrast;
       AudioWaterfall.Bandwidth = sett.Receive.Bandwidth;
-      AudioWaterfall.SetBandwidth(); // {!} do not call in design mode
+      AudioWaterfall.SetBandwidth();
 
       MessageListWidget.ApplySettings(ctx.Settings);
       foreach (DecodedItem item in MessageListWidget.listBox.Items)
@@ -123,8 +123,8 @@ namespace SkyRoof
     private void TxAmplitudeSlider_ValueChanged(object sender, EventArgs e)
     {
       ctx.Settings.Ft4Console.Transmit.TxGain = TxGainSlider.Value;
-      toolTip1.SetToolTip(TxGainSlider, $"TX Gain  {TxGainSlider.Value:F0} dB");
       Sender.Soundcard.Volume = Dsp.FromDb2(TxGainSlider.Value);
+      toolTip1.SetToolTip(TxGainSlider, $"TX Gain  {TxGainSlider.Value:F0} dB");
     }
 
 
@@ -503,6 +503,7 @@ namespace SkyRoof
             QsoInfo qso = GetQsoInfo();
             bool newQso = Sequencer.LastHisCall != Sequencer.HisCall;
             if (newQso) ctx.LoqFt4QsoDialog.PopUp(ctx, qso);
+            LogBtn.Enabled = true; // enable log button after first QSO
             Sequencer.Reset();
             Sender.SetMessage(Sequencer.Message!);
           }
@@ -537,6 +538,11 @@ namespace SkyRoof
       qso.TxFreq = (ulong)freq;
 
       return qso;
+    }
+
+    private void LogBtn_MouseClick(object sender, MouseEventArgs e)
+    {
+      ctx.LoqFt4QsoDialog.PopUp(ctx, GetQsoInfo());
     }
 
 

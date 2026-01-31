@@ -60,6 +60,7 @@
       EnableTxBtn = new Button();
       TuneBtn = new Button();
       toolTip1 = new ToolTip(components);
+      LogBtn = new Button();
       ((System.ComponentModel.ISupportInitialize)SplitContainer).BeginInit();
       SplitContainer.Panel1.SuspendLayout();
       SplitContainer.Panel2.SuspendLayout();
@@ -117,6 +118,7 @@
       // 
       // panel1
       // 
+      panel1.Controls.Add(LogBtn);
       panel1.Controls.Add(TxGainSlider);
       panel1.Controls.Add(AmplitudeBar);
       panel1.Controls.Add(TxMessageLabel);
@@ -133,14 +135,14 @@
       panel1.Size = new Size(286, 263);
       panel1.TabIndex = 4;
       // 
-      // TxAmplitudeSlider
+      // TxGainSlider
       // 
       TxGainSlider.AutoSize = false;
       TxGainSlider.LargeChange = 1;
       TxGainSlider.Location = new Point(261, 163);
       TxGainSlider.Maximum = 0;
       TxGainSlider.Minimum = -60;
-      TxGainSlider.Name = "TxAmplitudeSlider";
+      TxGainSlider.Name = "TxGainSlider";
       TxGainSlider.Orientation = Orientation.Vertical;
       TxGainSlider.Size = new Size(25, 92);
       TxGainSlider.TabIndex = 34;
@@ -410,9 +412,9 @@
       // 
       // HaltTxBtn
       // 
-      HaltTxBtn.Location = new Point(118, 42);
+      HaltTxBtn.Location = new Point(97, 43);
       HaltTxBtn.Name = "HaltTxBtn";
-      HaltTxBtn.Size = new Size(96, 28);
+      HaltTxBtn.Size = new Size(74, 28);
       HaltTxBtn.TabIndex = 2;
       HaltTxBtn.Text = "Halt TX";
       HaltTxBtn.UseVisualStyleBackColor = true;
@@ -420,9 +422,9 @@
       // 
       // EnableTxBtn
       // 
-      EnableTxBtn.Location = new Point(14, 43);
+      EnableTxBtn.Location = new Point(17, 43);
       EnableTxBtn.Name = "EnableTxBtn";
-      EnableTxBtn.Size = new Size(96, 28);
+      EnableTxBtn.Size = new Size(74, 28);
       EnableTxBtn.TabIndex = 1;
       EnableTxBtn.Text = "Enable TX";
       EnableTxBtn.UseVisualStyleBackColor = true;
@@ -430,9 +432,9 @@
       // 
       // TuneBtn
       // 
-      TuneBtn.Location = new Point(222, 42);
+      TuneBtn.Location = new Point(177, 43);
       TuneBtn.Name = "TuneBtn";
-      TuneBtn.Size = new Size(50, 28);
+      TuneBtn.Size = new Size(44, 28);
       TuneBtn.TabIndex = 0;
       TuneBtn.Text = "Tune";
       TuneBtn.UseVisualStyleBackColor = true;
@@ -441,6 +443,17 @@
       // toolTip1
       // 
       toolTip1.Popup += toolTip1_Popup;
+      // 
+      // LogBtn
+      // 
+      LogBtn.Enabled = false;
+      LogBtn.Location = new Point(227, 43);
+      LogBtn.Name = "LogBtn";
+      LogBtn.Size = new Size(44, 28);
+      LogBtn.TabIndex = 35;
+      LogBtn.Text = "Log";
+      LogBtn.UseVisualStyleBackColor = true;
+      LogBtn.MouseClick += LogBtn_MouseClick;
       // 
       // Ft4ConsolePanel
       // 
@@ -500,5 +513,6 @@
     private Ft4AmplitudeBar AmplitudeBar;
     private ToolTip toolTip1;
     private TrackBar TxGainSlider;
+    private Button LogBtn;
   }
 }
