@@ -1,18 +1,21 @@
-﻿using System.Timers;
+﻿using System.ComponentModel;
+using System.Diagnostics;
+using System.Timers;
+using System.Windows.Forms;
 using FontAwesome;
 using VE3NEA;
 
 namespace SkyRoof
 {
-  public class Ft4MessageEventArgs : EventArgs
-  {
-    public DecodedItem Item { get; }
-    public Ft4MessageEventArgs(DecodedItem item) { Item = item; }
-  }
-
-
   public partial class Ft4MessageListWidget : UserControl
   {
+    public class Ft4MessageEventArgs : EventArgs
+    {
+      public DecodedItem Item { get; }
+      public Ft4MessageEventArgs(DecodedItem item) { Item = item; }
+    }
+
+
     private readonly System.Timers.Timer freezeTimer = new System.Timers.Timer();
     public DecodedItem HotItem, ClickedItem;
     private Point lastMouseLocation;
@@ -145,7 +148,7 @@ namespace SkyRoof
       if (e.Button != MouseButtons.Left) return;
 
       ClickedItem = GetItemUnderCursor();
-      if (ClickedItem?.IsClickable() == true) 
+      if (ClickedItem?.IsClickable() == true)
         OnMessageClick(ClickedItem);
     }
 
@@ -242,7 +245,7 @@ namespace SkyRoof
         if (itm.SlotNumber < item.SlotNumber) break;
         else if (itm.Type == DecodedItemType.TxMessage && itm.SlotNumber == item.SlotNumber)
         {
-          listBox.Items[i] = item; 
+          listBox.Items[i] = item;
           return;
         }
       }
@@ -387,7 +390,7 @@ namespace SkyRoof
     private void ShowSeparatorTooltip(DecodedItem hotItem)
     {
       string title = hotItem.Odd ? "Odd (2-nd)" : "Even (1-st)";
-      string tooltip = string.Format("slot {0}\n{1:%h} hours {1:%m} minutes ago", 
+      string tooltip = string.Format("slot {0}\n{1:%h} hours {1:%m} minutes ago",
         hotItem.SlotNumber % NativeFT4Coder.SLOTS_PER_DAY, DateTime.UtcNow - hotItem.Utc);
       ShowTooltip(title, tooltip);
     }
@@ -433,6 +436,27 @@ namespace SkyRoof
     private void ScrollMNU_Click(object sender, EventArgs e)
     {
       listBox.ScrollToBottom();
+    }
+    private void FindOnQrzMNU_Click(object sender, EventArgs e)
+    {
+      Utils.OpenUrl("https://www.qrz.com/db/" + MenuCall);
+    }
+
+    private void FindOnGoogleMNU_Click(object sender, EventArgs e)
+    {
+      Utils.OpenUrl("https://www.google.com/search?q=" + MenuCall);
+    }
+
+    string? MenuCall = null;
+    private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
+    {
+      MenuCall = HotItem?.Parse?.DECallsign ?? "";
+      FindOnQrzMNU.Text = string.Format("Find {0} on QRZ.COM...", MenuCall);
+      FindOnGoogleMNU.Text = string.Format("Find {0} on Google...", MenuCall);
+
+      bool callClicked = MenuCall != "";
+      FindOnQrzMNU.Enabled = callClicked;
+      FindOnGoogleMNU.Enabled = callClicked;
     }
   }
 }

@@ -233,7 +233,7 @@ namespace SkyRoof
       }
     }
 
-    private void MessageListWidget_MessageHover(object? sender, Ft4MessageEventArgs? e)
+    private void MessageListWidget_MessageHover(object? sender, Ft4MessageListWidget.Ft4MessageEventArgs? e)
     {
       AudioWaterfall.ShowCallsign(MessageListWidget.HotItem);
     }
@@ -561,7 +561,7 @@ namespace SkyRoof
     }
 
     // click on someone's message
-    private void MessageListWidget_MessageClick(object sender, Ft4MessageEventArgs e)
+    private void MessageListWidget_MessageClick(object sender, Ft4MessageListWidget.Ft4MessageEventArgs e)
     {
       if (e.Item.FromMe && ModifierKeys == Keys.Control)
         AdjustUplinkOffset(e.Item);

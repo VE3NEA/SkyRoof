@@ -33,6 +33,9 @@
       contextMenuStrip1 = new ContextMenuStrip(components);
       ClearMNU = new ToolStripMenuItem();
       ScrollMNU = new ToolStripMenuItem();
+      toolStripMenuItem1 = new ToolStripSeparator();
+      FindOnQrzMNU = new ToolStripMenuItem();
+      FindOnGoogleMNU = new ToolStripMenuItem();
       toolTip1 = new ToolTip(components);
       contextMenuStrip1.SuspendLayout();
       SuspendLayout();
@@ -60,9 +63,10 @@
       // 
       // contextMenuStrip1
       // 
-      contextMenuStrip1.Items.AddRange(new ToolStripItem[] { ClearMNU, ScrollMNU });
+      contextMenuStrip1.Items.AddRange(new ToolStripItem[] { ClearMNU, ScrollMNU, toolStripMenuItem1, FindOnQrzMNU, FindOnGoogleMNU });
       contextMenuStrip1.Name = "contextMenuStrip1";
-      contextMenuStrip1.Size = new Size(181, 70);
+      contextMenuStrip1.Size = new Size(181, 120);
+      contextMenuStrip1.Opening += contextMenuStrip1_Opening;
       // 
       // ClearMNU
       // 
@@ -77,6 +81,25 @@
       ScrollMNU.Size = new Size(180, 22);
       ScrollMNU.Text = "Scroll to Bottom";
       ScrollMNU.Click += ScrollMNU_Click;
+      // 
+      // toolStripMenuItem1
+      // 
+      toolStripMenuItem1.Name = "toolStripMenuItem1";
+      toolStripMenuItem1.Size = new Size(177, 6);
+      // 
+      // FindOnQrzMNU
+      // 
+      FindOnQrzMNU.Name = "FindOnQrzMNU";
+      FindOnQrzMNU.Size = new Size(180, 22);
+      FindOnQrzMNU.Text = "Find on QRZ";
+      FindOnQrzMNU.Click += FindOnQrzMNU_Click;
+      // 
+      // FindOnGoogleMNU
+      // 
+      FindOnGoogleMNU.Name = "FindOnGoogleMNU";
+      FindOnGoogleMNU.Size = new Size(180, 22);
+      FindOnGoogleMNU.Text = "Find on Google";
+      FindOnGoogleMNU.Click += FindOnGoogleMNU_Click;
       // 
       // Ft4MessageListWidget
       // 
@@ -96,5 +119,8 @@
     private ContextMenuStrip contextMenuStrip1;
     private ToolStripMenuItem ClearMNU;
     private ToolStripMenuItem ScrollMNU;
+    private ToolStripSeparator toolStripMenuItem1;
+    private ToolStripMenuItem FindOnQrzMNU;
+    private ToolStripMenuItem FindOnGoogleMNU;
   }
 }

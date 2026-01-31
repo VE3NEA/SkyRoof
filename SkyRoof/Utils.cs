@@ -171,5 +171,22 @@ namespace VE3NEA
       form.StartPosition = FormStartPosition.Manual;
       form.SetBounds(newX, newY, newWidth, newHeight);
     }
+
+    public static void OpenUrl(string url)
+    {
+      try
+      {
+        ProcessStartInfo psi = new ProcessStartInfo
+        {
+          FileName = url,
+          UseShellExecute = true
+        };
+        Process.Start(psi);
+      }
+      catch (Exception ex)
+      {
+        MessageBox.Show($"Failed to open URL: {url}\n\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+      }
+    }
   }
 }
