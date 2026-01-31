@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using FontAwesome;
+using Newtonsoft.Json.Linq;
 using Serilog;
 using VE3NEA;
 using WeifenLuo.WinFormsUI.Docking;
@@ -107,8 +108,8 @@ namespace SkyRoof
       Decoder.CutoffFrequency = sett.Receive.Bandwidth - 50;
 
       Sender.Soundcard.SetDeviceId(sett.Transmit.TxSoundcard);
-      Sender.Soundcard.Volume = Dsp.FromDb2(sett.Transmit.TxGain);
       Sender.XitEnabled = sett.Transmit.XitEnabled;
+      TxGainSlider.Value = sett.Transmit.TxGain;
 
       Sequencer.MyCall = ctx.Settings.User.Call;
       Sequencer.MySquare = ctx.Settings.User.Square;
@@ -119,6 +120,12 @@ namespace SkyRoof
       UpdateTxButtons();
     }
 
+    private void TxAmplitudeSlider_ValueChanged(object sender, EventArgs e)
+    {
+      ctx.Settings.Ft4Console.Transmit.TxGain = TxGainSlider.Value;
+      toolTip1.SetToolTip(TxGainSlider, $"TX Gain  {TxGainSlider.Value:F0} dB");
+      Sender.Soundcard.Volume = Dsp.FromDb2(TxGainSlider.Value);
+    }
 
 
 

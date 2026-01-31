@@ -33,6 +33,7 @@
       AudioWaterfall = new AudioWaterfallWidget();
       MessageListWidget = new Ft4MessageListWidget();
       panel1 = new Panel();
+      TxGainSlider = new TrackBar();
       AmplitudeBar = new Ft4AmplitudeBar();
       TxMessageLabel = new Label();
       TxMessagesPanel = new FlowLayoutPanel();
@@ -64,6 +65,7 @@
       SplitContainer.Panel2.SuspendLayout();
       SplitContainer.SuspendLayout();
       panel1.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)TxGainSlider).BeginInit();
       TxMessagesPanel.SuspendLayout();
       groupBox2.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)RxSpinner).BeginInit();
@@ -115,6 +117,7 @@
       // 
       // panel1
       // 
+      panel1.Controls.Add(TxGainSlider);
       panel1.Controls.Add(AmplitudeBar);
       panel1.Controls.Add(TxMessageLabel);
       panel1.Controls.Add(TxMessagesPanel);
@@ -130,14 +133,30 @@
       panel1.Size = new Size(286, 263);
       panel1.TabIndex = 4;
       // 
+      // TxAmplitudeSlider
+      // 
+      TxGainSlider.AutoSize = false;
+      TxGainSlider.LargeChange = 1;
+      TxGainSlider.Location = new Point(261, 163);
+      TxGainSlider.Maximum = 0;
+      TxGainSlider.Minimum = -60;
+      TxGainSlider.Name = "TxAmplitudeSlider";
+      TxGainSlider.Orientation = Orientation.Vertical;
+      TxGainSlider.Size = new Size(25, 92);
+      TxGainSlider.TabIndex = 34;
+      TxGainSlider.TickFrequency = 10;
+      toolTip1.SetToolTip(TxGainSlider, "TX Gain");
+      TxGainSlider.Value = -30;
+      TxGainSlider.ValueChanged += TxAmplitudeSlider_ValueChanged;
+      // 
       // AmplitudeBar
       // 
       AmplitudeBar.BackColor = SystemColors.ButtonShadow;
-      AmplitudeBar.Location = new Point(261, 77);
+      AmplitudeBar.Location = new Point(266, 77);
       AmplitudeBar.Name = "AmplitudeBar";
       AmplitudeBar.Size = new Size(9, 80);
       AmplitudeBar.TabIndex = 33;
-      toolTip1.SetToolTip(AmplitudeBar, "Amplitude");
+      toolTip1.SetToolTip(AmplitudeBar, "RX Amplitude");
       // 
       // TxMessageLabel
       // 
@@ -145,7 +164,7 @@
       TxMessageLabel.Font = new Font("Courier New", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
       TxMessageLabel.Location = new Point(14, 165);
       TxMessageLabel.Name = "TxMessageLabel";
-      TxMessageLabel.Size = new Size(258, 21);
+      TxMessageLabel.Size = new Size(246, 21);
       TxMessageLabel.TabIndex = 32;
       TxMessageLabel.TextAlign = ContentAlignment.MiddleCenter;
       // 
@@ -238,11 +257,11 @@
       groupBox2.Controls.Add(label3);
       groupBox2.Controls.Add(label2);
       groupBox2.Controls.Add(TxSpinner);
-      groupBox2.Location = new Point(98, 77);
+      groupBox2.Location = new Point(99, 77);
       groupBox2.Margin = new Padding(4, 3, 4, 3);
       groupBox2.Name = "groupBox2";
       groupBox2.Padding = new Padding(4, 3, 4, 3);
-      groupBox2.Size = new Size(156, 82);
+      groupBox2.Size = new Size(161, 82);
       groupBox2.TabIndex = 30;
       groupBox2.TabStop = false;
       // 
@@ -438,6 +457,7 @@
       ((System.ComponentModel.ISupportInitialize)SplitContainer).EndInit();
       SplitContainer.ResumeLayout(false);
       panel1.ResumeLayout(false);
+      ((System.ComponentModel.ISupportInitialize)TxGainSlider).EndInit();
       TxMessagesPanel.ResumeLayout(false);
       groupBox2.ResumeLayout(false);
       groupBox2.PerformLayout();
@@ -479,5 +499,6 @@
     public SplitContainer SplitContainer;
     private Ft4AmplitudeBar AmplitudeBar;
     private ToolTip toolTip1;
+    private TrackBar TxGainSlider;
   }
 }

@@ -36,7 +36,7 @@ namespace SkyRoof
 
     internal string GetTooltip()
     {
-      return $"{Dsp.ToDb2(Amplitude):F0} dBFS";
+      return $"RX Amplitude  {Dsp.ToDb2(Amplitude):F0} dBFS";
     }
 
     private void Ft4AmplitudeBar_Paint(object sender, PaintEventArgs e)
