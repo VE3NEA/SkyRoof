@@ -33,6 +33,7 @@ namespace SkyRoof
     private Font fontAwesome11;
 
     public string MyCall;
+    public Context ctx;
 
     public event EventHandler<Ft4MessageEventArgs?>? MessageHover;
     public event EventHandler<Ft4MessageEventArgs>? MessageClick;
@@ -428,6 +429,12 @@ namespace SkyRoof
       }
     }
 
+
+
+
+    //--------------------------------------------------------------------------------------------------------------
+    //                                                menu
+    //--------------------------------------------------------------------------------------------------------------
     private void ClearMNU_Click(object sender, EventArgs e)
     {
       listBox.Items.Clear();
@@ -437,6 +444,7 @@ namespace SkyRoof
     {
       listBox.ScrollToBottom();
     }
+
     private void FindOnQrzMNU_Click(object sender, EventArgs e)
     {
       Utils.OpenUrl("https://www.qrz.com/db/" + MenuCall);
@@ -457,6 +465,11 @@ namespace SkyRoof
       bool callClicked = MenuCall != "";
       FindOnQrzMNU.Enabled = callClicked;
       FindOnGoogleMNU.Enabled = callClicked;
+    }
+
+    private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+      new SettingsDialog(ctx, "SkyRoof.Settings.Ft4Console").ShowDialog();
     }
   }
 }

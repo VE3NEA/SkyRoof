@@ -27,6 +27,7 @@ namespace SkyRoof
       InitializeComponent();
 
       this.ctx = ctx;
+      MessageListWidget.ctx = ctx;
       Log.Information("Creating Ft4ConsolePanel");
 
       ctx.Ft4ConsolePanel = this;
@@ -502,7 +503,7 @@ namespace SkyRoof
             Sender.Stop();
             QsoInfo qso = GetQsoInfo();
             bool newQso = Sequencer.LastHisCall != Sequencer.HisCall;
-            if (newQso) ctx.LoqFt4QsoDialog.PopUp(ctx, qso);
+            if (newQso) LoqFt4QsoDialog.PopUp(ctx, qso);
             LogBtn.Enabled = true; // enable log button after first QSO
             Sequencer.Reset();
             Sender.SetMessage(Sequencer.Message!);
@@ -516,16 +517,19 @@ namespace SkyRoof
 
     private QsoInfo GetQsoInfo()
     {
-      QsoInfo qso = new();
-
       string sat = ctx.SatelliteSelector.SelectedSatellite?.LotwName ?? "";
       double freq = ctx.FrequencyControl.RadioLink.CorrectedUplinkFrequency;
       string band = ctx.FrequencyControl.GetBandName(true);
+      
+      DateTime utc = Sender.Slot.CurrentSlotStartTime;
+      if (utc == DateTime.MinValue) utc = DateTime.UtcNow;
+
+      QsoInfo qso = new();
 
       qso.StationCallsign = Sequencer.MyCall;
       qso.MyGridSquare = Sequencer.MySquare;
-      qso.Utc = Sender.Slot.CurrentSlotStartTime;
-      qso.Call = Sequencer.HisCall!;
+      qso.Utc = DateTime.UtcNow;
+      qso.Call = Sequencer.HisCall ?? Sequencer.LastHisCall ?? "NO CALLSIGN"; 
       qso.Band = band;
       qso.Mode = "FT4";
       qso.Sat = sat;
@@ -542,7 +546,7 @@ namespace SkyRoof
 
     private void LogBtn_MouseClick(object sender, MouseEventArgs e)
     {
-      ctx.LoqFt4QsoDialog.PopUp(ctx, GetQsoInfo());
+      LoqFt4QsoDialog.PopUp(ctx, GetQsoInfo());
     }
 
 

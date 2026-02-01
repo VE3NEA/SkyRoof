@@ -112,10 +112,11 @@ namespace SkyRoof
       Name = "LoqFt4QsoDialog";
       ShowInTaskbar = false;
       SizeGripStyle = SizeGripStyle.Hide;
-      StartPosition = FormStartPosition.CenterScreen;
+      StartPosition = FormStartPosition.Manual;
       Text = "Save QSO";
       TopMost = true;
       FormClosing += LoqFt4QsoDialog_FormClosing;
+      Move += LoqFt4QsoDialog_Move;
       ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
       ResumeLayout(false);
     }

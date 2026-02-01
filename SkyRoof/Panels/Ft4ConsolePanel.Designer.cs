@@ -33,6 +33,7 @@
       AudioWaterfall = new AudioWaterfallWidget();
       MessageListWidget = new Ft4MessageListWidget();
       panel1 = new Panel();
+      LogBtn = new Button();
       TxGainSlider = new TrackBar();
       AmplitudeBar = new Ft4AmplitudeBar();
       TxMessageLabel = new Label();
@@ -60,7 +61,6 @@
       EnableTxBtn = new Button();
       TuneBtn = new Button();
       toolTip1 = new ToolTip(components);
-      LogBtn = new Button();
       ((System.ComponentModel.ISupportInitialize)SplitContainer).BeginInit();
       SplitContainer.Panel1.SuspendLayout();
       SplitContainer.Panel2.SuspendLayout();
@@ -134,6 +134,16 @@
       panel1.Name = "panel1";
       panel1.Size = new Size(286, 263);
       panel1.TabIndex = 4;
+      // 
+      // LogBtn
+      // 
+      LogBtn.Location = new Point(227, 43);
+      LogBtn.Name = "LogBtn";
+      LogBtn.Size = new Size(44, 28);
+      LogBtn.TabIndex = 35;
+      LogBtn.Text = "Log";
+      LogBtn.UseVisualStyleBackColor = true;
+      LogBtn.MouseClick += LogBtn_MouseClick;
       // 
       // TxGainSlider
       // 
@@ -443,17 +453,6 @@
       // toolTip1
       // 
       toolTip1.Popup += toolTip1_Popup;
-      // 
-      // LogBtn
-      // 
-      LogBtn.Enabled = false;
-      LogBtn.Location = new Point(227, 43);
-      LogBtn.Name = "LogBtn";
-      LogBtn.Size = new Size(44, 28);
-      LogBtn.TabIndex = 35;
-      LogBtn.Text = "Log";
-      LogBtn.UseVisualStyleBackColor = true;
-      LogBtn.MouseClick += LogBtn_MouseClick;
       // 
       // Ft4ConsolePanel
       // 

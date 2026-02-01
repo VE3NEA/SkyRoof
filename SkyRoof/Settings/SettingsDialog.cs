@@ -20,9 +20,11 @@ namespace SkyRoof
       InitializeComponent();
       this.ctx = ctx;
       grid.SelectedObject = Utils.DeepClone(ctx.Settings);
-      //grid.ExpandAllGridItems();
-      grid.ExpandTopLevelProperties(true);
-      SelectSection(section);
+
+      if (section == null)
+        grid.ExpandTopLevelProperties(null, true);
+      else
+        grid.ExpandTopLevelProperties(grid.GetItemByFullName(section));
     }
 
     private void SelectSection(string section)

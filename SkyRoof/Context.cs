@@ -37,9 +37,6 @@ namespace SkyRoof
     public QsoEntryPanel? QsoEntryPanel;
     public Ft4ConsolePanel? Ft4ConsolePanel;
 
-    // dialogs
-    internal LoqFt4QsoDialog LoqFt4QsoDialog = new();
-
     // devices
     public SoapySdrDevice? Sdr;
     public Slicer? Slicer;

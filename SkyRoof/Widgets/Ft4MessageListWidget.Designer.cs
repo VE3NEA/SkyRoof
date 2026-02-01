@@ -29,6 +29,7 @@
     private void InitializeComponent()
     {
       components = new System.ComponentModel.Container();
+      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Ft4MessageListWidget));
       listBox = new VE3NEA.ListBoxEx();
       contextMenuStrip1 = new ContextMenuStrip(components);
       ClearMNU = new ToolStripMenuItem();
@@ -37,6 +38,8 @@
       FindOnQrzMNU = new ToolStripMenuItem();
       FindOnGoogleMNU = new ToolStripMenuItem();
       toolTip1 = new ToolTip(components);
+      settingsToolStripMenuItem = new ToolStripMenuItem();
+      toolStripMenuItem2 = new ToolStripSeparator();
       contextMenuStrip1.SuspendLayout();
       SuspendLayout();
       // 
@@ -63,9 +66,9 @@
       // 
       // contextMenuStrip1
       // 
-      contextMenuStrip1.Items.AddRange(new ToolStripItem[] { ClearMNU, ScrollMNU, toolStripMenuItem1, FindOnQrzMNU, FindOnGoogleMNU });
+      contextMenuStrip1.Items.AddRange(new ToolStripItem[] { ClearMNU, ScrollMNU, toolStripMenuItem1, FindOnQrzMNU, FindOnGoogleMNU, toolStripMenuItem2, settingsToolStripMenuItem });
       contextMenuStrip1.Name = "contextMenuStrip1";
-      contextMenuStrip1.Size = new Size(181, 120);
+      contextMenuStrip1.Size = new Size(181, 148);
       contextMenuStrip1.Opening += contextMenuStrip1_Opening;
       // 
       // ClearMNU
@@ -77,6 +80,7 @@
       // 
       // ScrollMNU
       // 
+      ScrollMNU.Image = Properties.Resources.arrow_down_16;
       ScrollMNU.Name = "ScrollMNU";
       ScrollMNU.Size = new Size(180, 22);
       ScrollMNU.Text = "Scroll to Bottom";
@@ -89,6 +93,7 @@
       // 
       // FindOnQrzMNU
       // 
+      FindOnQrzMNU.Image = Properties.Resources.qrz;
       FindOnQrzMNU.Name = "FindOnQrzMNU";
       FindOnQrzMNU.Size = new Size(180, 22);
       FindOnQrzMNU.Text = "Find on QRZ";
@@ -96,10 +101,24 @@
       // 
       // FindOnGoogleMNU
       // 
+      FindOnGoogleMNU.Image = (Image)resources.GetObject("FindOnGoogleMNU.Image");
       FindOnGoogleMNU.Name = "FindOnGoogleMNU";
       FindOnGoogleMNU.Size = new Size(180, 22);
       FindOnGoogleMNU.Text = "Find on Google";
       FindOnGoogleMNU.Click += FindOnGoogleMNU_Click;
+      // 
+      // settingsToolStripMenuItem
+      // 
+      settingsToolStripMenuItem.Image = Properties.Resources.gear_1_;
+      settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+      settingsToolStripMenuItem.Size = new Size(180, 22);
+      settingsToolStripMenuItem.Text = "Settings...";
+      settingsToolStripMenuItem.Click += settingsToolStripMenuItem_Click;
+      // 
+      // toolStripMenuItem2
+      // 
+      toolStripMenuItem2.Name = "toolStripMenuItem2";
+      toolStripMenuItem2.Size = new Size(177, 6);
       // 
       // Ft4MessageListWidget
       // 
@@ -122,5 +141,7 @@
     private ToolStripSeparator toolStripMenuItem1;
     private ToolStripMenuItem FindOnQrzMNU;
     private ToolStripMenuItem FindOnGoogleMNU;
+    private ToolStripSeparator toolStripMenuItem2;
+    private ToolStripMenuItem settingsToolStripMenuItem;
   }
 }
