@@ -42,7 +42,7 @@ namespace VE3NEA
     [DllImport("ft4_coder", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     public static extern void decode_ft4(
         [In] float[] audio_samples,
-        ref int nQSOProgress,
+        ref QsoStage nQSOProgress,
         ref int nfqso,
         ref int nfb,
         [In] byte[] mycall,

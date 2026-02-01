@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Serilog;
 using VE3NEA;
+using static VE3NEA.NativeFT4Coder;
 
 namespace SkyRoof
 {
@@ -75,7 +76,7 @@ namespace SkyRoof
         for (int i = 0; i < samples.Length; i++)
           samples[i] /= max;
 
-      int stage = (int)NativeFT4Coder.QsoStage.CALLING;
+      QsoStage stage = NativeFT4Coder.QsoStage.CALLING;
       Buffers!.SetMyCall(MyCall);
 
       DecodedSlotNumber = Slot.SlotNumber;

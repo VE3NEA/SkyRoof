@@ -12,6 +12,8 @@ for the list of currently supported radios. If your radio model is not yet suppo
 If your radio is supported by SkyCAT, use skycatd.exe, a command line program that comes as part of the SkyCAT package. To start using it, follow the
 [setup instructions](https://ve3nea.github.io/SkyCAT/skycatd.html) on the SkyCAT web site.
 
+The latest command definition files are available [here](https://github.com/VE3NEA/SkyCAT/tree/master/Rigs).
+Update the file for your radio before you proceed.
 
 ## Using rigctld.exe
 
