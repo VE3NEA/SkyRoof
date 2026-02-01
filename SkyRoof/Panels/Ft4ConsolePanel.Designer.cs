@@ -137,6 +137,7 @@
       // 
       // LogBtn
       // 
+      LogBtn.Enabled = false;
       LogBtn.Location = new Point(227, 43);
       LogBtn.Name = "LogBtn";
       LogBtn.Size = new Size(44, 28);
