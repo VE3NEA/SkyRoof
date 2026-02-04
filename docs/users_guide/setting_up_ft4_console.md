@@ -75,7 +75,7 @@ In Windows 11 open **Settings / System / Sound**, select your soundcard, and adj
 
 ## TX Gain
 
-The amplitude of FT4 audio output must be set carefully to ensure the desired output power and to prevent transmission of audio harmonics. To adjust the output amplitude, click on the **Tune** button in FT4 Console to start transmission and adjust **Transmit / Gain** in the Settings dialog. Use the meters in the transceiver to ensure that the radio delivers full output power, and that the ALC level is around zero. 
+The amplitude of FT4 audio output must be set carefully to ensure the desired output power and to prevent transmission of audio harmonics. To adjust the output amplitude, click on the **Tune** button in FT4 Console to start transmission and adjust **TX Gain slider**. Use the meters in the transceiver to ensure that the radio delivers full output power, and that the ALC level is around zero. 
 
 In IC-9700 you can display all meters in the satellite mode by pressing **Menu / Meter**, as shown in the screenshot below. **S/Po** must be at the maximum, and **ALC** at the minimum. For IC-9700 the optimal TX gain is about -32 dB.
 

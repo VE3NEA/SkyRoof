@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.25](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.25/SkyRoofSetup-v.1.25.zip)
+[SkyRoof v.1.26](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.26/SkyRoofSetup-v.1.26.zip)
 
 <br>
 
@@ -15,6 +15,13 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.26
+
+- added TX Gain slider to the FT4 Console panel;
+- added the Log button in the FT4 Console panel;
+- added commands to the context menu in the FT4 Console panel.
+
 
 #### v.1.25
 

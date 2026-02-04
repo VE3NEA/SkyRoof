@@ -36,6 +36,16 @@ The first column in the received messages is the SNR of the received signal. It 
 Sender's callsigns are color-highlighted based on their status from the logging interface. See
 [QSO Entry](qso_entry_panel.md) for information about callsign colors.
 
+
+The popup menu has commands to
+
+- clear the message list;
+- scroll to the bottom and enable auto-scrolling;
+- find the callsign on QRZ.COM or on Google;
+- open the Settings dialog and expand the FT4 settings.
+
+![mrnu](../images/ft4_menu.png)
+
 ### Control Area
 
  - **Enable TX button** - enable transmissions;
@@ -43,6 +53,8 @@ Sender's callsigns are color-highlighted based on their status from the logging 
  - **Halt TX button** - abort current transmission;
 
  - **Tune button** - transmit a tone for tuning. This button works only when Enable TX is turned off. Similarly, the Enable TX works only when Tune is off;
+
+ - **Log button** - log the current QSO. Disabled until the first QSO is made;
 
  - **TX Odd/Even** - select odd or even time slots for transmission;
  
@@ -53,6 +65,8 @@ Sender's callsigns are color-highlighted based on their status from the logging 
  - **up and down arrow buttons** - set RX tone equal to TX tone or vice versa. The buttons are color-coded, e.g., if you click on a green arrow, the green maker on the frequency scale moves;
 
  - **amplitude bar** - shows the peak amplitude of the input audio, see the **FT4 Console Settings** section for details;
+
+ - **TX Gain slider** - allows you to adjust the amplitude of FT4 audio signals sent to the radio;
  
  - **message text** - the current message to be transmitted;
  
