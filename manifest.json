@@ -332,6 +332,16 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/ft4_menu.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/ft4_menu.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/ft4_uplink_offset.png",
       "output": {
         "resource": {
