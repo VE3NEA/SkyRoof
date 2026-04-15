@@ -572,6 +572,56 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/recorder_panel.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/recorder_panel.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/recorder_playback.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/recorder_playback.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/recorder_record_menu.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/recorder_record_menu.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/recorder_recording.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/recorder_recording.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/recorder_save_menu.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/recorder_save_menu.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/red_spot.png",
       "output": {
         "resource": {
@@ -1309,6 +1359,16 @@
       "output": {
         ".html": {
           "relative_path": "users_guide/recevie_sstv.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/recorder_panel.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/recorder_panel.html"
         }
       },
       "version": ""

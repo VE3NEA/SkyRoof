@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Recorder Panel | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Recorder Panel | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/recorder_panel.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MMW827H44"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-1MMW827H44');
+      </script>
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="recorder-panel">Recorder Panel</h1>
+
+<p>The Recorder panel records the received audio or I/Q signal and plays it back later.
+Up to 30 minutes of data can be stored in the recording buffer.</p>
+<p><img src="../images/recorder_panel.png" alt="Recorder panel"></p>
+<h2 id="recording">Recording</h2>
+<p>Click <strong>Record</strong> to start recording audio. To choose what to record, click the <strong>▼</strong> button next to Record:</p>
+<p><img src="../images/recorder_record_menu.png" alt="Record menu"></p>
+<ul>
+<li><strong>Record Audio</strong> — records the demodulated audio signal (mono);</li>
+<li><strong>Record I/Q</strong> — records the complex baseband I/Q signal (stereo).</li>
+</ul>
+<p>The button turns red and the status bar shows the recording type and elapsed time while recording is active.
+Click <strong>Record</strong> again to stop.</p>
+<p><img src="../images/recorder_recording.png" alt="Recording in progress"></p>
+<p>The waveform display shows the recorded signal growing from the left. The full 30-minute buffer width is
+always shown during recording, so the waveform expands to fill it as the recording progresses.</p>
+<h2 id="event-markers">Event Markers</h2>
+<p>While recording is active, the panel automatically tracks changes in the selected satellite, transmitter,
+and mode, as well as QSOs saved in the <a href="qso_entry_panel.html">QSO Entry</a> panel. These events appear as
+colored markers along the top edge of the waveform:</p>
+<ul>
+<li><strong>green circle</strong> — satellite selection changed;</li>
+<li><strong>magenta triangle</strong> — transmitter selection changed;</li>
+<li><strong>yellow triangle</strong> — demodulation mode changed;</li>
+<li><strong>cyan square</strong> — QSO saved.</li>
+</ul>
+<p>Move the mouse cursor over a marker to see a tooltip with the details of that event.</p>
+<h2 id="playback">Playback</h2>
+<p>Click <strong>Play Back</strong> to play back the recording. The button turns green and a red vertical line
+moves across the waveform to show the current position. The status bar shows the elapsed time,
+total duration, and progress percentage.</p>
+<p><img src="../images/recorder_playback.png" alt="Playback in progress"></p>
+<p>Click anywhere on the waveform during playback to seek to that position.</p>
+<p>Click <strong>Play Back</strong> again to stop playback.</p>
+<h2 id="saving-and-loading">Saving and Loading</h2>
+<p>Click <strong>Save</strong> to save the recording. To choose the file format, click the <strong>▼</strong> button next to Save:</p>
+<p><img src="../images/recorder_save_menu.png" alt="Save menu"></p>
+<ul>
+<li><strong>Save .mp3</strong> — available for audio recordings only; saves a compressed MP3 file resampled to 16 kHz;</li>
+<li><strong>Save .wav</strong> — saves a 48 kHz 32-bit float WAV file. Audio recordings are saved as mono;
+I/Q recordings are saved as stereo (left channel = I, right channel = Q).</li>
+</ul>
+<p>Click <strong>Load</strong> to load a previously saved .wav or .mp3 file into the buffer for playback.</p>
+<p>The Save and Load dialogs open in the <strong>Recordings</strong> subfolder of the <a href="data_folder.html">data folder</a> by default.</p>
+<h2 id="playback-routing">Playback Routing</h2>
+<p>During playback, audio is sent to the same soundcard that is selected in <a href="setting_up_audio.html">Settings</a> for SDR audio output.
+Both audio and I/Q are also routed through the same output channel (VAC or UDP) that is configured
+for the <a href="setting_up_output_stream.html">Output Stream</a> function in the <a href="setting_up_output_stream.html">Settings</a>, so external applications can receive
+the played-back signal just as they would a live signal.</p>
+<h2 id="waveform-display">Waveform Display</h2>
+<p>The vertical gain slider on the right edge of the waveform adjusts the display amplitude in dB,
+making quiet signals easier to see. It does not affect the recording or playback level.</p>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
