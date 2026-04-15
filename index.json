@@ -2,7 +2,7 @@
   "credits.html": {
     "href": "credits.html",
     "title": "Credits | SkyRoof",
-    "summary": "Credits The following libraries, images and other resources were used in the SkyRoof project: Software Tools and Libraries Visual Studio SGP.NET DockPanelSuite FFTW liquid-dsp SharpGL CSCore MathNet.Numerics Newtonsoft.Json Serilog AngleSharp WSJT-X WsjtxUtils airspy.dll rtlsdr.dll Soapy SDR SoapyAirspy SoapyRTLSDR SoapySDRPlay3 Inno Setup ISTool InnoDependencyInstaller Fonts and Images FontAwesome FontAwesomeIcons Satellite icons created by Dighital - Flaticon SVG Repo Lunapic image editor"
+    "summary": "Credits The following libraries, images and other resources were used in the SkyRoof project: Software Tools and Libraries Visual Studio SGP.NET DockPanelSuite FFTW liquid-dsp SharpGL CSCore MathNet.Numerics Newtonsoft.Json Serilog AngleSharp WSJT-X WsjtxUtils airspy.dll rtlsdr.dll Soapy SDR SoapyAirspy SoapyRTLSDR SoapySDRPlay3 Inno Setup ISTool InnoDependencyInstaller Multimedia Timer NAudio Fonts and Images FontAwesome FontAwesomeIcons Satellite icons created by Dighital - Flaticon SVG Repo Lunapic image editor"
   },
   "download.html": {
     "href": "download.html",
