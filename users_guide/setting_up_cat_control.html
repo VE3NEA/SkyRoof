@@ -162,6 +162,17 @@ Enter this port number in the settings as well, and run two instances of <strong
 frequency with all corrections applied. Another way to toggle this setting is via the right-click menu on the frequency display widget on the toolbar.</p>
 </li>
 </ul>
+<h2 id="using-cat-with-a-transverter">Using CAT with a Transverter</h2>
+<p>If your transceiver does not understand VHF/UHF frequencies (e.g., a &quot;dumb&quot; HF rig connected
+via a transverter, or an HF rig such as the IC-7300), enable the <strong>RX CAT Offset</strong> and / or
+<strong>TX CAT Offset</strong> in the <strong>Transverter</strong> section of the Settings. SkyRoof will then send the
+IF frequency (e.g., 29.950 MHz) to the radio instead of the satellite RF (e.g., 145.950 MHz).
+Modern rigs with built-in XVRT support (e.g., the K3S) do their own conversion internally and
+should leave these offsets <strong>disabled</strong>.</p>
+<p>When a CAT offset is enabled but no transverter band covers the current frequency, the <strong>RX CAT</strong>
+or <strong>TX CAT</strong> label on the status bar turns <strong>yellow</strong> and SkyRoof skips the CAT command rather
+than send a frequency the radio cannot tune. Hover over the label to see the explanation.</p>
+<p>See <a href="setting_up_transverter.html">Setting Up Transverter</a>.</p>
 <h2 id="model-specific-notes">Model-Specific Notes</h2>
 <h3 id="ic-9700">IC-9700</h3>
 <ul>

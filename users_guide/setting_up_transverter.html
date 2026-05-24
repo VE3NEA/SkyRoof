@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Setting Up Transverter | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Setting Up Transverter | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/setting_up_transverter.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MMW827H44"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-1MMW827H44');
+      </script>
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="setting-up-transverter">Setting Up Transverter</h1>
+
+<p>If you receive on an HF SDR connected to a VHF/UHF transverter, or transmit with an HF
+transceiver connected to a transverter, the SDR and the rig &quot;see&quot; the satellite signal at the
+transverter's <strong>IF frequency</strong> (typically 28–30 MHz), not at the actual RF frequency
+(144 MHz, 432 MHz). SkyRoof can apply the LO offset for you so that:</p>
+<ul>
+<li>the <strong>SDR</strong> is tuned to the IF that the transverter outputs, while the waterfall scale and the
+frequency display continue to show the RF frequency of the satellite;</li>
+<li>the <strong>transceiver</strong> (via CAT) receives the IF frequency that it can actually tune, instead of
+the VHF/UHF frequency that it cannot.</li>
+</ul>
+<p>The three offsets — for the SDR, for the RX CAT channel and for the TX CAT channel — are
+independently enabled, so you can mix-and-match: a smart VHF/UHF rig with an SDR-on-transverter
+setup, a dumb HF rig with the SDR on the antenna directly, or any other combination.</p>
+<div class="NOTE">
+<h5>Note</h5>
+<p>Frequencies are <strong>always</strong> displayed at the actual RF (144/432 MHz). The IF translation is
+applied internally by SkyRoof when it tunes the SDR or sends a CAT command.</p>
+</div>
+<h2 id="when-you-need-this">When You Need This</h2>
+<ul>
+<li><p><strong>HF transceiver + transverter, no built-in XVRT support</strong> (e.g., IC-735, IC-7300):
+enable <strong>RX CAT</strong> and <strong>TX CAT</strong> offsets. SkyRoof sends 29.950 MHz to the radio when the
+satellite is on 145.950 MHz.</p>
+</li>
+<li><p><strong>Modern transceiver with built-in XVRT offset</strong> (e.g., K3S + Elecraft XV):
+the radio already converts internally. Leave the <strong>CAT</strong> offsets <strong>disabled</strong> so SkyRoof
+sends the RF frequency, which the rig converts itself.</p>
+</li>
+<li><p><strong>HF SDR on the transverter IF output</strong> (e.g., Airspy HF+, RTL-SDR with an upconverter on
+HF range, IC-R7000 IF tap): enable the <strong>SDR</strong> offset. The SDR is tuned to the IF band, but
+the waterfall and frequency display continue to show the actual satellite RF.</p>
+</li>
+<li><p><strong>VHF/UHF SDR on the antenna directly, no transverter</strong>: leave all three offsets disabled;
+SkyRoof behaves exactly as without this feature.</p>
+</li>
+</ul>
+<h2 id="settings">Settings</h2>
+<p>Click on <strong>Tools / Settings</strong> in the main menu to open the
+<a href="settings_window.html">Settings dialog</a>, then expand the <strong>Transverter</strong> section:</p>
+<p><img src="../images/transverter_settings.png" alt="Transverter Settings"></p>
+<ul>
+<li><strong>SDR Offset Enabled</strong> — when on, the SDR is tuned to the IF of the matching SDR transverter
+band, not to the satellite RF;</li>
+<li><strong>RX CAT Offset Enabled</strong> — when on, the RX frequency sent to the radio is offset by the LO of
+the matching CAT band;</li>
+<li><strong>TX CAT Offset Enabled</strong> — same, for the TX frequency.</li>
+<li><strong>SDR Bands</strong> — list of bands for the SDR path;</li>
+<li><strong>CAT Bands</strong> — list of bands for the CAT path.</li>
+</ul>
+<p>The two band lists are separate because the SDR transverter and the transmit transverter often
+use different local oscillators, and because the CAT path's RF range may be narrower than the
+SDR path (the SDR sees the entire transverter passband, but the radio's HF receiver can only
+tune a slice of it).</p>
+<h3 id="editing-bands">Editing Bands</h3>
+<p>Click the <strong>...</strong> button in the <strong>SDR Bands</strong> or <strong>CAT Bands</strong> row to open the collection
+editor. You can <strong>add new bands, edit the existing ones, or delete bands</strong>:</p>
+<p><img src="../images/transverter_band_editor.png" alt="Transverter Band Editor"></p>
+<p>Each band has:</p>
+<ul>
+<li><strong>Name</strong> — a free-text label (e.g., <code>VHF 2m</code>, <code>UHF 70cm</code>, <code>23 cm</code>);</li>
+<li><strong>RfLow / RfHigh</strong> — RF frequency range in Hz, inclusive;</li>
+<li><strong>LoOffset</strong> — local oscillator offset in Hz. IF = RF − LO.</li>
+</ul>
+<p>When SkyRoof needs the IF for an active RF, it looks up the first band whose <code>[RfLow, RfHigh]</code>
+range covers that RF and subtracts its <code>LoOffset</code>. If no band matches, the offset is zero (SDR
+case) or the CAT command is skipped with a warning (CAT case — see below).</p>
+<h3 id="restoring-the-defaults">Restoring the Defaults</h3>
+<p>If you delete entries from a band list and want to bring back the seeded defaults, right-click
+on the <strong>SDR Bands</strong> or <strong>CAT Bands</strong> row and choose <strong>Reset</strong>. This replaces the entire list
+with the default entries. An empty list, on its own, is preserved across sessions — SkyRoof
+will not &quot;helpfully&quot; re-seed it on the next launch.</p>
+<h2 id="default-bands">Default Bands</h2>
+<h3 id="default-sdr-bands">Default SDR Bands</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>RF Low (MHz)</th>
+<th>RF High (MHz)</th>
+<th>LO (MHz)</th>
+<th>IF Range</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VHF 2m</td>
+<td>144.000</td>
+<td>148.000</td>
+<td>116.000</td>
+<td>28.0–32.0 MHz</td>
+</tr>
+<tr>
+<td>UHF 70cm</td>
+<td>432.000</td>
+<td>438.000</td>
+<td>407.000</td>
+<td>25.0–31.0 MHz</td>
+</tr>
+</tbody>
+</table>
+<p>The SDR band table covers the full ham VHF allocation and the satellite portion of the UHF
+allocation. The IF spans (4 MHz and 6 MHz) exceed the SDR's maximum bandwidth of 3.1 MHz, so
+the SDR cannot show the entire transverter passband at once — see <a href="#behavior-at-runtime">Behavior at Runtime</a>
+below for how SkyRoof handles this.</p>
+<h3 id="alternative-sdr-bands-107-mhz-if">Alternative SDR Bands (10.7 MHz IF)</h3>
+<p>For receivers that use 10.7 MHz as the IF output (e.g., the IC-R7000 wideband communications
+receiver), edit the SDR bands to use these LO values instead:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>RF Low (MHz)</th>
+<th>RF High (MHz)</th>
+<th>LO (MHz)</th>
+<th>IF Range</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VHF 2m</td>
+<td>144.000</td>
+<td>148.000</td>
+<td>135.300</td>
+<td>8.7–12.7 MHz</td>
+</tr>
+<tr>
+<td>UHF 70cm</td>
+<td>432.000</td>
+<td>438.000</td>
+<td>424.300</td>
+<td>7.7–13.7 MHz</td>
+</tr>
+</tbody>
+</table>
+<h3 id="default-cat-bands">Default CAT Bands</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>RF Low (MHz)</th>
+<th>RF High (MHz)</th>
+<th>LO (MHz)</th>
+<th>IF Range</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VHF 2m</td>
+<td>145.800</td>
+<td>146.000</td>
+<td>116.000</td>
+<td>29.8–30.0 MHz</td>
+</tr>
+<tr>
+<td>UHF 70cm AO-7 uplink</td>
+<td>432.000</td>
+<td>434.000</td>
+<td>404.000</td>
+<td>28.0–30.0 MHz</td>
+</tr>
+<tr>
+<td>UHF 70cm</td>
+<td>435.000</td>
+<td>437.000</td>
+<td>407.000</td>
+<td>28.0–30.0 MHz</td>
+</tr>
+</tbody>
+</table>
+<p>The CAT RF ranges are narrower than the SDR ranges so the resulting IF lands inside a typical
+HF rig's tuning range (28–30 MHz). The AO-7 mode U-V uplink (432–434 MHz) is split into its
+own entry because it uses a different LO than the rest of the 70 cm band.</p>
+<h2 id="behavior-at-runtime">Behavior at Runtime</h2>
+<p>When <strong>SDR Offset Enabled</strong> is on:</p>
+<ul>
+<li>The SDR is retuned to the IF center of the active satellite's band on the first activation
+and whenever the satellite crosses to a different band. The waterfall history resets on each
+such retune;</li>
+<li>Within a band, only the audio slicer offset moves as the Doppler-corrected signal drifts;
+the SDR center stays put and the waterfall keeps scrolling;</li>
+<li>If the transverter band is wider than the SDR's bandwidth (the default 4 MHz VHF and 6 MHz
+UHF bands are), the SDR center is repositioned as needed to keep the Doppler-corrected signal
+visible, while keeping the SDR passband within the transverter band limits;</li>
+<li>The frequency scale, the satellite labels and the pass-visibility check always work in RF, so
+what you see on screen is the satellite's actual frequency regardless of where the SDR is
+physically tuned.</li>
+</ul>
+<p>When <strong>RX CAT</strong> or <strong>TX CAT</strong> offset is enabled but the active RF does not fall into any CAT
+band, SkyRoof <strong>skips the CAT frequency command</strong> rather than sending a frequency the radio
+cannot tune. A warning is written to the log, and:</p>
+<ul>
+<li>the corresponding <strong>RX CAT</strong> or <strong>TX CAT</strong> label on the status bar turns <strong>yellow</strong>;</li>
+<li>the tooltip on that label explains the out-of-band condition, naming the offending
+frequency.</li>
+</ul>
+<p>This is the signal that you need to either disable the CAT offset (if you are listening to a
+non-ham satellite) or add a band entry to the CAT list (if you want to extend coverage).</p>
+<h2 id="frequency-display-tooltips">Frequency Display Tooltips</h2>
+<p>When any of the three offsets is enabled, the tooltip on the downlink and uplink frequency
+display in the <a href="frequency_control.html">Frequency Control</a> panel includes extra lines:</p>
+<ul>
+<li><code>SDR Transverter IF: &lt;value&gt; MHz</code> — only on the downlink, when the SDR offset is enabled
+and an SDR band matches;</li>
+<li><code>CAT Transverter IF: &lt;value&gt; MHz</code> — on the downlink when RX CAT offset is enabled, and on
+the uplink when TX CAT offset is enabled, when a CAT band matches.</li>
+</ul>
+<p>This lets you confirm at a glance what IF frequency is being sent to the SDR and to the radio.</p>
+<h2 id="common-configurations">Common Configurations</h2>
+<h3 id="k3s-with-xvrt--sdr-on-the-transverter-if">K3S with XVRT + SDR on the transverter IF</h3>
+<ul>
+<li><code>SdrOffsetEnabled = true</code>, both CAT offsets <code>false</code>.</li>
+<li>SkyRoof tunes the SDR to the IF band and keeps the satellite visible there.</li>
+<li>SkyRoof sends 435.835 MHz to the K3S (unchanged); the rig applies its own XVRT conversion
+internally.</li>
+</ul>
+<h3 id="ic-7300-no-transverter-awareness--sdr-on-the-transverter-if">IC-7300 (no transverter awareness) + SDR on the transverter IF</h3>
+<ul>
+<li><code>SdrOffsetEnabled = true</code>, <code>RxCatOffsetEnabled = true</code>, <code>TxCatOffsetEnabled = true</code>.</li>
+<li>Downlink 435.835 MHz → SDR shows 28.835 MHz IF; IC-7300 commanded to 28.835 MHz.</li>
+<li>Uplink 145.965 MHz → IC-7300 commanded to 29.965 MHz.</li>
+<li>The IC-7300 covers 1.8–54 MHz continuously, so both IFs are inside its tuning range.</li>
+</ul>
+<h3 id="sdr-on-the-antenna-smart-rig">SDR on the antenna, smart rig</h3>
+<ul>
+<li>All offsets disabled. Behaviour is identical to a SkyRoof setup without any transverter.</li>
+</ul>
+<h3 id="ao-7-mode-u-v">AO-7 mode U-V</h3>
+<ul>
+<li>Uplink 432.xxx MHz → matches the <strong>UHF 70cm AO-7 uplink</strong> CAT band → CAT LO = 404 MHz →
+IF ≈ 28.xxx MHz.</li>
+<li>Downlink 145.xxx MHz → matches the SDR's <strong>VHF 2m</strong> band → SDR LO = 116 MHz →
+IF ≈ 29.xxx MHz.</li>
+</ul>
+<h3 id="non-ham-telemetry-satellite-eg-400550-mhz">Non-ham telemetry satellite (e.g., 400.550 MHz)</h3>
+<ul>
+<li>No CAT or SDR band covers 400 MHz → both offsets resolve to zero → SDR tunes directly to
+400.550 MHz, RF is sent to the radio (if it can tune there) → no transverter behaviour.</li>
+</ul>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="setting_up_sdr.html">Setting Up SDR</a></li>
+<li><a href="setting_up_cat_control.html">Setting Up CAT Control</a></li>
+<li><a href="frequency_control.html">Frequency Control</a></li>
+</ul>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

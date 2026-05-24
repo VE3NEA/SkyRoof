@@ -1012,6 +1012,26 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/transverter_band_editor.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/transverter_band_editor.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/transverter_settings.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/transverter_settings.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/tune_to_frequency.png",
       "output": {
         "resource": {
@@ -1154,11 +1174,11 @@
       "type": "Toc",
       "source_relative_path": "toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "toc.html"
-        },
         ".json": {
           "relative_path": "toc.json"
+        },
+        ".html": {
+          "relative_path": "toc.html"
         }
       },
       "version": ""
@@ -1525,6 +1545,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "users_guide/setting_up_transverter.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/setting_up_transverter.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "users_guide/setting_up_voice_announcements.md",
       "output": {
         ".html": {
@@ -1597,11 +1627,11 @@
       "type": "Toc",
       "source_relative_path": "users_guide/toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "users_guide/toc.html"
-        },
         ".json": {
           "relative_path": "users_guide/toc.json"
+        },
+        ".html": {
+          "relative_path": "users_guide/toc.html"
         }
       },
       "version": ""
