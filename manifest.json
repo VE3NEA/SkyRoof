@@ -1455,6 +1455,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "users_guide/satellite_photo.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/satellite_photo.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "users_guide/satellite_selector.md",
       "output": {
         ".html": {
