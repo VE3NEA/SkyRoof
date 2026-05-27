@@ -21,6 +21,9 @@ namespace SkyRoof
     protected TcpClient? TcpClient;
     protected bool stopping = false;
     protected bool ErrorLogged = false;
+    private readonly int sendTimeout;
+    private readonly int receiveTimeout;
+    private readonly int reconnectDelay;
 
     public event EventHandler? StatusChanged;
     public bool IsRunning {get; private set;}
@@ -32,6 +35,9 @@ namespace SkyRoof
       Port = port;
       Delay = settings.Delay;
       log = settings.LogTraffic;
+      sendTimeout = settings.SendTimeout;
+      receiveTimeout = settings.ReceiveTimeout;
+      reconnectDelay = settings.ReconnectDelay;
     }
 
 
@@ -108,8 +114,8 @@ namespace SkyRoof
     private bool Connect()
     {
       TcpClient = new();
-      TcpClient.SendTimeout = 1000;
-      TcpClient.ReceiveTimeout = 3000;
+      TcpClient.SendTimeout = sendTimeout;
+      TcpClient.ReceiveTimeout = receiveTimeout;
 
       try
       {

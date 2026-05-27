@@ -12,6 +12,9 @@ namespace SkyRoof
   {
     public int Delay {get; set; }
     public bool LogTraffic { get; set; }
+    public int SendTimeout { get; set; }
+    public int ReceiveTimeout { get; set; }
+    public int ReconnectDelay { get; set; }
   }
 
   public class CatSettings : IControlEngineSettings
@@ -25,6 +28,21 @@ namespace SkyRoof
     [Description("Log command traffic for debugging")]
     [DefaultValue(false)]
     public bool LogTraffic { get; set; }
+
+    [DisplayName("Send Timeout")]
+    [Description("TCP send timeout in milliseconds")]
+    [DefaultValue(1000)]
+    public int SendTimeout { get; set; } = 1000;
+
+    [DisplayName("Receive Timeout")]
+    [Description("TCP receive timeout in milliseconds. Increase for high-latency networks or remote rigctld.")]
+    [DefaultValue(3000)]
+    public int ReceiveTimeout { get; set; } = 3000;
+
+    [DisplayName("Reconnect Delay")]
+    [Description("Milliseconds to wait between reconnect attempts after a connection is lost.")]
+    [DefaultValue(5000)]
+    public int ReconnectDelay { get; set; } = 5000;
 
     [DefaultValue(false)]
     [DisplayName("Ignore Dial Knob")]

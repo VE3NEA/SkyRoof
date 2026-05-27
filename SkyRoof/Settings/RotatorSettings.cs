@@ -17,7 +17,22 @@ namespace SkyRoof
     [Description("Log command traffic for debugging")]
     [DefaultValue(false)]
     public bool LogTraffic { get; set; }
-    
+
+    [DisplayName("Send Timeout")]
+    [Description("TCP send timeout in milliseconds")]
+    [DefaultValue(2000)]
+    public int SendTimeout { get; set; } = 2000;
+
+    [DisplayName("Receive Timeout")]
+    [Description("TCP receive timeout in milliseconds. Increase for high-latency networks.")]
+    [DefaultValue(5000)]
+    public int ReceiveTimeout { get; set; } = 5000;
+
+    [DisplayName("Reconnect Delay")]
+    [Description("Milliseconds to wait between reconnect attempts after a connection is lost.")]
+    [DefaultValue(5000)]
+    public int ReconnectDelay { get; set; } = 5000;
+
     [DefaultValue(false)]
     public bool Enabled { get; set; } = false;
 
