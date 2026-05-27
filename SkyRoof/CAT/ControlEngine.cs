@@ -24,6 +24,7 @@ namespace SkyRoof
     private readonly int sendTimeout;
     private readonly int receiveTimeout;
     private readonly int reconnectDelay;
+    private readonly ManualResetEventSlim stopEvent = new ManualResetEventSlim(false);
     private int consecutiveErrors = 0;
     private const int MaxConsecutiveErrors = 5;
 
@@ -58,16 +59,18 @@ namespace SkyRoof
       if (processingThread != null) return;
 
       stopping = false;
+      stopEvent.Reset();
       processingThread = new Thread(new ThreadStart(ThreadProcedure));
       processingThread.IsBackground = true;
       processingThread.Name = GetType().Name;
-      processingThread.Start();      
+      processingThread.Start();
     }
 
     protected void StopThread()
     {
       if (stopping) return;
       stopping = true;
+      stopEvent.Set();
       processingThread?.Join();
       processingThread = null;
     }
@@ -76,32 +79,48 @@ namespace SkyRoof
     {
       processingThread!.Priority = ThreadPriority.Highest;
 
-      if (Connect() && Setup())
-      {
-        IsRunning = true;
-        OnStatusChanged();
+      bool lastReportedRunning = false;
+      bool everConnected = false;
 
-        while (!stopping)
-          try
-          {
-            Cycle();
-            Thread.Sleep(Delay);
-          }
-          catch (SocketException ex)
-          {
-            Log.Error(ex, $"Socket error in {GetType().Name}");
-            break;
-          }
-          catch (Exception ex)
-          {
-            Log.Error(ex, $"Error in {GetType().Name}");
-          }
+      while (!stopping)
+      {
+        if (Connect() && Setup())
+        {
+          IsRunning = true;
+          ErrorLogged = false;
+          everConnected = true;
+          if (!lastReportedRunning) { lastReportedRunning = true; OnStatusChanged(); }
+
+          while (!stopping && TcpClient != null && TcpClient.Connected)
+            try
+            {
+              Cycle();
+              Thread.Sleep(Delay);
+            }
+            catch (SocketException ex)
+            {
+              Log.Error(ex, $"Socket error in {GetType().Name}");
+              break;
+            }
+            catch (Exception ex)
+            {
+              Log.Error(ex, $"Error in {GetType().Name}");
+            }
+        }
+
+        Disconnect();
+        IsRunning = false;
+        if (lastReportedRunning) { lastReportedRunning = false; OnStatusChanged(); }
+
+        if (!stopping)
+        {
+          string state = everConnected ? "connection lost" : "initial connection failed";
+          Log.Information($"{GetType().Name}: {state}, retrying in {reconnectDelay / 1000} seconds");
+          stopEvent.Wait(reconnectDelay);
+        }
       }
 
-      Disconnect();
-      IsRunning = false;
       processingThread = null;
-      OnStatusChanged();
     }
 
     protected abstract bool Setup();
@@ -298,6 +317,7 @@ namespace SkyRoof
     public virtual void Dispose()
     {
       StopThread();
+      stopEvent.Dispose();
     }
   }
 }
