@@ -17,6 +17,7 @@ namespace SkyRoof
   public class RotatorControlEngine : ControlEngine
   {
     public Bearing? RequestedBearing, LastReadBearing, LastWrittenBearing;
+    private volatile bool stopRequested = false;
 
     public event EventHandler? BearingChanged;
 
@@ -32,6 +33,7 @@ namespace SkyRoof
 
     public void RotateTo(Bearing bearing)
     {
+      stopRequested = false;
       RequestedBearing = bearing;
     }
 
@@ -40,16 +42,25 @@ namespace SkyRoof
       syncContext.Post(s => BearingChanged?.Invoke(this, EventArgs.Empty), null);
     }
 
+    // UI-thread safe: sets a request flag and returns. The processing thread
+    // sends the S command from Cycle() so no socket I/O ever runs on the caller.
     public void StopRotation()
     {
-      if (TcpClient == null || !TcpClient.Connected) return;
       RequestedBearing = LastWrittenBearing = null;
-      SendWriteCommand("S");
+      stopRequested = true;
     }
 
     protected override void Cycle()
     {
       if (TcpClient == null || !TcpClient.Connected) return;
+
+      if (stopRequested)
+      {
+        SendWriteCommand("S");
+        stopRequested = false;
+        return;
+      }
+
       WriteBearing();
       ReadBearing();
     }
