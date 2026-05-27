@@ -24,6 +24,8 @@ namespace SkyRoof
     private readonly int sendTimeout;
     private readonly int receiveTimeout;
     private readonly int reconnectDelay;
+    private int consecutiveErrors = 0;
+    private const int MaxConsecutiveErrors = 5;
 
     public event EventHandler? StatusChanged;
     public bool IsRunning {get; private set;}
@@ -195,9 +197,29 @@ namespace SkyRoof
     protected bool SendWriteCommand(string command)
     {
       var reply = SendCommand(command);
-      if (reply == "RPRT 0\n") return true;
 
-      else if (reply != null) BadReply(reply);
+      // success - command accepted, reset connection-error counter
+      if (reply == "RPRT 0\n") { Interlocked.Exchange(ref consecutiveErrors, 0); return true; }
+
+      // protocol-level rejection from the rig (e.g. RPRT -1, RPRT -11) - connection
+      // is healthy, the command itself was just refused. Log and move on without
+      // counting toward the reconnect threshold.
+      if (reply != null) { BadReply(reply); return false; }
+
+      // no reply at all - treat as a timeout. Retry once before counting a strike.
+      if (log) Log.Warning($"Retrying {GetType().Name} command: {command} (no reply)");
+      Thread.Sleep(100);
+      reply = SendCommand(command);
+      if (reply == "RPRT 0\n") { Interlocked.Exchange(ref consecutiveErrors, 0); return true; }
+      if (reply != null) { BadReply(reply); return false; }
+
+      // still no reply after retry - count as a connection strike
+      int errors = Interlocked.Increment(ref consecutiveErrors);
+      if (errors >= MaxConsecutiveErrors)
+      {
+        Log.Error($"{GetType().Name}: {MaxConsecutiveErrors} consecutive timeouts, forcing reconnect");
+        throw new SocketException((int)SocketError.TimedOut);
+      }
       return false;
     }
 
@@ -207,6 +229,7 @@ namespace SkyRoof
       if (reply == null) return null;
       if (reply.EndsWith("\n"))
       {
+        Interlocked.Exchange(ref consecutiveErrors, 0);
         reply = reply.Substring(0, reply.Length - 1);
         if (log) Log.Information($"Reply from {GetType().Name} ctld: {reply}");
         return reply;
