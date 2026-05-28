@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>QSO Scheduler | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="QSO Scheduler | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/qso_scheduler_panel.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MMW827H44"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-1MMW827H44');
+      </script>
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="qso-scheduler">QSO Scheduler</h1>
+
+<p>The QSO Scheduler panel helps you plan a satellite QSO with a DX station by finding the time windows when
+the satellite is simultaneously visible from your location and from the DX location.</p>
+<p>Click on <strong>View / QSO Scheduler</strong> to open the panel:</p>
+<p><img src="../images/qso_scheduler_panel.png" alt="QSO Scheduler panel"></p>
+<h2 id="selecting-the-satellite-and-the-dx-station">Selecting the Satellite and the DX Station</h2>
+<ul>
+<li><strong>Satellite</strong> - select the satellite for the QSO from the drop-down list. The list contains the satellites
+in the currently selected group, see <a href="creating_satellite_groups.html">Creating Satellite Groups</a>;</li>
+<li><strong>DX Grid Square</strong> - enter the 4- or 6-character Maidenhead grid square of the DX station. The input
+box turns pink while the value is incomplete or invalid.</li>
+</ul>
+<p>Your own grid square and altitude are taken from the user details in the
+<a href="settings_window.html">Settings Window</a>. The DX station is assumed to be at sea level.</p>
+<h2 id="reading-the-prediction-list">Reading the Prediction List</h2>
+<p>Each item in the list represents one common visibility window for the next 14 days, sorted by start time:</p>
+<ul>
+<li><strong>Satellite name</strong> is highlighted in light yellow for VHF downlinks and light cyan for UHF downlinks;</li>
+<li><strong>Orbit number</strong> follows the satellite name;</li>
+<li><strong>Wait time</strong> on the upper right shows how long until the window starts, or <strong>Now</strong> in green
+if the window is already in progress;</li>
+<li><strong>Start and end times</strong> of the common segment are displayed in local time (the label shows
+<strong>Geostationary</strong> instead for geostationary satellites);</li>
+<li><strong>Duration</strong> of the common segment and the maximum elevation of the satellite from each station during
+that segment;</li>
+<li><strong>Two mini sky-views</strong> on the right show the satellite path during the common segment, as seen from
+your station (left) and from the DX station (right). The green dot marks the start of the segment,
+the red dot marks the end.</li>
+</ul>
+<h2 id="pass-details">Pass Details</h2>
+<p>Click on a list item to open the QSO Schedule window with more information about the pass:</p>
+<p><img src="../images/qso_schedule_window.png" alt="QSO Schedule window"></p>
+<p>The window displays the full sky view for the pass from each station, with the entire pass arc drawn in
+silver and the common segment highlighted in green. The green check mark indicates the AOS point, the
+red X mark indicates the LOS point. The text above the charts lists the satellite, orbit number, common
+segment in local and UTC time, duration, time until the segment starts, and the maximum elevation of the
+satellite from each station during the common segment.</p>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

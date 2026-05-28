@@ -572,6 +572,26 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/qso_schedule_window.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/qso_schedule_window.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/qso_scheduler_panel.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/qso_scheduler_panel.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/recorder_panel.png",
       "output": {
         "resource": {
@@ -1349,6 +1369,16 @@
       "output": {
         ".html": {
           "relative_path": "users_guide/qso_entry_panel.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/qso_scheduler_panel.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/qso_scheduler_panel.html"
         }
       },
       "version": ""
