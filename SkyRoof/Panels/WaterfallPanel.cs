@@ -57,9 +57,12 @@ namespace SkyRoof
       ScaleControl.BuildLabels();
     }
 
+    private WaterfallQuality lastAppliedQuality = WaterfallQuality.Auto;
+
     public void ApplySettings()
     {
       var sett = ctx.Settings.Waterfall;
+      WaterfallControl.Quality = sett.Quality;
       WaterfallControl.Brightness = sett.Brightness;
       WaterfallControl.Contrast = sett.Contrast;
       int paletteIndex = Math.Min(ctx.PaletteManager.Palettes.Count() - 1, sett.PaletteIndex);
@@ -67,6 +70,18 @@ namespace SkyRoof
       WaterfallControl.Refresh();
 
       ctx.MainForm.SetWaterfallSpeed();
+
+      if (sett.Quality != lastAppliedQuality)
+      {
+        lastAppliedQuality = sett.Quality;
+        if (WaterfallControl.RecreateTexturesIfNeeded())
+        {
+          // Spectrum analyzer depends on WaterfallControl.SpectraWidth.
+          ctx.MainForm.DestroySpectrumAnalyzer();
+          ctx.MainForm.CreateSpectrumAnalyzer();
+          ctx.MainForm.ConfigureWaterfall();
+        }
+      }
     }
 
     internal void SetPassband()

@@ -7,6 +7,8 @@ namespace SkyRoof
   {
     private Context ctx;
     private bool changing;
+    private WaterfallControl.WaterfallPerfSnapshot? lastSnapshot;
+    private DateTime lastSnapshotUtc;
 
     public WaterfallSildersDlg()
     {
@@ -29,10 +31,14 @@ namespace SkyRoof
       label4.Text = FontAwesomeIcons.Palette;
 
       SettingsToDialog();
+
+      lastSnapshotUtc = DateTime.UtcNow;
+      perfTimer.Start();
     }
 
     private void WaterfallSildersDlg_Deactivate(object sender, EventArgs e)
     {
+      perfTimer.Stop();
       Close();
     }
 
@@ -40,6 +46,49 @@ namespace SkyRoof
     private void WaterfallSildersDlg_KeyPress(object sender, KeyPressEventArgs e)
     {
       if (e.KeyChar == (char)Keys.Escape) Close();
+    }
+
+    private void perfTimer_Tick(object? sender, EventArgs e)
+    {
+      var wc = ctx?.WaterfallPanel?.WaterfallControl;
+      if (wc == null)
+      {
+        PerfLabel.Text = "Perf: —";
+        return;
+      }
+
+      var snap = wc.GetPerfSnapshot();
+      var now = DateTime.UtcNow;
+      double dt = (now - lastSnapshotUtc).TotalSeconds;
+
+      double uploadsPerSec = 0;
+      double drawsPerSec = 0;
+      double uploadMsAvg = 0;
+      double drawMsAvg = 0;
+
+      if (dt > 0.1 && lastSnapshot is WaterfallControl.WaterfallPerfSnapshot prev)
+      {
+        long dUploads = snap.UploadCalls - prev.UploadCalls;
+        long dDraws = snap.DrawCalls - prev.DrawCalls;
+        long dUploadTicks = snap.UploadTimeTicks - prev.UploadTimeTicks;
+        long dDrawTicks = snap.DrawTimeTicks - prev.DrawTimeTicks;
+
+        uploadsPerSec = dUploads / dt;
+        drawsPerSec = dDraws / dt;
+
+        if (dUploads > 0)
+          uploadMsAvg = 1000.0 * dUploadTicks / snap.StopwatchFrequency / dUploads;
+
+        if (dDraws > 0)
+          drawMsAvg = 1000.0 * dDrawTicks / snap.StopwatchFrequency / dDraws;
+      }
+
+      lastSnapshot = snap;
+      lastSnapshotUtc = now;
+
+      PerfLabel.Text =
+        $"FPS {snap.Fps:0.0}  drop {snap.DroppedUploads}\n" +
+        $"upd {uploadsPerSec:0.0}/s {uploadMsAvg:0.00} ms  draw {drawsPerSec:0.0}/s {drawMsAvg:0.00} ms";
     }
     
     private void comboBox1_DrawItem(object sender, DrawItemEventArgs e)

@@ -40,6 +40,8 @@
       SpeedTrackbar = new TrackBar();
       label4 = new Label();
       PaletteComboBox = new ComboBox();
+      PerfLabel = new Label();
+      perfTimer = new System.Windows.Forms.Timer(components);
       toolTip1 = new ToolTip(components);
       panel1 = new Panel();
       ((System.ComponentModel.ISupportInitialize)BrightnessTrackbar).BeginInit();
@@ -168,6 +170,21 @@
       PaletteComboBox.DrawItem += comboBox1_DrawItem;
       PaletteComboBox.SelectedIndexChanged += Trackbar_ValueChanged;
       // 
+      // PerfLabel
+      // 
+      PerfLabel.Font = new Font("Segoe UI", 8F);
+      PerfLabel.ForeColor = Color.DimGray;
+      PerfLabel.Location = new Point(5, 146);
+      PerfLabel.Name = "PerfLabel";
+      PerfLabel.Size = new Size(198, 46);
+      PerfLabel.TabIndex = 11;
+      PerfLabel.Text = "Perf: —";
+      // 
+      // perfTimer
+      // 
+      perfTimer.Interval = 500;
+      perfTimer.Tick += perfTimer_Tick;
+      // 
       // panel1
       // 
       panel1.BorderStyle = BorderStyle.FixedSingle;
@@ -175,15 +192,16 @@
       panel1.Dock = DockStyle.Fill;
       panel1.Location = new Point(0, 0);
       panel1.Name = "panel1";
-      panel1.Size = new Size(208, 149);
+      panel1.Size = new Size(208, 198);
       panel1.TabIndex = 10;
       // 
       // WaterfallSildersDlg
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
-      ClientSize = new Size(208, 149);
+      ClientSize = new Size(208, 198);
       ControlBox = false;
+      Controls.Add(PerfLabel);
       Controls.Add(PaletteComboBox);
       Controls.Add(SpeedLabel);
       Controls.Add(label3);
@@ -225,6 +243,8 @@
     public TrackBar SpeedTrackbar;
     private Label label4;
     private ComboBox PaletteComboBox;
+    private Label PerfLabel;
+    private System.Windows.Forms.Timer perfTimer;
     private ToolTip toolTip1;
     private Panel panel1;
   }

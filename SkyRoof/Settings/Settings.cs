@@ -10,10 +10,7 @@ namespace SkyRoof
     public UiSettings Ui = new();
     public SatelliteSettings Satellites = new();
     public SdrSettings Sdr = new();
-    public WaterfallSettings Waterfall = new();
     public LatestVersionInfo LatestVersion = new();
-
-
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public UserSettings User { get; set; } = new();
@@ -28,6 +25,10 @@ namespace SkyRoof
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public AnnouncerSettings Announcements { get; set; } = new();
 
+
+    [DisplayName("Waterfall")]
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public WaterfallSettings Waterfall { get; set; } = new();
 
     [DisplayName("CAT Control")]
     [TypeConverter(typeof(ExpandableObjectConverter))]

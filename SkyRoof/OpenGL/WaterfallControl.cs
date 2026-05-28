@@ -7,6 +7,7 @@ using System.Buffers;
 using Serilog;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.Threading;
 
 namespace SkyRoof
 {
@@ -37,6 +38,19 @@ namespace SkyRoof
     public double Zoom = 1.95f;
     public double Pan = 0;
     public double ScrollSpeed = 1;
+    public WaterfallQuality Quality = WaterfallQuality.Auto;
+
+    // cached uniform locations (avoid glGetUniformLocation in draw loop)
+    private int locScreenWidth;
+    private int locZoom;
+    private int locPan;
+    private int locScrollPos;
+    private int locScrollHeight;
+    private int locBrightness;
+    private int locContrast;
+    private int locTextureFold;
+    private int locTextureWidth;
+    private int locSpectraHeight;
 
 
 
@@ -47,6 +61,11 @@ namespace SkyRoof
     public WaterfallControl()
     {
       InitializeComponent();
+    }
+
+    protected override void OnPaintBackground(PaintEventArgs e)
+    {
+      // Avoid WinForms background erase between OpenGL frames (visible as flicker on slow GPUs).
     }
 
     private void OpenglControl_OpenGLInitialized(object sender, EventArgs e)
@@ -73,6 +92,18 @@ namespace SkyRoof
       ShaderProgram.Bind(gl);
       CheckError(gl);
 
+      // Resolve uniform locations once.
+      locScreenWidth = ShaderProgram.GetUniformLocation(gl, "in_ScreenWidth");
+      locZoom = ShaderProgram.GetUniformLocation(gl, "in_zoom");
+      locPan = ShaderProgram.GetUniformLocation(gl, "in_pan");
+      locScrollPos = ShaderProgram.GetUniformLocation(gl, "in_ScrollPos");
+      locScrollHeight = ShaderProgram.GetUniformLocation(gl, "in_ScrollHeight");
+      locBrightness = ShaderProgram.GetUniformLocation(gl, "in_Brightness");
+      locContrast = ShaderProgram.GetUniformLocation(gl, "in_Contrast");
+      locTextureFold = ShaderProgram.GetUniformLocation(gl, "in_TextureFold");
+      locTextureWidth = ShaderProgram.GetUniformLocation(gl, "in_TextureWidth");
+      locSpectraHeight = ShaderProgram.GetUniformLocation(gl, "in_SpectraHeight");
+
       gl.Uniform1(ShaderProgram.GetUniformLocation(gl, "indexedTexture"), 0);
       CheckError(gl);
       gl.Uniform1(ShaderProgram.GetUniformLocation(gl, "paletteTexture"), 1);
@@ -81,7 +112,55 @@ namespace SkyRoof
       IndexedTexture = new(OpenglControl.OpenGL, TextureWidth, TextureHeight);
       SetPalette(Palette);
 
+      // Set constant uniforms once (they only change when texture geometry changes).
+      gl.Uniform1(locTextureFold, TextureFold);
+      CheckError(gl);
+      gl.Uniform1(locTextureWidth, TextureWidth);
+      CheckError(gl);
+      gl.Uniform1(locSpectraHeight, SpectraHeight);
+      CheckError(gl);
+
       CreateVba(gl);
+    }
+
+    public bool RecreateTexturesIfNeeded()
+    {
+      if (!IsHandleCreated) return false;
+      if (IndexedTexture == null || ShaderProgram == null) return false;
+
+      int oldTexW = TextureWidth;
+      int oldTexH = TextureHeight;
+      int oldSpectraW = SpectraWidth;
+      int oldSpectraH = SpectraHeight;
+      int oldFold = TextureFold;
+
+      ChooseTextureSize();
+      bool changed =
+        oldTexW != TextureWidth ||
+        oldTexH != TextureHeight ||
+        oldSpectraW != SpectraWidth ||
+        oldSpectraH != SpectraHeight ||
+        oldFold != TextureFold;
+
+      if (!changed) return false;
+
+      // Reallocate texture. Note: old textures are not explicitly deleted (rare quality changes only).
+      IndexedTexture = new(OpenglControl.OpenGL, TextureWidth, TextureHeight);
+      SetPalette(Palette);
+
+      // Update constant uniforms for new geometry.
+      var gl = OpenglControl.OpenGL;
+      ShaderProgram.Bind(gl);
+      gl.Uniform1(locTextureFold, TextureFold);
+      gl.Uniform1(locTextureWidth, TextureWidth);
+      gl.Uniform1(locSpectraHeight, SpectraHeight);
+      ShaderProgram.Unbind(gl);
+
+      // Reset scroll state to avoid stale wrap assumptions.
+      Row = 0;
+      ScrollPos = 0;
+      OpenglControl.Invalidate();
+      return true;
     }
 
     private void LogOpenglInformation()
@@ -121,7 +200,15 @@ namespace SkyRoof
       int screenHeight = Screen.AllScreens.Max(s => s.Bounds.Height);
 
       // set texture size
-      TextureWidth = maxTextureSize.Width;
+      int requestedWidth = Quality switch
+      {
+        WaterfallQuality.Low => 2048,
+        WaterfallQuality.Medium => 4096,
+        WaterfallQuality.High => 8192,
+        _ => maxTextureSize.Width,
+      };
+
+      TextureWidth = Math.Min(maxTextureSize.Width, requestedWidth);
       SpectraHeight = screenHeight > 1280 ? 2048 : 1024;
       int maxTextureFold = maxTextureSize.Height / SpectraHeight;
 
@@ -222,51 +309,72 @@ namespace SkyRoof
     {
       var gl = OpenglControl.OpenGL;
 
-      CheckError(gl, false);
-
+      Interlocked.Increment(ref drawCalls);
+      long t0 = Stopwatch.GetTimestamp();
       ShaderProgram.Bind(gl);
+#if DEBUG
       CheckError(gl);
+#endif
       IndexedTexture.Bind(gl);
+#if DEBUG
       CheckError(gl);
+#endif
       VertexBufferArray.Bind(gl);
+#if DEBUG
       CheckError(gl);
+#endif
 
       //UpdateScrollPosOnDraw();
       float scrollHeight = OpenglControl.Size.Height / (float)SpectraHeight;
 
       // a bug in SharpGL prevents ShaderProgram.SetUniform1 from setting int 
-      gl.Uniform1(ShaderProgram.GetUniformLocation(gl, "in_ScreenWidth"), OpenglControl.Size.Width);
+      gl.Uniform1(locScreenWidth, OpenglControl.Size.Width);
+#if DEBUG
       CheckError(gl);
+#endif
 
-      ShaderProgram.SetUniform1(gl, "in_zoom", (float)Zoom);
+      gl.Uniform1(locZoom, (float)Zoom);
+#if DEBUG
       CheckError(gl);
-      ShaderProgram.SetUniform1(gl, "in_pan", (float)Pan);
+#endif
+      gl.Uniform1(locPan, (float)Pan);
+#if DEBUG
       CheckError(gl);
+#endif
 
-      ShaderProgram.SetUniform1(gl, "in_ScrollPos", (float)ScrollPos);
+      gl.Uniform1(locScrollPos, (float)ScrollPos);
+#if DEBUG
       CheckError(gl);
-      ShaderProgram.SetUniform1(gl, "in_ScrollHeight", scrollHeight);
+#endif
+      gl.Uniform1(locScrollHeight, scrollHeight);
+#if DEBUG
       CheckError(gl);
-      ShaderProgram.SetUniform1(gl, "in_Brightness", computeBrightness());
+#endif
+      gl.Uniform1(locBrightness, computeBrightness());
+#if DEBUG
       CheckError(gl);
-      ShaderProgram.SetUniform1(gl, "in_Contrast", Contrast);
+#endif
+      gl.Uniform1(locContrast, Contrast);
+#if DEBUG
       CheckError(gl);
-
-      gl.Uniform1(ShaderProgram.GetUniformLocation(gl, "in_TextureFold"), TextureFold);
-      CheckError(gl);
-      gl.Uniform1(ShaderProgram.GetUniformLocation(gl, "in_TextureWidth"), TextureWidth);
-      CheckError(gl);
-      gl.Uniform1(ShaderProgram.GetUniformLocation(gl, "in_SpectraHeight"), SpectraHeight);
-      CheckError(gl);
+#endif
 
       gl.DrawArrays(OpenGL.GL_TRIANGLE_STRIP, 0, 4);
+#if DEBUG
       CheckError(gl);
+#endif
       VertexBufferArray.Unbind(gl);
+#if DEBUG
       CheckError(gl);
+#endif
 
       ShaderProgram.Unbind(gl);
+#if DEBUG
       CheckError(gl);
+#endif
       UpdateFps();
+
+      Interlocked.Add(ref drawTimeTicks, Stopwatch.GetTimestamp() - t0);
     }
 
 
@@ -300,22 +408,101 @@ namespace SkyRoof
     public int Row;                // write positon, 0..TEXTURE_HEIGHT-1
     private double ScrollPos = 0;  // display position in texture, 0..1
 
+    // Coalesce uploads: keep latest spectrum only, avoid BeginInvoke backlog.
+    private readonly object uploadGate = new();
+    private float[]? pendingSpectrum;
+    private int pendingSpectrumCount;
+    private volatile bool uploadPending;
+    private long droppedUploads;
+    private long uploadCalls;
+    private long drawCalls;
+    private long uploadTimeTicks;
+    private long drawTimeTicks;
+
+    public readonly record struct WaterfallPerfSnapshot(
+      float Fps,
+      long DroppedUploads,
+      long UploadCalls,
+      long DrawCalls,
+      long UploadTimeTicks,
+      long DrawTimeTicks,
+      long StopwatchFrequency
+    );
+
+    public WaterfallPerfSnapshot GetPerfSnapshot()
+    {
+      // Reads are atomic on x64 but not guaranteed on all platforms; use Interlocked for safety.
+      return new WaterfallPerfSnapshot(
+        Fps,
+        Interlocked.Read(ref droppedUploads),
+        Interlocked.Read(ref uploadCalls),
+        Interlocked.Read(ref drawCalls),
+        Interlocked.Read(ref uploadTimeTicks),
+        Interlocked.Read(ref drawTimeTicks),
+        Stopwatch.Frequency
+      );
+    }
+
     internal void AppendSpectrum(float[] spectrum)
     {
       if (!IsHandleCreated || !Enabled) return;
 
       // spectrum may be overwritten after this function returns, make a copy
-      var spectrumCopy = ArrayPool.Rent(spectrum.Length);
+      float[] spectrumCopy = ArrayPool.Rent(spectrum.Length);
       Array.Copy(spectrum, spectrumCopy, spectrum.Length);
+
+      bool needQueue = false;
+      lock (uploadGate)
+      {
+        // Replace any pending spectrum with the newest one.
+        if (pendingSpectrum != null)
+        {
+          ArrayPool.Return(pendingSpectrum);
+          droppedUploads++;
+        }
+
+        pendingSpectrum = spectrumCopy;
+        pendingSpectrumCount = spectrum.Length;
+
+        if (!uploadPending)
+        {
+          uploadPending = true;
+          needQueue = true;
+        }
+      }
+
+      if (!needQueue) return;
 
       BeginInvoke(() =>
       {
-        IndexedTexture.SetRows(Row * TextureFold, TextureFold, spectrumCopy);
-        ArrayPool.Return(spectrumCopy);
+        float[]? local;
+        int localCount;
+        lock (uploadGate)
+        {
+          local = pendingSpectrum;
+          localCount = pendingSpectrumCount;
+          pendingSpectrum = null;
+          pendingSpectrumCount = 0;
+          uploadPending = false;
+        }
 
-        if (++Row == SpectraHeight) Row = 0;
-        ScrollPos = Row / (float)SpectraHeight;
-        OpenglControl.Invalidate();
+        if (local == null || localCount <= 0) return;
+
+        try
+        {
+          Interlocked.Increment(ref uploadCalls);
+          long t0 = Stopwatch.GetTimestamp();
+          IndexedTexture.SetRows(Row * TextureFold, TextureFold, local, localCount);
+          Interlocked.Add(ref uploadTimeTicks, Stopwatch.GetTimestamp() - t0);
+
+          if (++Row == SpectraHeight) Row = 0;
+          ScrollPos = Row / (float)SpectraHeight;
+          OpenglControl.Invalidate();
+        }
+        finally
+        {
+          ArrayPool.Return(local);
+        }
       });
     }
   }

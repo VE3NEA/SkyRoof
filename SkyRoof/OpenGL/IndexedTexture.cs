@@ -41,6 +41,16 @@ namespace SkyRoof
         OpenGL.GL_RED, OpenGL.GL_BYTE, IntPtr.Zero);
       CheckError(gl);
 
+      // Set texture parameters once (avoid per-frame state churn).
+      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_NEAREST); // shrink
+      CheckError(gl);
+      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR);  // stretch
+      CheckError(gl);
+      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_S, OpenGL.GL_CLAMP_TO_EDGE);  // x
+      CheckError(gl);
+      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_T, OpenGL.GL_REPEAT); // y
+      CheckError(gl);
+
 
       // framebuffer to clear the texture
 
@@ -82,6 +92,16 @@ namespace SkyRoof
       gl.TexImage2D(OpenGL.GL_TEXTURE_2D, 0, OpenGL.GL_RGB, PALETTE_SIZE, 1, 0, 
         OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE, palette);
       CheckError(gl);
+
+      // Palette texture parameters are constant.
+      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_NEAREST);
+      CheckError(gl);
+      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_NEAREST);
+      CheckError(gl);
+      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_S, OpenGL.GL_CLAMP_TO_EDGE);
+      CheckError(gl);
+      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_T, OpenGL.GL_CLAMP_TO_EDGE);
+      CheckError(gl);
     }
 
     public void ClearBitmap()
@@ -100,51 +120,35 @@ namespace SkyRoof
 
     public void SetRows(int rowIndex, int rowCount, float[] data)
     {
-      CheckError(gl, false);
+      SetRows(rowIndex, rowCount, data, data.Length);
+    }
 
+    public void SetRows(int rowIndex, int rowCount, float[] data, int dataCount)
+    {
       // TexSubImage2D in SharpGL accepts only int[], so give it floats in an int[] buffer
-      if ((IntBuffer?.Length ?? 0) < data.Length) IntBuffer = new int[data.Length];
-      Buffer.BlockCopy(data, 0, IntBuffer, 0, data.Length * sizeof(float)); 
+      if (dataCount <= 0) return;
+      if ((IntBuffer?.Length ?? 0) < dataCount) IntBuffer = new int[dataCount];
+      Buffer.BlockCopy(data, 0, IntBuffer, 0, dataCount * sizeof(float));
 
       gl.BindTexture(OpenGL.GL_TEXTURE_2D, textureIds[0]);
+#if DEBUG
       CheckError(gl);
+#endif
 
       gl.TexSubImage2D(OpenGL.GL_TEXTURE_2D, 0, 0, rowIndex, Width, rowCount, 
         OpenGL.GL_RED, OpenGL.GL_FLOAT, IntBuffer);
+#if DEBUG
       CheckError(gl);
+#endif
     }
 
     public void Bind(OpenGL gl)
     {
-      CheckError(gl, false);
-
       gl.ActiveTexture(OpenGL.GL_TEXTURE0);
-      CheckError(gl);
       gl.BindTexture(OpenGL.GL_TEXTURE_2D, textureIds[0]);
-      CheckError(gl);
-
-      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_NEAREST); // shrink
-      CheckError(gl);
-      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR);  // stretch
-      CheckError(gl);
-      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_S, OpenGL.GL_CLAMP_TO_EDGE);  // x
-      CheckError(gl);
-      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_T, OpenGL.GL_REPEAT); // y
-      CheckError(gl);
 
       gl.ActiveTexture(OpenGL.GL_TEXTURE1);
-      CheckError(gl);
       gl.BindTexture(OpenGL.GL_TEXTURE_2D, textureIds[1]);
-      CheckError(gl);
-
-      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_NEAREST);
-      CheckError(gl);
-      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_NEAREST);
-      CheckError(gl);
-      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_S, OpenGL.GL_CLAMP_TO_EDGE);
-      CheckError(gl);
-      gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_T, OpenGL.GL_CLAMP_TO_EDGE);
-      CheckError(gl);
     }
 
     private void CheckError(OpenGL gl, bool log = true)
