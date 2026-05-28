@@ -215,14 +215,13 @@ namespace SkyRoof
     {
       var reply = SendCommand(command);
       if (reply == "RPRT 0\n") return true;
-      if (reply != null) BadReply(reply);
+      BadReply(reply);
       return false;
     }
 
     protected string? SendReadCommand(string command)
     {
       var reply = SendCommand(command);
-      if (reply == null) return null;
       if (reply.EndsWith("\n"))
       {
         reply = reply.Substring(0, reply.Length - 1);
@@ -234,7 +233,7 @@ namespace SkyRoof
       return null;
     }
 
-    protected string? SendCommand(string command)
+    protected string SendCommand(string command)
     {
       try
       {
