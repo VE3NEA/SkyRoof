@@ -31,6 +31,11 @@ namespace SkyRoof
     [TypeConverter(typeof(VE3NEA.EnumDescriptionConverter))]
     public WaterfallQuality Quality { get; set; } = WaterfallQuality.Auto;
 
+    [DisplayName("Show performance counters")]
+    [Description("Show FPS / upload / draw performance counters in the Waterfall sliders popup.")]
+    [DefaultValue(false)]
+    public bool ShowPerformanceCounters { get; set; } = false;
+
     public override string ToString() { return string.Empty; }
   }
 }

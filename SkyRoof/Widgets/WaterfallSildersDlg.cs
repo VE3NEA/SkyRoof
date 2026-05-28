@@ -33,7 +33,9 @@ namespace SkyRoof
       SettingsToDialog();
 
       lastSnapshotUtc = DateTime.UtcNow;
-      perfTimer.Start();
+      bool showPerf = ctx.Settings.Waterfall.ShowPerformanceCounters;
+      PerfLabel.Visible = showPerf;
+      if (showPerf) perfTimer.Start();
     }
 
     private void WaterfallSildersDlg_Deactivate(object sender, EventArgs e)
@@ -50,6 +52,13 @@ namespace SkyRoof
 
     private void perfTimer_Tick(object? sender, EventArgs e)
     {
+      if (ctx?.Settings?.Waterfall?.ShowPerformanceCounters != true)
+      {
+        PerfLabel.Visible = false;
+        perfTimer.Stop();
+        return;
+      }
+
       var wc = ctx?.WaterfallPanel?.WaterfallControl;
       if (wc == null)
       {

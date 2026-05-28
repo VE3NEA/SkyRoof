@@ -39,6 +39,7 @@ namespace SkyRoof
     public double Pan = 0;
     public double ScrollSpeed = 1;
     public WaterfallQuality Quality = WaterfallQuality.Auto;
+    public bool PerfCountersEnabled = false;
 
     // cached uniform locations (avoid glGetUniformLocation in draw loop)
     private int locScreenWidth;
@@ -309,8 +310,12 @@ namespace SkyRoof
     {
       var gl = OpenglControl.OpenGL;
 
-      Interlocked.Increment(ref drawCalls);
-      long t0 = Stopwatch.GetTimestamp();
+      long t0 = 0;
+      if (PerfCountersEnabled)
+      {
+        Interlocked.Increment(ref drawCalls);
+        t0 = Stopwatch.GetTimestamp();
+      }
       ShaderProgram.Bind(gl);
 #if DEBUG
       CheckError(gl);
@@ -374,7 +379,8 @@ namespace SkyRoof
 #endif
       UpdateFps();
 
-      Interlocked.Add(ref drawTimeTicks, Stopwatch.GetTimestamp() - t0);
+      if (PerfCountersEnabled)
+        Interlocked.Add(ref drawTimeTicks, Stopwatch.GetTimestamp() - t0);
     }
 
 
@@ -431,6 +437,19 @@ namespace SkyRoof
 
     public WaterfallPerfSnapshot GetPerfSnapshot()
     {
+      if (!PerfCountersEnabled)
+      {
+        return new WaterfallPerfSnapshot(
+          Fps,
+          0,
+          0,
+          0,
+          0,
+          0,
+          Stopwatch.Frequency
+        );
+      }
+
       // Reads are atomic on x64 but not guaranteed on all platforms; use Interlocked for safety.
       return new WaterfallPerfSnapshot(
         Fps,
@@ -458,7 +477,7 @@ namespace SkyRoof
         if (pendingSpectrum != null)
         {
           ArrayPool.Return(pendingSpectrum);
-          droppedUploads++;
+          if (PerfCountersEnabled) Interlocked.Increment(ref droppedUploads);
         }
 
         pendingSpectrum = spectrumCopy;
@@ -490,10 +509,15 @@ namespace SkyRoof
 
         try
         {
-          Interlocked.Increment(ref uploadCalls);
-          long t0 = Stopwatch.GetTimestamp();
+          long t0 = 0;
+          if (PerfCountersEnabled)
+          {
+            Interlocked.Increment(ref uploadCalls);
+            t0 = Stopwatch.GetTimestamp();
+          }
           IndexedTexture.SetRows(Row * TextureFold, TextureFold, local, localCount);
-          Interlocked.Add(ref uploadTimeTicks, Stopwatch.GetTimestamp() - t0);
+          if (PerfCountersEnabled)
+            Interlocked.Add(ref uploadTimeTicks, Stopwatch.GetTimestamp() - t0);
 
           if (++Row == SpectraHeight) Row = 0;
           ScrollPos = Row / (float)SpectraHeight;

@@ -63,6 +63,7 @@ namespace SkyRoof
     {
       var sett = ctx.Settings.Waterfall;
       WaterfallControl.Quality = sett.Quality;
+      WaterfallControl.PerfCountersEnabled = sett.ShowPerformanceCounters;
       WaterfallControl.Brightness = sett.Brightness;
       WaterfallControl.Contrast = sett.Contrast;
       int paletteIndex = Math.Min(ctx.PaletteManager.Palettes.Count() - 1, sett.PaletteIndex);
