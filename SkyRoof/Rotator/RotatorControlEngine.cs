@@ -16,7 +16,7 @@ namespace SkyRoof
 {
   public class RotatorControlEngine : ControlEngine
   {
-    public Bearing? RequestedBearing, LastReadBearing, LastWrittenBearing;
+    public volatile Bearing? RequestedBearing, LastReadBearing, LastWrittenBearing;
     private volatile bool stopRequested = false;
 
     public event EventHandler? BearingChanged;
