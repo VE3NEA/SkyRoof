@@ -158,6 +158,9 @@ namespace SkyRoof
 
     public List<SatellitePass> Passes = new();
 
+    /// <summary>snapshot for UI enumeration while <see cref="Passes"/> may be rebuilt on another thread.</summary>
+    public SatellitePass[] GetPassesSnapshot() => Passes.ToArray();
+
     public SatellitePasses(Context ctx)
     {
       this.ctx = ctx;

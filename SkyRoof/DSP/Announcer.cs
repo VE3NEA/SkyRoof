@@ -52,13 +52,14 @@ namespace SkyRoof
 
       var sett = ctx!.Settings.Announcements;
 
+      var groupPasses = ctx.GroupPasses.GetPassesSnapshot();
       var minStartTime = DateTime.UtcNow.AddMinutes(sett.Announcement1.Minutes).AddSeconds(1);
       if (sett.Announcement1.Enabled)
-        Queue1 = ctx.GroupPasses.Passes.Where(p => p.StartTime > minStartTime).ToList();
+        Queue1 = groupPasses.Where(p => p.StartTime > minStartTime).ToList();
 
       minStartTime = DateTime.UtcNow.AddMinutes(sett.Announcement2.Minutes).AddSeconds(1);
       if (sett.Announcement2.Enabled)
-        Queue2 = ctx.GroupPasses.Passes.Where(p => p.StartTime > minStartTime).ToList();
+        Queue2 = groupPasses.Where(p => p.StartTime > minStartTime).ToList();
     }
 
     public void AddToQueue(IEnumerable<SatellitePass> passes)

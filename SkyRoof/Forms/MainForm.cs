@@ -45,7 +45,7 @@ namespace SkyRoof
 
       EnsureUserDetails();
 
-      // Always start with auto tuning disabled for this session (do not persist).
+      // always start with auto tuning disabled for this session (do not persist).
       ctx.Settings.Satellites.AutoMonitorEnabled = false;
 
       ctx.GroupPasses = new(ctx);
@@ -280,11 +280,11 @@ namespace SkyRoof
     {
       if (ctx.RecorderPanel?.isPlayingBack == true) return;
 
-      // Record/playback taps should use the same pre-gain samples.
+      // record/playback taps should use the same pre-gain samples.
       ctx.RecorderPanel?.AddIqSamples(e);
       ctx.AutoRecorder?.AddIqSamples(e.Data, e.Count);
 
-      // Output-stream routing applies gain; don't mutate the shared buffer used by recording/playback.
+      // output-stream routing applies gain; don't mutate the shared buffer used by recording/playback.
       ApplyIqOutputStreamGainAndRoute(e.Data, e.Count);
     }
 
@@ -296,11 +296,11 @@ namespace SkyRoof
 
       ctx.SpeakerSoundcard.AddSamples(e.Data, 0, e.Count);
 
-      // Record/playback taps should use the same pre-gain samples.
+      // record/playback taps should use the same pre-gain samples.
       ctx.RecorderPanel?.AddAudioSamples(e);
       ctx.AutoRecorder?.AddAudioSamples(e.Data, e.Count);
 
-      // Output-stream routing applies gain; don't mutate the shared buffer used by recording/playback.
+      // output-stream routing applies gain; don't mutate the shared buffer used by recording/playback.
       ApplyAudioOutputStreamGainAndRoute(e.Data, e.Count);
     }
 
@@ -309,7 +309,7 @@ namespace SkyRoof
       float gain = Dsp.FromDb2(ctx.Settings.OutputStream.Gain);
       if (count <= 0) return;
 
-      // Copy to avoid mutating the shared slicer buffer (used by speaker + recording).
+      // copy to avoid mutating the shared slicer buffer (used by speaker + recording).
       float[] streamData = new float[count];
       Array.Copy(data, 0, streamData, 0, count);
       for (int i = 0; i < count; i++) streamData[i] *= gain;
@@ -325,7 +325,7 @@ namespace SkyRoof
       float gain = Dsp.FromDb2(ctx.Settings.OutputStream.Gain);
       if (count <= 0) return;
 
-      // Copy to avoid mutating the shared slicer buffer (used by recording/playback).
+      // copy to avoid mutating the shared slicer buffer (used by recording/playback).
       Complex32[] streamData = new Complex32[count];
       Array.Copy(data, 0, streamData, 0, count);
       for (int i = 0; i < count; i++) streamData[i] *= gain;
@@ -1049,7 +1049,7 @@ namespace SkyRoof
     {
       if (ctx.AutoRecorder == null || ctx.MonitoredPasses == null) return;
 
-      // Pass-through recording is tied to auto monitoring; with auto tuning off, Audio/IQ prefs are inactive.
+      // pass-through recording is tied to auto monitoring; with auto tuning off, Audio/IQ prefs are inactive.
       if (!ctx.Settings.Satellites.AutoMonitorEnabled)
       {
         ctx.AutoRecorder.Stop();
@@ -1063,7 +1063,7 @@ namespace SkyRoof
       if (cust.AutoRecordMode == AutoRecordMode.Off) { ctx.AutoRecorder.Stop(); return; }
 
       var now = DateTime.UtcNow;
-      var activePass = ctx.MonitoredPasses.Passes
+      var activePass = ctx.MonitoredPasses.GetPassesSnapshot()
         .FirstOrDefault(p => p.Satellite == sat && p.StartTime <= now && p.EndTime > now);
       if (activePass == null) { ctx.AutoRecorder.Stop(); return; }
 
@@ -1223,7 +1223,7 @@ namespace SkyRoof
 
       int minEl = Math.Max(0, Math.Min(90, ctx.Settings.Satellites.AutoMonitorMinElevationDeg));
 
-      var activePasses = ctx.MonitoredPasses.Passes
+      var activePasses = ctx.MonitoredPasses.GetPassesSnapshot()
         .Where(p => p.StartTime <= now && p.EndTime > now)
         .ToList();
 
@@ -1253,7 +1253,7 @@ namespace SkyRoof
         int chosenIdx = ids.IndexOf(chosenId);
         if (curIdx >= 0 && chosenIdx >= 0 && curIdx <= chosenIdx)
         {
-          // If we're currently on a higher/equal priority sat, keep it unless it fails the min elevation
+          // if we're currently on a higher/equal priority sat, keep it unless it fails the min elevation
           // and another active pass meets the threshold.
           bool currentMeets = activeById[currentId].MaxElevation >= minEl;
           if (!anyMeets || currentMeets) return;
@@ -1272,14 +1272,14 @@ namespace SkyRoof
 
     private void AutoParkRotatorBetweenPasses(DateTime nowUtc)
     {
-      // Only park when auto monitoring is enabled (to avoid unexpected movement).
+      // only park when auto monitoring is enabled (to avoid unexpected movement).
       if (!ctx.Settings.Satellites.AutoMonitorEnabled) return;
       if (!ctx.Settings.Rotator.Enabled) return;
       if (nowUtc - LastAutoParkTimeUtc < AutoParkMinInterval) return;
 
       LastAutoParkTimeUtc = nowUtc;
 
-      // Clear the selected pass so tracking logic knows we're between passes.
+      // clear the selected pass so tracking logic knows we're between passes.
       ctx.SatelliteSelector.SetSelectedPass(null);
       RotatorWidget.Park();
     }

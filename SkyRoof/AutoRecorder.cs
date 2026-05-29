@@ -21,7 +21,7 @@ namespace SkyRoof
     private Task? writerTask;
 
     /// <summary>
-    /// Extra headroom after AF gain so peaks rarely hit 0 dBFS in the WAV (speaker path can still clip in hardware).
+    /// extra headroom after AF gain so peaks rarely hit 0 dBFS in the WAV (speaker path can still clip in hardware).
     /// </summary>
     private const float PcmHeadroom = 0.92f;
 
@@ -66,13 +66,13 @@ namespace SkyRoof
         string suffix = wantAudio ? "" : "_IQ";
         fileName = Path.Combine(recordingsDir, $"{utc}Z_{safeSat}{el}{suffix}.wav");
 
-        // Use 16-bit PCM for maximum player compatibility.
+        // use 16-bit PCM for maximum player compatibility.
         var format = new WaveFormat(SdrConst.AUDIO_SAMPLING_RATE, 16, wantAudio ? 1 : 2);
         writer = new WaveFileWriter(fileName, format);
         this.satId = satId;
         isAudio = wantAudio;
 
-        // Start background writer
+        // start background writer
         channel = Channel.CreateBounded<WriteChunk>(new BoundedChannelOptions(64)
         {
           FullMode = BoundedChannelFullMode.DropOldest,
@@ -104,10 +104,13 @@ namespace SkyRoof
       }
       catch { }
 
-      // Best-effort: let background loop finish queued writes quickly.
+      var task = writerTask;
+      writerTask = null;
+
+      // let the background writer drain the channel before disposing the file.
       try
       {
-        writerTask?.Wait(250);
+        task?.Wait(TimeSpan.FromSeconds(2));
       }
       catch { }
 
@@ -115,8 +118,6 @@ namespace SkyRoof
       writer = null;
       satId = null;
       fileName = null;
-
-      writerTask = null;
       writerCts?.Dispose();
       writerCts = null;
       channel = null;
@@ -136,7 +137,7 @@ namespace SkyRoof
       int bytes = count * sizeof(short);
       byte[] buffer = ArrayPool<byte>.Shared.Rent(bytes);
 
-      // Match what you hear: <see cref="GainWidget"/> applies AF gain inside SpeakerSoundcard; we tap pre-gain floats.
+      // match what you hear: <see cref="GainWidget"/> applies AF gain inside SpeakerSoundcard; we tap pre-gain floats.
       float af = Dsp.FromDb2(ctx.Settings.Audio.SoundcardVolume);
 
       // float [-1..1] -> PCM16 (write directly into byte buffer)

@@ -321,7 +321,7 @@ namespace SkyRoof
       bool hamBand = ctx.Sdr == null || SatnogsDbTransmitter.IsHamFrequency(ctx.FrequencyControl.GetSdrRfCenter());
       SatellitePasses passes = hamBand ? ctx.HamPasses : ctx.SdrPasses;
       
-      foreach (var pass in passes.Passes)
+      foreach (var pass in passes.GetPassesSnapshot())
         if (pass.StartTime < now.AddMinutes(6) && pass.EndTime > now.AddMinutes(-25))
         {
           var transmitters = pass.Satellite.Transmitters.Where(tx => tx.alive);

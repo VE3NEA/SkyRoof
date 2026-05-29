@@ -218,7 +218,7 @@ namespace SkyRoof
     private void DrawPasses(Graphics g, DateTime now)
     {
       if (ctx.GroupPasses == null) return;
-      var passes = ctx.GroupPasses.Passes.Where(p => !p.Geostationary);
+      var passes = ctx.GroupPasses.GetPassesSnapshot().Where(p => !p.Geostationary);
 
       SatLabelRects.Clear();
 

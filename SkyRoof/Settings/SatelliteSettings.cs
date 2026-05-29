@@ -47,18 +47,18 @@ namespace SkyRoof
     public string SelectedSatelliteId;
 
     /// <summary>
-    /// Satellite IDs selected for monitoring, ordered by priority (index 0 = highest).
+    /// satellite IDs selected for monitoring, ordered by priority (index 0 = highest).
     /// </summary>
     public List<string> MonitoredSatelliteIds = new();
 
     /// <summary>
-    /// When enabled, SkyRoof automatically selects the highest-priority monitored satellite
+    /// when enabled, SkyRoof automatically selects the highest-priority monitored satellite
     /// during an active pass (and applies its last-selected transmitter).
     /// </summary>
     public bool AutoMonitorEnabled = false;
 
     /// <summary>
-    /// Minimum pass max elevation (degrees) required before auto-monitoring will switch away
+    /// minimum pass max elevation (degrees) required before auto-monitoring will switch away
     /// from a higher-priority satellite to a lower-priority one.
     /// </summary>
     public int AutoMonitorMinElevationDeg = 0;
@@ -128,7 +128,7 @@ namespace SkyRoof
     public string? SelectedTransmitterId;
 
     /// <summary>
-    /// Recording preference for auto-recording when this satellite is selected/auto-selected.
+    /// recording preference for auto-recording when this satellite is selected/auto-selected.
     /// </summary>
     public AutoRecordMode AutoRecordMode = AutoRecordMode.Off;
 

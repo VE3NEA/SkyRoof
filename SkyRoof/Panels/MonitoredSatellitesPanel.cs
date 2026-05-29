@@ -17,6 +17,7 @@ namespace SkyRoof
     private readonly ToolTip minElToolTip = new();
     private readonly ToolTip listColumnToolTip = new();
     private readonly System.Windows.Forms.Timer nextPassTimer = new();
+    private readonly System.Windows.Forms.Timer minElSaveTimer = new() { Interval = 400 };
     private int? DragSourceIndex;
 
     private const string MinElevationToolTip =
@@ -25,8 +26,10 @@ namespace SkyRoof
     private const string NextPassToolTip = "Time until the next pass";
     private const string AudioRecordToolTip = "Enable audio recording for this satellite";
     private const string IqRecordToolTip = "Enable I/Q recording for this satellite.";
-    private const int MaxColumnIndex = 3;
-    private const int NextColumnIndex = 4;
+    private const int SatelliteColumnIndex = 1;
+    private const int SatelliteColumnMaxWidth = 240;
+    private const int NextColumnIndex = 3;
+    private const int MaxColumnIndex = 4;
     private const int AudioColumnIndex = 5;
     private const int IqColumnIndex = 6;
 
@@ -45,6 +48,12 @@ namespace SkyRoof
       nextPassTimer.Interval = 1000;
       nextPassTimer.Tick += (s, e) => UpdateNextPassCountdown();
       nextPassTimer.Start();
+
+      minElSaveTimer.Tick += (s, e) =>
+      {
+        minElSaveTimer.Stop();
+        ctx.Settings.SaveToFile();
+      };
     }
 
     protected override void OnFormClosing(FormClosingEventArgs e)
@@ -52,6 +61,8 @@ namespace SkyRoof
       Log.Information("Closing MonitoredSatellitesPanel");
       nextPassTimer.Stop();
       nextPassTimer.Dispose();
+      minElSaveTimer.Stop();
+      minElSaveTimer.Dispose();
       minElToolTip.Dispose();
       listColumnToolTip.Dispose();
       ctx.MonitoredSatellitesPanel = null;
@@ -104,6 +115,12 @@ namespace SkyRoof
       {
         ctx.Settings.Satellites.AutoMonitorMinElevationDeg = minElTrackBar.Value;
         minElValueLabel.Text = $"{minElTrackBar.Value}°";
+        minElSaveTimer.Stop();
+        minElSaveTimer.Start();
+      };
+      minElTrackBar.MouseUp += (s, e) =>
+      {
+        minElSaveTimer.Stop();
         ctx.Settings.SaveToFile();
       };
       top.Controls.Add(minElTrackBar);
@@ -122,10 +139,12 @@ namespace SkyRoof
       listView.MultiSelect = false;
       listView.AllowDrop = true;
       listView.Columns.Add("#", 40);
-      listView.Columns.Add("Satellite", 200);
-      listView.Columns.Add("Transmitter", 220);
+      listView.Columns.Add("Satellite", MeasureColumnHeaderWidth(listView, "Satellite"));
+      listView.Columns.Add("Transmitter", 130);
+      listView.Columns.Add("Next Pass", MeasureNextPassColumnWidth(listView));
+      listView.Columns[NextColumnIndex].TextAlign = HorizontalAlignment.Right;
       listView.Columns.Add("Max", 50);
-      listView.Columns.Add("Next", 110);
+      listView.Columns[MaxColumnIndex].TextAlign = HorizontalAlignment.Right;
       listView.Columns.Add("Audio", MeasureColumnHeaderWidth(listView, "Audio"));
       listView.Columns.Add("I/Q", 45);
       listView.DoubleClick += (s, e) => SelectInApp();
@@ -179,7 +198,14 @@ namespace SkyRoof
         listView.EndUpdate();
       }
 
+      ResizeSatelliteColumn();
       UpdateNextPassCountdown();
+    }
+
+    private void ResizeSatelliteColumn()
+    {
+      if (listView.Columns.Count <= SatelliteColumnIndex) return;
+      listView.Columns[SatelliteColumnIndex].Width = MeasureSatelliteColumnWidth(listView);
     }
 
     private void UpdateNextPassCountdown()
@@ -188,7 +214,7 @@ namespace SkyRoof
       if (ctx.MonitoredPasses == null) return;
 
       var now = DateTime.UtcNow;
-      var passes = ctx.MonitoredPasses.Passes;
+      var passes = ctx.MonitoredPasses.GetPassesSnapshot();
 
       foreach (ListViewItem item in listView.Items)
       {
@@ -197,8 +223,8 @@ namespace SkyRoof
         var active = passes.FirstOrDefault(p => p.Satellite == sat && p.StartTime <= now && p.EndTime > now);
         if (active != null)
         {
-          item.SubItems[3].Text = $"{Math.Round(active.MaxElevation):F0}°";
-          item.SubItems[4].Text = "Now";
+          item.SubItems[NextColumnIndex].Text = "Now";
+          item.SubItems[MaxColumnIndex].Text = $"{Math.Round(active.MaxElevation):F0}°";
           continue;
         }
 
@@ -207,8 +233,8 @@ namespace SkyRoof
           .OrderBy(p => p.StartTime)
           .FirstOrDefault();
 
-        item.SubItems[3].Text = next == null ? "" : $"{Math.Round(next.MaxElevation):F0}°";
-        item.SubItems[4].Text = next == null ? "" : Utils.TimespanToString(next.StartTime - now);
+        item.SubItems[NextColumnIndex].Text = next == null ? "" : Utils.TimespanToString(next.StartTime - now);
+        item.SubItems[MaxColumnIndex].Text = next == null ? "" : $"{Math.Round(next.MaxElevation):F0}°";
       }
     }
 
@@ -369,13 +395,13 @@ namespace SkyRoof
       int srcIdIndex = ids.IndexOf(srcSat.sat_id);
       if (srcIdIndex < 0) return;
 
-      // Map ListView dst index to sat id
+      // map ListView dst index to sat id
       string? dstSatId = (listView.Items[dst].Tag as SatnogsDbSatellite)?.sat_id;
       if (dstSatId == null) return;
       int dstIdIndex = ids.IndexOf(dstSatId);
       if (dstIdIndex < 0) return;
 
-      // Move the id in the priority list
+      // move the id in the priority list
       var moved = ids[srcIdIndex];
       ids.RemoveAt(srcIdIndex);
       if (dstIdIndex > srcIdIndex) dstIdIndex -= 1;
@@ -421,6 +447,25 @@ namespace SkyRoof
     {
       int textWidth = TextRenderer.MeasureText(headerText, control.Font).Width;
       return textWidth + 16;
+    }
+
+    private static int MeasureNextPassColumnWidth(Control control)
+    {
+      int headerWidth = MeasureColumnHeaderWidth(control, "Next Pass");
+      int sampleWidth = TextRenderer.MeasureText("23h 59m 59s", control.Font).Width + 16;
+      return Math.Max(headerWidth, sampleWidth);
+    }
+
+    private static int MeasureSatelliteColumnWidth(ListView listView)
+    {
+      int width = MeasureColumnHeaderWidth(listView, "Satellite");
+      foreach (ListViewItem item in listView.Items)
+      {
+        if (item.SubItems.Count <= SatelliteColumnIndex) continue;
+        int nameWidth = TextRenderer.MeasureText(item.SubItems[SatelliteColumnIndex].Text, listView.Font).Width + 16;
+        width = Math.Max(width, nameWidth);
+      }
+      return Math.Min(SatelliteColumnMaxWidth, width);
     }
 
     private bool IsOverColumnHeader(Point location)

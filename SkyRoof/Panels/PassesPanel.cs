@@ -130,7 +130,7 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     internal void ShowPasses()
     {
-      IEnumerable<SatellitePass> passes = ctx.GroupPasses.Passes;
+      IEnumerable<SatellitePass> passes = ctx.GroupPasses.GetPassesSnapshot();
       var startTime = DateTime.UtcNow;
       var endTime = startTime + TimeSpan.FromDays(2);
 
@@ -140,7 +140,7 @@ namespace SkyRoof
 
         // sat in group, show 3-day prediction
         if (!ctx.SatelliteSelector.GroupSatellites.Contains(sat))
-          passes = ctx.HamPasses.Passes;
+          passes = ctx.HamPasses.GetPassesSnapshot();
         // else show 2-hour prediction
         passes = passes.Where(p => p.Satellite == sat);
       }
@@ -151,7 +151,7 @@ namespace SkyRoof
 
       else
       {
-        passes = ctx.HamPasses.Passes;
+        passes = ctx.HamPasses.GetPassesSnapshot();
         endTime = startTime + TimeSpan.FromHours(2);
       }
 
