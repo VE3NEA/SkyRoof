@@ -172,13 +172,16 @@
       // 
       // PerfLabel
       // 
+      PerfLabel.AutoSize = true;
       PerfLabel.Font = new Font("Segoe UI", 8F);
       PerfLabel.ForeColor = Color.DimGray;
-      PerfLabel.Location = new Point(5, 146);
+      PerfLabel.Location = new Point(5, 149);
+      PerfLabel.MaximumSize = new Size(218, 0);
       PerfLabel.Name = "PerfLabel";
-      PerfLabel.Size = new Size(198, 46);
+      PerfLabel.Size = new Size(198, 13);
       PerfLabel.TabIndex = 11;
       PerfLabel.Text = "Perf: —";
+      PerfLabel.Visible = false;
       // 
       // perfTimer
       // 
@@ -192,14 +195,14 @@
       panel1.Dock = DockStyle.Fill;
       panel1.Location = new Point(0, 0);
       panel1.Name = "panel1";
-      panel1.Size = new Size(208, 198);
+      panel1.Size = new Size(240, 149);
       panel1.TabIndex = 10;
       // 
       // WaterfallSildersDlg
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
-      ClientSize = new Size(208, 198);
+      ClientSize = new Size(240, 149);
       ControlBox = false;
       Controls.Add(PerfLabel);
       Controls.Add(PaletteComboBox);

@@ -135,15 +135,11 @@ namespace SkyRoof
       Buffer.BlockCopy(data, 0, IntBuffer, 0, srcFloatCount * sizeof(float));
 
       gl.BindTexture(OpenGL.GL_TEXTURE_2D, textureIds[0]);
-#if DEBUG
       CheckError(gl);
-#endif
 
       gl.TexSubImage2D(OpenGL.GL_TEXTURE_2D, 0, 0, rowIndex, Width, rowCount, 
         OpenGL.GL_RED, OpenGL.GL_FLOAT, IntBuffer);
-#if DEBUG
       CheckError(gl);
-#endif
     }
 
     public void Bind(OpenGL gl)

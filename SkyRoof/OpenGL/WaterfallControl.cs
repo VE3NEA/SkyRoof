@@ -318,66 +318,40 @@ namespace SkyRoof
         t0 = Stopwatch.GetTimestamp();
       }
       ShaderProgram.Bind(gl);
-#if DEBUG
       CheckError(gl);
-#endif
       IndexedTexture.Bind(gl);
-#if DEBUG
       CheckError(gl);
-#endif
       VertexBufferArray.Bind(gl);
-#if DEBUG
       CheckError(gl);
-#endif
 
       //UpdateScrollPosOnDraw();
       float scrollHeight = OpenglControl.Size.Height / (float)SpectraHeight;
 
       // a bug in SharpGL prevents ShaderProgram.SetUniform1 from setting int 
       gl.Uniform1(locScreenWidth, OpenglControl.Size.Width);
-#if DEBUG
       CheckError(gl);
-#endif
 
       gl.Uniform1(locZoom, (float)Zoom);
-#if DEBUG
       CheckError(gl);
-#endif
       gl.Uniform1(locPan, (float)Pan);
-#if DEBUG
       CheckError(gl);
-#endif
 
       gl.Uniform1(locScrollPos, (float)ScrollPos);
-#if DEBUG
       CheckError(gl);
-#endif
       gl.Uniform1(locScrollHeight, scrollHeight);
-#if DEBUG
       CheckError(gl);
-#endif
       gl.Uniform1(locBrightness, computeBrightness());
-#if DEBUG
       CheckError(gl);
-#endif
       gl.Uniform1(locContrast, Contrast);
-#if DEBUG
       CheckError(gl);
-#endif
 
       gl.DrawArrays(OpenGL.GL_TRIANGLE_STRIP, 0, 4);
-#if DEBUG
       CheckError(gl);
-#endif
       VertexBufferArray.Unbind(gl);
-#if DEBUG
       CheckError(gl);
-#endif
 
       ShaderProgram.Unbind(gl);
-#if DEBUG
       CheckError(gl);
-#endif
       UpdateFps();
 
       if (PerfCountersEnabled)

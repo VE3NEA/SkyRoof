@@ -121,11 +121,22 @@ namespace SkyRoof
 
     private void SlidersBtn_Click(object sender, EventArgs e)
     {
-      openSlidersDlg?.Close();
+      if (openSlidersDlg != null && !openSlidersDlg.IsDisposed && openSlidersDlg.Visible)
+      {
+        openSlidersDlg.Close();
+        return;
+      }
+
       openSlidersDlg = new WaterfallSildersDlg(ctx);
       openSlidersDlg.FormClosed += (_, _) => openSlidersDlg = null;
       openSlidersDlg.Location = WaterfallControl.PointToScreen(new Point(2, 2));
       openSlidersDlg.Show();
+    }
+
+    internal bool IsPointOnSlidersButton(Point screenPoint)
+    {
+      var bounds = new Rectangle(SlidersBtn.PointToScreen(Point.Empty), SlidersBtn.Size);
+      return bounds.Contains(screenPoint);
     }
 
     private const double MinHzPerPixel = 20;

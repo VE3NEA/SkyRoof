@@ -5,6 +5,11 @@ namespace SkyRoof
 {
   public partial class WaterfallSildersDlg : Form
   {
+    private const int MinClientWidth = 240;
+    private const int PerfTopMargin = 8;
+    private const int BottomPadding = 6;
+    private const int HorizontalPadding = 10;
+
     private Context ctx;
     private bool changing;
     private WaterfallControl.WaterfallPerfSnapshot? lastSnapshot;
@@ -30,9 +35,10 @@ namespace SkyRoof
       label4.Font = ctx.AwesomeFont14;
       label4.Text = FontAwesomeIcons.Palette;
 
-      SettingsToDialog();
+      panel1.SendToBack();
 
-      perfTimer.Start();
+      SettingsToDialog();
+      PerformLayout();
       SyncPerformanceCountersFromSettings();
     }
 
@@ -40,16 +46,104 @@ namespace SkyRoof
     {
       bool showPerf = ctx.Settings.Waterfall.ShowPerformanceCounters;
       PerfLabel.Visible = showPerf;
+
       if (showPerf)
       {
         lastSnapshot = null;
         lastSnapshotUtc = DateTime.UtcNow;
+        perfTimer.Start();
       }
+      else
+      {
+        perfTimer.Stop();
+      }
+
+      UpdatePerfLayout();
+    }
+
+    private void UpdatePerfLayout()
+    {
+      PerformLayout();
+
+      bool showPerf = PerfLabel.Visible;
+      int slidersBottom = GetSlidersBottom();
+      int width = GetSlidersClientWidth();
+
+      int height = slidersBottom + BottomPadding;
+      if (showPerf)
+      {
+        PerfLabel.MaximumSize = new Size(width - HorizontalPadding, 0);
+        PerfLabel.Location = new Point(5, slidersBottom + PerfTopMargin);
+        width = Math.Max(width, PerfLabel.Right + HorizontalPadding);
+        height = PerfLabel.Bottom + BottomPadding;
+      }
+
+      if (ClientSize.Width != width || ClientSize.Height != height)
+        ClientSize = new Size(width, height);
+    }
+
+    private int GetSlidersClientWidth()
+    {
+      int right = 0;
+      foreach (Control control in EnumerSliderControls())
+        right = Math.Max(right, GetControlRightEdge(control));
+
+      return Math.Max(MinClientWidth, right + HorizontalPadding);
+    }
+
+    private static int GetControlRightEdge(Control control)
+    {
+      if (control.AutoSize)
+        return control.Left + control.GetPreferredSize(Size.Empty).Width;
+
+      return control.Right;
+    }
+
+    private IEnumerable<Control> EnumerSliderControls()
+    {
+      foreach (Control control in Controls)
+      {
+        if (control == PerfLabel) continue;
+
+        if (control == panel1)
+        {
+          foreach (Control child in panel1.Controls)
+            yield return child;
+          continue;
+        }
+
+        yield return control;
+      }
+    }
+
+    private int GetSlidersBottom()
+    {
+      int bottom = 0;
+      foreach (Control control in Controls)
+      {
+        if (control == PerfLabel) continue;
+
+        if (control == panel1)
+        {
+          foreach (Control child in panel1.Controls)
+            bottom = Math.Max(bottom, child.Bottom);
+          continue;
+        }
+
+        bottom = Math.Max(bottom, control.Bottom);
+      }
+
+      return bottom;
     }
 
     private void WaterfallSildersDlg_Deactivate(object sender, EventArgs e)
     {
       perfTimer.Stop();
+
+      // SlidersBtn toggles visibility; don't auto-close when that button is clicked.
+      if (ctx.WaterfallPanel?.IsPointOnSlidersButton(Cursor.Position) == true)
+        return;
+
       Close();
     }
 
@@ -63,15 +157,15 @@ namespace SkyRoof
     {
       if (ctx?.Settings?.Waterfall?.ShowPerformanceCounters != true)
       {
-        PerfLabel.Visible = false;
+        SyncPerformanceCountersFromSettings();
         return;
       }
 
-      PerfLabel.Visible = true;
       var wc = ctx?.WaterfallPanel?.WaterfallControl;
       if (wc == null)
       {
-        PerfLabel.Text = "Perf: —";
+        PerfLabel.Text = "FPS —\r\ndrop —\r\nupd —\r\ndraw —";
+        UpdatePerfLayout();
         return;
       }
 
@@ -105,8 +199,12 @@ namespace SkyRoof
       lastSnapshotUtc = now;
 
       PerfLabel.Text =
-        $"FPS {snap.Fps:0.0}  drop {snap.DroppedUploads}\n" +
-        $"upd {uploadsPerSec:0.0}/s {uploadMsAvg:0.00} ms  draw {drawsPerSec:0.0}/s {drawMsAvg:0.00} ms";
+        $"FPS {snap.Fps:0.0}\r\n" +
+        $"drop {snap.DroppedUploads}\r\n" +
+        $"upd {uploadsPerSec:0.0}/s  {uploadMsAvg:0.00} ms\r\n" +
+        $"draw {drawsPerSec:0.0}/s  {drawMsAvg:0.00} ms";
+
+      UpdatePerfLayout();
     }
     
     private void comboBox1_DrawItem(object sender, DrawItemEventArgs e)
@@ -140,6 +238,7 @@ namespace SkyRoof
       if (changing) return;
       DialogToSettings();
       ctx.WaterfallPanel?.ApplySettings();
+      UpdatePerfLayout();
     }
 
     private void SettingsToDialog()
@@ -155,6 +254,10 @@ namespace SkyRoof
 
       PaletteComboBox.DataSource = ctx.PaletteManager.Palettes;
       PaletteComboBox.SelectedIndex = Math.Max(0, Math.Min(ctx.PaletteManager.Palettes.Count() - 1, sett.PaletteIndex));
+
+      BrightnessLabel.Text = BrightnessTrackbar.Value.ToString();
+      ContrastLabel.Text = ContrastTrackbar.Value.ToString();
+      SpeedLabel.Text = Speeds[SpeedTrackbar.Value].ToString();
 
       changing = false;
     }
