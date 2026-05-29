@@ -36,11 +36,7 @@ namespace SkyRoof
       stopBtn.Click += (s, e) =>
       {
         if (ctx == null) return;
-        ctx.Settings.Satellites.AutoMonitorEnabled = false;
-        ctx.Settings.SaveToFile();
-        ctx.AutoRecorder?.Stop();
-        ctx.MonitoredSatellitesPanel?.SyncAutoMonitorControlsFromSettings();
-        ctx.MainForm?.UpdateAutoMonitorBannerVisibility();
+        ctx.MainForm?.SetAutoMonitorEnabled(false);
       };
 
       layout.Controls.Add(label, 0, 0);

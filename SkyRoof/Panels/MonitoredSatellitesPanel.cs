@@ -11,13 +11,24 @@ namespace SkyRoof
     private readonly Button upBtn = new();
     private readonly Button downBtn = new();
     private readonly Button removeBtn = new();
-    private readonly CheckBox autoCheckbox = new();
     private readonly Label minElLabel = new();
     private readonly TrackBar minElTrackBar = new();
     private readonly Label minElValueLabel = new();
+    private readonly ToolTip minElToolTip = new();
+    private readonly ToolTip listColumnToolTip = new();
     private readonly System.Windows.Forms.Timer nextPassTimer = new();
     private int? DragSourceIndex;
-    private bool syncingAutoControls;
+
+    private const string MinElevationToolTip =
+      "The minimum elevation required for a higher priority satellite to interrupt a lower priority one during a pass.";
+    private const string MaxPassToolTip = "Max elevation of the next pass";
+    private const string NextPassToolTip = "Time until the next pass";
+    private const string AudioRecordToolTip = "Enable audio recording for this satellite";
+    private const string IqRecordToolTip = "Enable I/Q recording for this satellite.";
+    private const int MaxColumnIndex = 3;
+    private const int NextColumnIndex = 4;
+    private const int AudioColumnIndex = 5;
+    private const int IqColumnIndex = 6;
 
     public MonitoredSatellitesPanel(Context ctx)
     {
@@ -41,6 +52,8 @@ namespace SkyRoof
       Log.Information("Closing MonitoredSatellitesPanel");
       nextPassTimer.Stop();
       nextPassTimer.Dispose();
+      minElToolTip.Dispose();
+      listColumnToolTip.Dispose();
       ctx.MonitoredSatellitesPanel = null;
       ctx.MainForm.MonitoredSatellitesMNU.Checked = false;
       base.OnFormClosing(e);
@@ -58,42 +71,22 @@ namespace SkyRoof
         Padding = new Padding(8, 6, 8, 6),
       };
 
-      upBtn.Text = "Up";
-      upBtn.AutoSize = true;
-      upBtn.Margin = new Padding(0, 0, 8, 0);
+      ConfigureIconButton(upBtn, RotateBitmap(Properties.Resources.arrow_down_16, RotateFlipType.Rotate180FlipNone), "Move up");
       upBtn.Click += (s, e) => MoveSelected(-1);
 
-      downBtn.Text = "Down";
-      downBtn.AutoSize = true;
-      downBtn.Margin = new Padding(0, 0, 8, 0);
+      ConfigureIconButton(downBtn, Properties.Resources.arrow_down_16, "Move down");
       downBtn.Click += (s, e) => MoveSelected(+1);
 
-      removeBtn.Text = "Remove";
-      removeBtn.AutoSize = true;
-      removeBtn.Margin = new Padding(0);
+      ConfigureGlyphButton(removeBtn, "\uE74D", "Remove");
       removeBtn.Click += (s, e) => RemoveSelected();
 
       top.Controls.Add(upBtn);
       top.Controls.Add(downBtn);
       top.Controls.Add(removeBtn);
 
-      autoCheckbox.Text = "Auto";
-      autoCheckbox.AutoSize = true;
-      autoCheckbox.Margin = new Padding(12, 3, 0, 0);
-      autoCheckbox.Checked = ctx.Settings.Satellites.AutoMonitorEnabled;
-      autoCheckbox.CheckedChanged += (s, e) =>
-      {
-        if (syncingAutoControls) return;
-        ctx.Settings.Satellites.AutoMonitorEnabled = autoCheckbox.Checked;
-        ctx.Settings.SaveToFile();
-        if (!autoCheckbox.Checked) ctx.AutoRecorder?.Stop();
-        ctx.MainForm?.UpdateAutoMonitorBannerVisibility();
-      };
-      top.Controls.Add(autoCheckbox);
-
-      minElLabel.Text = "Min El:";
+      minElLabel.Text = "Min Elevation:";
       minElLabel.AutoSize = true;
-      minElLabel.Margin = new Padding(12, 6, 4, 0);
+      minElLabel.Margin = new Padding(8, 6, 4, 0);
       top.Controls.Add(minElLabel);
 
       minElTrackBar.Minimum = 0;
@@ -119,6 +112,10 @@ namespace SkyRoof
       minElValueLabel.Margin = new Padding(0, 6, 0, 0);
       top.Controls.Add(minElValueLabel);
 
+      minElToolTip.SetToolTip(minElLabel, MinElevationToolTip);
+      minElToolTip.SetToolTip(minElTrackBar, MinElevationToolTip);
+      minElToolTip.SetToolTip(minElValueLabel, MinElevationToolTip);
+
       listView.Dock = DockStyle.Fill;
       listView.View = View.Details;
       listView.FullRowSelect = true;
@@ -129,9 +126,11 @@ namespace SkyRoof
       listView.Columns.Add("Transmitter", 220);
       listView.Columns.Add("Max", 50);
       listView.Columns.Add("Next", 110);
-      listView.Columns.Add("Audio", 55);
+      listView.Columns.Add("Audio", MeasureColumnHeaderWidth(listView, "Audio"));
       listView.Columns.Add("I/Q", 45);
       listView.DoubleClick += (s, e) => SelectInApp();
+      listView.MouseMove += ListView_MouseMove;
+      listView.MouseLeave += (s, e) => listColumnToolTip.SetToolTip(listView, "");
       listView.MouseDown += ListView_MouseDown;
       listView.ItemDrag += ListView_ItemDrag;
       listView.DragEnter += ListView_DragEnter;
@@ -141,19 +140,6 @@ namespace SkyRoof
 
       Controls.Add(listView);
       Controls.Add(top);
-    }
-
-    public void SyncAutoMonitorControlsFromSettings()
-    {
-      syncingAutoControls = true;
-      try
-      {
-        autoCheckbox.Checked = ctx.Settings.Satellites.AutoMonitorEnabled;
-      }
-      finally
-      {
-        syncingAutoControls = false;
-      }
     }
 
     public void RefreshList()
@@ -226,6 +212,44 @@ namespace SkyRoof
       }
     }
 
+    private void ListView_MouseMove(object? sender, MouseEventArgs e)
+    {
+      string tip = GetColumnToolTip(e.Location);
+      if (listColumnToolTip.GetToolTip(listView) != tip)
+        listColumnToolTip.SetToolTip(listView, tip);
+    }
+
+    private string GetColumnToolTip(Point location)
+    {
+      var hit = listView.HitTest(location);
+      int col = -1;
+      if (hit.Item != null && hit.SubItem != null)
+        col = hit.Item.SubItems.IndexOf(hit.SubItem);
+      else if (IsOverColumnHeader(location))
+        col = GetColumnIndexAt(location.X);
+
+      return col switch
+      {
+        MaxColumnIndex => MaxPassToolTip,
+        NextColumnIndex => NextPassToolTip,
+        AudioColumnIndex => AudioRecordToolTip,
+        IqColumnIndex => IqRecordToolTip,
+        _ => "",
+      };
+    }
+
+    private int GetColumnIndexAt(int x)
+    {
+      int left = 0;
+      for (int i = 0; i < listView.Columns.Count; i++)
+      {
+        int right = left + listView.Columns[i].Width;
+        if (x >= left && x < right) return i;
+        left = right;
+      }
+      return -1;
+    }
+
     private void ListView_MouseDown(object sender, MouseEventArgs e)
     {
       if (e.Button != MouseButtons.Left) return;
@@ -234,12 +258,11 @@ namespace SkyRoof
       if (hit.Item == null) return;
       if (hit.Item.Tag is not SatnogsDbSatellite sat) return;
 
-      // columns: 0=#, 1=sat, 2=tx, 3=max, 4=next, 5=audio, 6=iq
       int col = hit.Item.SubItems.IndexOf(hit.SubItem);
-      if (col != 5 && col != 6) return;
+      if (col != AudioColumnIndex && col != IqColumnIndex) return;
 
       var cust = ctx.Settings.Satellites.SatelliteCustomizations.GetOrCreate(sat.sat_id);
-      if (col == 5)
+      if (col == AudioColumnIndex)
         cust.AutoRecordMode = cust.AutoRecordMode == AutoRecordMode.Audio ? AutoRecordMode.Off : AutoRecordMode.Audio;
       else
         cust.AutoRecordMode = cust.AutoRecordMode == AutoRecordMode.Iq ? AutoRecordMode.Off : AutoRecordMode.Iq;
@@ -363,6 +386,48 @@ namespace SkyRoof
 
       int selectIdx = Math.Max(0, Math.Min(dst, listView.Items.Count - 1));
       listView.Items[selectIdx].Selected = true;
+    }
+
+    private static void ConfigureIconButton(Button btn, Image image, string toolTip)
+    {
+      btn.Text = "";
+      btn.Image = image;
+      btn.ImageAlign = ContentAlignment.MiddleCenter;
+      btn.Size = new Size(28, 28);
+      btn.Margin = new Padding(0, 0, 4, 0);
+      btn.UseVisualStyleBackColor = true;
+      btn.AccessibleName = toolTip;
+    }
+
+    private static void ConfigureGlyphButton(Button btn, string mdl2Glyph, string toolTip)
+    {
+      btn.Text = mdl2Glyph;
+      btn.Font = new Font("Segoe MDL2 Assets", 10f);
+      btn.TextAlign = ContentAlignment.MiddleCenter;
+      btn.Size = new Size(28, 28);
+      btn.Margin = new Padding(0, 0, 8, 0);
+      btn.UseVisualStyleBackColor = true;
+      btn.AccessibleName = toolTip;
+    }
+
+    private static Image RotateBitmap(Image source, RotateFlipType rotate)
+    {
+      var bmp = new Bitmap(source);
+      bmp.RotateFlip(rotate);
+      return bmp;
+    }
+
+    private static int MeasureColumnHeaderWidth(Control control, string headerText)
+    {
+      int textWidth = TextRenderer.MeasureText(headerText, control.Font).Width;
+      return textWidth + 16;
+    }
+
+    private bool IsOverColumnHeader(Point location)
+    {
+      if (listView.Items.Count > 0)
+        return location.Y < listView.GetItemRect(0).Top;
+      return location.Y < TextRenderer.MeasureText("Ag", listView.Font).Height + 8;
     }
   }
 }

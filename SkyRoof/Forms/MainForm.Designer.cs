@@ -107,6 +107,8 @@
       RotatorDropdownBtn = new ToolStripDropDownButton();
       EnableRotatorMNU = new ToolStripMenuItem();
       TrackRotatorMNU = new ToolStripMenuItem();
+      AutoMonitorLedLabel = new ToolStripStatusLabel();
+      AutoMonitorStatusLabel = new ToolStripStatusLabel();
       NoiseFloorLabel = new ToolStripStatusLabel();
       CpuLoadlabel = new ToolStripStatusLabel();
       UpdateLabel = new ToolStripStatusLabel();
@@ -121,6 +123,8 @@
       // 
       // Toolbar
       // 
+      Toolbar.Controls.Add(panel5);
+      Toolbar.Controls.Add(ClockPanel);
       Toolbar.Controls.Add(RotatorWidget);
       Toolbar.Controls.Add(panel7);
       Toolbar.Controls.Add(GainWidget);
@@ -128,15 +132,10 @@
       Toolbar.Controls.Add(FrequencyWidget);
       Toolbar.Controls.Add(panel1);
       Toolbar.Controls.Add(SatellitePhotoWidget);
-      Toolbar.Controls.Add(SatelliteSelecionWidget);
-      Toolbar.Controls.Add(ClockPanel);
-      Toolbar.Controls.Add(panel2);
-      Toolbar.Controls.Add(AutoMonitorBannerWidget);
-      Toolbar.Controls.Add(ClockPanel);
-      Toolbar.Controls.Add(panel5);
       Toolbar.Controls.Add(SatellitePhotoSeparator);
       Toolbar.Controls.Add(SatelliteSelecionWidget);
       Toolbar.Controls.Add(panel2);
+      Toolbar.Controls.Add(AutoMonitorBannerWidget);
       Toolbar.Dock = DockStyle.Top;
       Toolbar.Location = new Point(0, 24);
       Toolbar.Name = "Toolbar";
@@ -166,7 +165,7 @@
       // 
       AutoMonitorBannerWidget.BorderStyle = BorderStyle.FixedSingle;
       AutoMonitorBannerWidget.Dock = DockStyle.Left;
-      AutoMonitorBannerWidget.Location = new Point(94, 0);
+      AutoMonitorBannerWidget.Location = new Point(0, 0);
       AutoMonitorBannerWidget.Name = "AutoMonitorBannerWidget";
       AutoMonitorBannerWidget.Size = new Size(420, 78);
       AutoMonitorBannerWidget.TabIndex = 12;
@@ -553,7 +552,7 @@
       // StatusStrip
       // 
       StatusStrip.ImageScalingSize = new Size(24, 24);
-      StatusStrip.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel2, SatDataLedLabel, SatDataStatusLabel, SdrLedLabel, SdrStatusLabel, SoundcardLedLabel, SoundcardStatusLabel, SoundcardDropdownBtn, VacLedLabel, VacStatusLabel, RxCatLedLabel, RxCatStatusLabel, TxCatLedLabel, TxCatStatusLabel, IqOutputLedLabel, IqOutputStatusLabel, RotatorLedLabel, RotatorStatusLabel, RotatorDropdownBtn, NoiseFloorLabel, CpuLoadlabel, UpdateLabel });
+      StatusStrip.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel2, SatDataLedLabel, SatDataStatusLabel, SdrLedLabel, SdrStatusLabel, SoundcardLedLabel, SoundcardStatusLabel, SoundcardDropdownBtn, VacLedLabel, VacStatusLabel, RxCatLedLabel, RxCatStatusLabel, TxCatLedLabel, TxCatStatusLabel, IqOutputLedLabel, IqOutputStatusLabel, RotatorLedLabel, RotatorStatusLabel, RotatorDropdownBtn, AutoMonitorLedLabel, AutoMonitorStatusLabel, NoiseFloorLabel, CpuLoadlabel, UpdateLabel });
       StatusStrip.Location = new Point(0, 926);
       StatusStrip.Name = "StatusStrip";
       StatusStrip.ShowItemToolTips = true;
@@ -772,6 +771,28 @@
       TrackRotatorMNU.Text = "Track";
       TrackRotatorMNU.Click += RotatorTrackMNU_CheckedChanged;
       // 
+      // AutoMonitorLedLabel
+      // 
+      AutoMonitorLedLabel.Font = new Font("Webdings", 9F);
+      AutoMonitorLedLabel.ForeColor = Color.Gray;
+      AutoMonitorLedLabel.Name = "AutoMonitorLedLabel";
+      AutoMonitorLedLabel.Size = new Size(21, 30);
+      AutoMonitorLedLabel.Text = "n";
+      AutoMonitorLedLabel.Click += AutoMonitorLabel_Click;
+      AutoMonitorLedLabel.MouseEnter += StatusLabel_MouseEnter;
+      AutoMonitorLedLabel.MouseLeave += StatusLabel_MouseLeave;
+      // 
+      // AutoMonitorStatusLabel
+      // 
+      AutoMonitorStatusLabel.Font = new Font("Segoe UI", 10F);
+      AutoMonitorStatusLabel.Name = "AutoMonitorStatusLabel";
+      AutoMonitorStatusLabel.Size = new Size(95, 30);
+      AutoMonitorStatusLabel.Text = "Auto Tuning";
+      AutoMonitorStatusLabel.TextAlign = ContentAlignment.MiddleLeft;
+      AutoMonitorStatusLabel.Click += AutoMonitorLabel_Click;
+      AutoMonitorStatusLabel.MouseEnter += StatusLabel_MouseEnter;
+      AutoMonitorStatusLabel.MouseLeave += StatusLabel_MouseLeave;
+      // 
       // NoiseFloorLabel
       // 
       NoiseFloorLabel.Name = "NoiseFloorLabel";
@@ -916,6 +937,8 @@
     private ToolStripDropDownButton RotatorDropdownBtn;
     private ToolStripMenuItem EnableRotatorMNU;
     private ToolStripMenuItem TrackRotatorMNU;
+    private ToolStripStatusLabel AutoMonitorLedLabel;
+    private ToolStripStatusLabel AutoMonitorStatusLabel;
     public ToolStripMenuItem Ft4ConsoleMNU;
     public ToolStripMenuItem RecorderMNU;
     public ToolStripMenuItem QsoSchedulerMNU;

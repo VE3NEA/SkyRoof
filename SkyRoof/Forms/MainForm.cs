@@ -81,7 +81,6 @@ namespace SkyRoof
 
       StartSdrIfEnabled();
       UpdateAutoMonitorBannerVisibility();
-      ctx.MonitoredSatellitesPanel?.SyncAutoMonitorControlsFromSettings();
 
       VersionChecker = new VersionChecker(ctx.Settings.LatestVersion);
       VersionChecker.UpdateAvailable += UpdateAvailable_handler;
@@ -93,6 +92,49 @@ namespace SkyRoof
     public void UpdateAutoMonitorBannerVisibility()
     {
       AutoMonitorBannerWidget?.SyncFromSettings();
+      ShowAutoMonitorStatus();
+    }
+
+    public void SetAutoMonitorEnabled(bool enabled)
+    {
+      if (ctx.Settings.Satellites.AutoMonitorEnabled == enabled)
+      {
+        ShowAutoMonitorStatus();
+        return;
+      }
+
+      if (enabled && ctx.Settings.Satellites.MonitoredSatelliteIds.Count == 0)
+      {
+        MessageBox.Show(
+          "Add at least one satellite to the Monitored Satellites list before enabling Auto Tuning.",
+          "SkyRoof",
+          MessageBoxButtons.OK,
+          MessageBoxIcon.Warning);
+        ShowAutoMonitorStatus();
+        return;
+      }
+
+      ctx.Settings.Satellites.AutoMonitorEnabled = enabled;
+      ctx.Settings.SaveToFile();
+      if (!enabled) ctx.AutoRecorder?.Stop();
+      UpdateAutoMonitorBannerVisibility();
+    }
+
+    public void ShowAutoMonitorStatus()
+    {
+      if (AutoMonitorLedLabel == null || AutoMonitorStatusLabel == null) return;
+
+      bool enabled = ctx.Settings.Satellites.AutoMonitorEnabled;
+      AutoMonitorLedLabel.ForeColor = enabled ? Color.Lime : Color.Red;
+      AutoMonitorStatusLabel.ToolTipText = enabled
+        ? "Auto tuning enabled — click to disable"
+        : "Auto tuning disabled — click to enable";
+      AutoMonitorLedLabel.ToolTipText = AutoMonitorStatusLabel.ToolTipText;
+    }
+
+    private void AutoMonitorLabel_Click(object sender, EventArgs e)
+    {
+      SetAutoMonitorEnabled(!ctx.Settings.Satellites.AutoMonitorEnabled);
     }
 
     private void UpdateAvailable_handler(object? sender, EventArgs e)
