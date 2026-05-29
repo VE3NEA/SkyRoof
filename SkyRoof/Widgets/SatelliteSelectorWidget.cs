@@ -79,7 +79,7 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     private void SetSelectedGroup(SatelliteGroup group)
     {
-      Debug.Assert(group.SelectedSatId != null);
+      if (group.SatelliteIds.Count == 0) return;
 
       ctx.Settings.Satellites.SelectedGroupId = group.Id;
       group.SelectedSatId ??= group.SatelliteIds[0];
@@ -126,7 +126,11 @@ namespace SkyRoof
       // read settings
       var sett = ctx.Settings.Satellites;
       SelectedGroup = sett.SatelliteGroups.First(g => g.Id == sett.SelectedGroupId);
-      GroupSatellites = SelectedGroup.SatelliteIds.Select(id => ctx.SatnogsDb.GetSatellite(id)!).ToArray();
+      GroupSatellites = SelectedGroup.SatelliteIds
+        .Select(id => ctx.SatnogsDb.GetSatellite(id))
+        .Where(s => s != null)
+        .Cast<SatnogsDbSatellite>()
+        .ToArray();
 
       // select item in combobox
       changing = true;
@@ -146,8 +150,12 @@ namespace SkyRoof
       SelectedSatellite = ctx.SatnogsDb.GetSatellite(sett.SelectedSatelliteId);
       if (SelectedSatellite == null)
       {
-        sett.SelectedSatelliteId = SelectedGroup.SatelliteIds[0];
-        SelectedSatellite = ctx.SatnogsDb.GetSatellite(sett.SelectedSatelliteId);
+        string? fallbackId = SelectedGroup.SatelliteIds
+          .FirstOrDefault(id => ctx.SatnogsDb.GetSatellite(id) != null);
+        if (fallbackId == null) return;
+
+        sett.SelectedSatelliteId = fallbackId;
+        SelectedSatellite = ctx.SatnogsDb.GetSatellite(fallbackId);
       }
 
       SetSatelliteInCombobox();
@@ -161,6 +169,8 @@ namespace SkyRoof
 
     private void ShowSelectedTransmitter()
     {
+      if (SelectedSatellite == null || SelectedSatellite.Transmitters.Count == 0) return;
+
       var cust = ctx.Settings.Satellites.SatelliteCustomizations.GetOrCreate(SelectedSatellite.sat_id);
       cust.SelectedTransmitterId ??= SelectedSatellite.Transmitters[0].uuid;
       SelectedTransmitter = SelectedSatellite.Transmitters.FirstOrDefault(t => t.uuid == cust.SelectedTransmitterId);

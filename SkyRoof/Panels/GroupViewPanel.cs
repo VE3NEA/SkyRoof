@@ -48,14 +48,46 @@ namespace SkyRoof
       // select group or default
       var sett = ctx.Settings.Satellites;
       var group = sett.SatelliteGroups.First(g => g.Id == sett.SelectedGroupId);
-      Items = group.SatelliteIds.Select(id => ItemFromSat(ctx.SatnogsDb.GetSatellite(id))).ToArray();
+      Items = group.SatelliteIds
+        .Select(id => ctx.SatnogsDb.GetSatellite(id))
+        .Where(s => s != null)
+        .Cast<SatnogsDbSatellite>()
+        .Select(ItemFromSat)
+        .ToArray();
       ShowAmsatStatuses();
 
-      listView1.VirtualListSize = Items.Length;
-      listView1.Invalidate();
+      SyncVirtualListSize();
 
       ShowSelectedSat();
       GroupNameLabel.Text = $"Group:   {group.Name}";
+    }
+
+    protected override void OnLoad(EventArgs e)
+    {
+      base.OnLoad(e);
+      SyncVirtualListSize();
+    }
+
+    private void SyncVirtualListSize()
+    {
+      Items ??= Array.Empty<ListViewItem>();
+      listView1.VirtualListSize = Items.Length;
+      if (listView1.SelectedIndices.Count > 0 && listView1.SelectedIndices[0] >= Items.Length)
+        listView1.SelectedIndices.Clear();
+    }
+
+    private bool TryGetSelectedItem(out ItemData data)
+    {
+      data = null!;
+      if (Items == null || Items.Length == 0) return false;
+      if (listView1.SelectedIndices.Count == 0) return false;
+
+      int idx = listView1.SelectedIndices[0];
+      if (idx < 0 || idx >= Items.Length) return false;
+      if (Items[idx].Tag is not ItemData itemData) return false;
+
+      data = itemData;
+      return true;
     }
 
     private ListViewItem ItemFromSat(SatnogsDbSatellite sat)
@@ -82,6 +114,8 @@ namespace SkyRoof
 
     public void ShowSelectedSat()
     {
+      if (Items == null) return;
+
       var selectedSat = ctx.SatelliteSelector.SelectedSatellite;
 
       foreach (var item in Items)
@@ -115,12 +149,15 @@ namespace SkyRoof
 
     public void UpdatePassTimes()
     {
+      if (Items == null || Items.Length == 0) return;
+
       var now = DateTime.UtcNow;
       bool changed = false;
 
       foreach (var item in Items)
       {
-        var data = item.Tag as ItemData;
+        if (item?.Tag is not ItemData data) continue;
+        if (item.SubItems.Count < 4) continue;
         if (data.Pass == null || data.Pass.EndTime < now)
         {
           data.Pass = ctx.HamPasses.GetNextPass(data.Sat);
@@ -147,6 +184,7 @@ namespace SkyRoof
       }
 
       if (changed) SortItems();
+      SyncVirtualListSize();
       listView1.Invalidate();
     }
 
@@ -171,7 +209,14 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     private void listView1_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
     {
-      e.Item = Items[e.ItemIndex];
+      if (Items == null || Items.Length == 0)
+      {
+        e.Item = new ListViewItem("");
+        return;
+      }
+
+      int idx = Math.Clamp(e.ItemIndex, 0, Items.Length - 1);
+      e.Item = Items[idx];
     }
 
     private void listView1_ColumnClick(object sender, ColumnClickEventArgs e)
@@ -183,10 +228,7 @@ namespace SkyRoof
     private void listView1_SelectedIndexChanged(object sender, EventArgs e)
     {
       if (MouseButtons == MouseButtons.Right) return;
-
-      if (listView1.SelectedIndices.Count == 0) return;
-
-      var data = (ItemData)Items[listView1.SelectedIndices[0]].Tag!;
+      if (!TryGetSelectedItem(out var data)) return;
 
       ctx.SatelliteSelector.SetSelectedSatellite(data.Sat);
       ctx.PassesPanel?.ShowPasses();
@@ -195,15 +237,17 @@ namespace SkyRoof
 
     private void SatelliteDetailsMNU_Click(object sender, EventArgs e)
     {
-      var data = (ItemData)Items[listView1.SelectedIndices[0]].Tag!;
+      if (!TryGetSelectedItem(out var data)) return;
       SatelliteDetailsForm.ShowSatellite(data.Sat, ctx.MainForm);
     }
 
     private void MonitorSatelliteMNU_Click(object sender, EventArgs e)
     {
       if (listView1.SelectedIndices.Count == 0) return;
-      var data = (ItemData)Items[listView1.SelectedIndices[0]].Tag!;
+      int idx = listView1.SelectedIndices[0];
+      if (Items == null || idx < 0 || idx >= Items.Length) return;
 
+      var data = (ItemData)Items[idx].Tag!;
       ToggleMonitored(data.Sat);
     }
 
@@ -222,14 +266,14 @@ namespace SkyRoof
 
     private void contextMenuStrip1_Opening(object sender, System.ComponentModel.CancelEventArgs e)
     {
-      if (listView1.SelectedIndices.Count == 0) e.Cancel = true;
-
-      if (listView1.SelectedIndices.Count > 0)
+      if (!TryGetSelectedItem(out var data))
       {
-        var data = (ItemData)Items[listView1.SelectedIndices[0]].Tag!;
-        bool monitored = ctx.Settings.Satellites.MonitoredSatelliteIds.Contains(data.Sat.sat_id);
-        MonitorSatelliteMNU.Text = monitored ? "Unmonitor Satellite" : "Monitor Satellite";
+        e.Cancel = true;
+        return;
       }
+
+      bool monitored = ctx.Settings.Satellites.MonitoredSatelliteIds.Contains(data.Sat.sat_id);
+      MonitorSatelliteMNU.Text = monitored ? "Unmonitor Satellite" : "Monitor Satellite";
     }
 
     private void listView1_MouseDown(object sender, MouseEventArgs e)

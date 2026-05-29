@@ -19,6 +19,7 @@ namespace SkyRoof
     private readonly System.Windows.Forms.Timer nextPassTimer = new();
     private readonly System.Windows.Forms.Timer minElSaveTimer = new() { Interval = 400 };
     private int? DragSourceIndex;
+    private bool refreshingList;
 
     private const string MinElevationToolTip =
       "The minimum elevation required for a higher priority satellite to interrupt a lower priority one during a pass.";
@@ -163,14 +164,24 @@ namespace SkyRoof
 
     public void RefreshList()
     {
+      if (IsDisposed) return;
+
+      nextPassTimer.Stop();
+      refreshingList = true;
       listView.BeginUpdate();
       try
       {
         listView.Items.Clear();
 
-        var ids = ctx.Settings.Satellites.MonitoredSatelliteIds;
+        if (ctx.SatnogsDb == null)
+          return;
 
-        for (int i = 0; i < ids.Count; i++)
+        var ids = ctx.Settings.Satellites.MonitoredSatelliteIds
+          .Where(id => !string.IsNullOrWhiteSpace(id))
+          .Distinct()
+          .ToArray();
+
+        for (int i = 0; i < ids.Length; i++)
         {
           var sat = ctx.SatnogsDb?.GetSatellite(ids[i]);
           if (sat == null) continue;
@@ -196,6 +207,8 @@ namespace SkyRoof
       finally
       {
         listView.EndUpdate();
+        refreshingList = false;
+        if (!IsDisposed) nextPassTimer.Start();
       }
 
       ResizeSatelliteColumn();
@@ -210,31 +223,40 @@ namespace SkyRoof
 
     private void UpdateNextPassCountdown()
     {
-      if (IsDisposed) return;
+      if (IsDisposed || refreshingList) return;
       if (ctx.MonitoredPasses == null) return;
 
       var now = DateTime.UtcNow;
       var passes = ctx.MonitoredPasses.GetPassesSnapshot();
 
-      foreach (ListViewItem item in listView.Items)
+      listView.BeginUpdate();
+      try
       {
-        if (item.Tag is not SatnogsDbSatellite sat) continue;
-
-        var active = passes.FirstOrDefault(p => p.Satellite == sat && p.StartTime <= now && p.EndTime > now);
-        if (active != null)
+        foreach (ListViewItem item in listView.Items)
         {
-          item.SubItems[NextColumnIndex].Text = "Now";
-          item.SubItems[MaxColumnIndex].Text = $"{Math.Round(active.MaxElevation):F0}°";
-          continue;
+          if (item.Tag is not SatnogsDbSatellite sat) continue;
+          if (item.SubItems.Count <= IqColumnIndex) continue;
+
+          var active = passes.FirstOrDefault(p => p.Satellite == sat && p.StartTime <= now && p.EndTime > now);
+          if (active != null)
+          {
+            item.SubItems[NextColumnIndex].Text = "Now";
+            item.SubItems[MaxColumnIndex].Text = $"{Math.Round(active.MaxElevation):F0}°";
+            continue;
+          }
+
+          var next = passes
+            .Where(p => p.Satellite == sat && p.StartTime > now)
+            .OrderBy(p => p.StartTime)
+            .FirstOrDefault();
+
+          item.SubItems[NextColumnIndex].Text = next == null ? "" : Utils.TimespanToString(next.StartTime - now);
+          item.SubItems[MaxColumnIndex].Text = next == null ? "" : $"{Math.Round(next.MaxElevation):F0}°";
         }
-
-        var next = passes
-          .Where(p => p.Satellite == sat && p.StartTime > now)
-          .OrderBy(p => p.StartTime)
-          .FirstOrDefault();
-
-        item.SubItems[NextColumnIndex].Text = next == null ? "" : Utils.TimespanToString(next.StartTime - now);
-        item.SubItems[MaxColumnIndex].Text = next == null ? "" : $"{Math.Round(next.MaxElevation):F0}°";
+      }
+      finally
+      {
+        listView.EndUpdate();
       }
     }
 
@@ -321,6 +343,7 @@ namespace SkyRoof
       ctx.Settings.SaveToFile();
 
       RefreshList();
+      if (listView.Items.Count == 0) return;
       listView.Items[Math.Max(0, Math.Min(newIdx, listView.Items.Count - 1))].Selected = true;
     }
 
@@ -410,6 +433,7 @@ namespace SkyRoof
       ctx.Settings.SaveToFile();
       RefreshList();
 
+      if (listView.Items.Count == 0) return;
       int selectIdx = Math.Max(0, Math.Min(dst, listView.Items.Count - 1));
       listView.Items[selectIdx].Selected = true;
     }

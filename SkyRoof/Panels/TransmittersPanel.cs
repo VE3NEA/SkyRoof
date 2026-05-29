@@ -123,5 +123,47 @@ namespace SkyRoof
 
       ctx.SatelliteSelector.SetSelectedTransmitter(tx);
     }
+
+    private void listView1_MouseDown(object sender, MouseEventArgs e)
+    {
+      if (e.Button != MouseButtons.Right) return;
+
+      var item = listView1.GetItemAt(e.X, e.Y);
+      if (item == null) return;
+
+      listView1.SelectedItems.Clear();
+      item.Selected = true;
+    }
+
+    private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
+    {
+      if (Satellite == null)
+      {
+        e.Cancel = true;
+        return;
+      }
+
+      bool monitored = ctx.Settings.Satellites.MonitoredSatelliteIds.Contains(Satellite.sat_id);
+      MonitorSatelliteMNU.Text = monitored ? "Unmonitor Satellite" : "Monitor Satellite";
+    }
+
+    private void MonitorSatelliteMNU_Click(object sender, EventArgs e)
+    {
+      if (Satellite == null) return;
+      ToggleMonitored(Satellite);
+    }
+
+    private void ToggleMonitored(SatnogsDbSatellite sat)
+    {
+      var ids = ctx.Settings.Satellites.MonitoredSatelliteIds;
+      if (ids.Contains(sat.sat_id))
+        ids.RemoveAll(id => id == sat.sat_id);
+      else
+        ids.Add(sat.sat_id);
+
+      ctx.Settings.SaveToFile();
+      ctx.MonitoredPasses?.FullRebuild();
+      ctx.MonitoredSatellitesPanel?.RefreshList();
+    }
   }
 }

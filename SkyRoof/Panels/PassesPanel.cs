@@ -106,7 +106,10 @@ namespace SkyRoof
     private void MonitorSatelliteMNU_Click(object sender, EventArgs e)
     {
       if (listViewEx1.SelectedIndices.Count == 0) return;
-      var pass = (SatellitePass)Items[listViewEx1.SelectedIndices[0]].Tag!;
+      int idx = listViewEx1.SelectedIndices[0];
+      if (idx < 0 || idx >= Items.Count) return;
+
+      var pass = (SatellitePass)Items[idx].Tag!;
       ToggleMonitored(pass.Satellite);
     }
 

@@ -69,6 +69,11 @@ namespace SkyRoof
       foreach (var group in SatelliteGroups)
         group.SatelliteIds.RemoveAll(id => db.GetSatellite(id)?.Tle == null);
 
+      MonitoredSatelliteIds.RemoveAll(id => db.GetSatellite(id) == null);
+
+      if (!string.IsNullOrEmpty(SelectedSatelliteId) && db.GetSatellite(SelectedSatelliteId) == null)
+        SelectedSatelliteId = null;
+
       Sanitize();
     }
 
@@ -101,13 +106,38 @@ namespace SkyRoof
 
       // ensure there is a selected sat in each group
       foreach (var group in SatelliteGroups)
+      {
+        if (group.SatelliteIds.Count == 0) continue;
         if (string.IsNullOrEmpty(group.SelectedSatId) || !group.SatelliteIds.Contains(group.SelectedSatId))
           group.SelectedSatId = group.SatelliteIds[0];
+      }
+
+      if (string.IsNullOrEmpty(SelectedSatelliteId) ||
+          !SatelliteGroups.Any(g => g.SatelliteIds.Contains(SelectedSatelliteId)))
+      {
+        SelectedSatelliteId = SatelliteGroups.FirstOrDefault(g => g.SatelliteIds.Count > 0)?.SelectedSatId;
+      }
 
       // remove monitored sats not present in any data (will be pruned later when db is available)
       MonitoredSatelliteIds = MonitoredSatelliteIds.Where(id => !string.IsNullOrWhiteSpace(id)).Distinct().ToList();
 
       AutoMonitorMinElevationDeg = Math.Max(0, Math.Min(90, AutoMonitorMinElevationDeg));
+
+      SanitizeTransmitterModes();
+    }
+
+    private void SanitizeTransmitterModes()
+    {
+      foreach (var tx in TransmitterCustomizations.Values)
+      {
+        tx.DownlinkMode = SanitizeMode(tx.DownlinkMode);
+        tx.UplinkMode = SanitizeMode(tx.UplinkMode);
+      }
+    }
+
+    private static Slicer.Mode SanitizeMode(Slicer.Mode mode)
+    {
+      return Enum.IsDefined(mode) ? mode : Slicer.Mode.USB;
     }
   }
 

@@ -35,12 +35,16 @@
       columnHeader3 = new ColumnHeader();
       columnHeader2 = new ColumnHeader();
       imageList1 = new ImageList(components);
+      contextMenuStrip1 = new ContextMenuStrip(components);
+      MonitorSatelliteMNU = new ToolStripMenuItem();
       SatNameLabel = new Label();
+      contextMenuStrip1.SuspendLayout();
       SuspendLayout();
       // 
       // listView1
       // 
       listView1.Columns.AddRange(new ColumnHeader[] { columnHeader1, columnHeader3, columnHeader2 });
+      listView1.ContextMenuStrip = contextMenuStrip1;
       listView1.Dock = DockStyle.Fill;
       listView1.FullRowSelect = true;
       listView1.LabelWrap = false;
@@ -55,6 +59,21 @@
       listView1.UseCompatibleStateImageBehavior = false;
       listView1.View = View.Details;
       listView1.SelectedIndexChanged += listView1_SelectedIndexChanged;
+      listView1.MouseDown += listView1_MouseDown;
+      // 
+      // contextMenuStrip1
+      // 
+      contextMenuStrip1.Items.AddRange(new ToolStripItem[] { MonitorSatelliteMNU });
+      contextMenuStrip1.Name = "contextMenuStrip1";
+      contextMenuStrip1.Size = new Size(198, 26);
+      contextMenuStrip1.Opening += contextMenuStrip1_Opening;
+      // 
+      // MonitorSatelliteMNU
+      // 
+      MonitorSatelliteMNU.Name = "MonitorSatelliteMNU";
+      MonitorSatelliteMNU.Size = new Size(197, 22);
+      MonitorSatelliteMNU.Text = "Monitor Satellite";
+      MonitorSatelliteMNU.Click += MonitorSatelliteMNU_Click;
       // 
       // columnHeader1
       // 
@@ -99,6 +118,7 @@
       Name = "TransmittersPanel";
       Text = "Satellite Transmitters";
       FormClosing += TransmittersPanel_FormClosing;
+      contextMenuStrip1.ResumeLayout(false);
       ResumeLayout(false);
     }
 
@@ -110,5 +130,7 @@
     private ColumnHeader columnHeader3;
     public Label SatNameLabel;
     private ImageList imageList1;
+    private ContextMenuStrip contextMenuStrip1;
+    private ToolStripMenuItem MonitorSatelliteMNU;
   }
 }

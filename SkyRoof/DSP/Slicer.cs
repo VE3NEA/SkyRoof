@@ -73,7 +73,7 @@ namespace SkyRoof
 
     private void SetMode(Mode mode)
     {
-      CurrentMode = mode;
+      CurrentMode = NormalizeMode(mode);
 
       CreateFilter();
 
@@ -320,6 +320,11 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     //                                        IDispose
     //----------------------------------------------------------------------------------------------
+    private static Mode NormalizeMode(Mode mode)
+    {
+      return Enum.IsDefined(mode) ? mode : Mode.USB;
+    }
+
     public override void Dispose()
     {
       base.Dispose();
