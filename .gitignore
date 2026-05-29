@@ -8,8 +8,8 @@ docs/_site
 *.grf
 release_steps.txt
 install/Output/
-
-
+CLAUDE.md
+.claude/settings.local.json
 
 # User-specific files
 *.rsuser
@@ -369,4 +369,3 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-CLAUDE.md

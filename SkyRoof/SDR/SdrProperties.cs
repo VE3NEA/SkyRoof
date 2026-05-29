@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.ComponentModel;
+using System.Globalization;
 using static VE3NEA.NativeSoapySdr;
 
 namespace VE3NEA
@@ -141,7 +142,7 @@ namespace VE3NEA
       {
         case SoapySDRArgInfoType.Bool: return Property.Value == "true";
         case SoapySDRArgInfoType.Int: return int.Parse(Property.Value);
-        case SoapySDRArgInfoType.Float: return float.Parse(Property.Value);
+        case SoapySDRArgInfoType.Float: return float.Parse(Property.Value, CultureInfo.InvariantCulture);
         default: return OptionToName();
       }
     }

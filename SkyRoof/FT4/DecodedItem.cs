@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using Devcorp.Controls.Design;
 using WsjtxUtils.WsjtxMessages.Messages;
 using WsjtxUtils.WsjtxMessages.QsoParsing;
@@ -72,7 +73,7 @@ namespace SkyRoof
       decode.New = true;
       decode.Time = (uint)((receivedAt - DateTime.UtcNow.Date).TotalMilliseconds);
       decode.Snr = int.Parse(message.Substring(7, 3));
-      decode.OffsetTimeSeconds = float.Parse(message.Substring(11, 4));
+      decode.OffsetTimeSeconds = float.Parse(message.Substring(11, 4), CultureInfo.InvariantCulture);
       decode.OffsetFrequencyHz = uint.Parse(message.Substring(16, 4));
       decode.Mode = message[21].ToString();
       if (message.Length > 24) decode.Message = message.Substring(24, message.Length - 24).Trim();

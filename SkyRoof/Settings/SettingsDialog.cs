@@ -37,9 +37,27 @@ namespace SkyRoof
 
     private void resetToolStripMenuItem_Click(object sender, EventArgs e)
     {
-      grid.ResetSelectedProperty();
-
       string label = PropertyGridEx.GetItemProperty(grid.SelectedGridItem, "HelpKeyword");
+
+      // collection properties don't have a [DefaultValue]; handle their reset explicitly
+      var settings = (Settings?)grid.SelectedObject;
+      switch (label)
+      {
+        case "SkyRoof.TransverterSettings.SdrBands":
+          settings!.Transverter.ResetSdrBands();
+          grid.Refresh();
+          break;
+
+        case "SkyRoof.TransverterSettings.CatBands":
+          settings!.Transverter.ResetCatBands();
+          grid.Refresh();
+          break;
+
+        default:
+          grid.ResetSelectedProperty();
+          break;
+      }
+
       ChangedFields.Add(label);
     }
 
@@ -114,7 +132,11 @@ namespace SkyRoof
 
         case "SkyRoof.Ft4ConsoleSettings.TxWatchDog":
           ValidateInt(e, 20, 1);
-          break;          
+          break;
+
+        case "SkyRoof.RotatorSettings.StepSize":
+          ValidateFloat(e, 30, 0.01f);
+          break;
       }
 
       if (canChange) ChangedFields.Add(label);
@@ -155,6 +177,11 @@ namespace SkyRoof
     private void ValidateInt(PropertyValueChangedEventArgs e, int max, int min = 0)
     {
       int cleanValue = Math.Max(min, Math.Min(max, (int)e.ChangedItem.Value));
+      e.ChangedItem.PropertyDescriptor.SetValue(e.ChangedItem.Parent.Value, cleanValue);
+    }
+    private void ValidateFloat(PropertyValueChangedEventArgs e, float max, float min = 0)
+    {
+      float cleanValue = Math.Max(min, Math.Min(max, (float)e.ChangedItem.Value));
       e.ChangedItem.PropertyDescriptor.SetValue(e.ChangedItem.Parent.Value, cleanValue);
     }
 

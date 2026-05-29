@@ -13,3 +13,4 @@ For the description of other settings see these sections:
 - [Setting Up Voice Announcements](setting_up_voice_announcements.md)
 - [Setting Up CAT Control](setting_up_cat_control.md)
 - [Setting Up Rotator Control]( setting_up_rotator_control.md)
+- [Setting Up Transverter](setting_up_transverter.md)

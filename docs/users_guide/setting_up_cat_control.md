@@ -81,6 +81,21 @@ The settings in the RX and TX sections are:
 - **Show Corrected Frequency** - The SkyRoof can display either the nominal frequency of the satellite transmitter, or the
     frequency with all corrections applied. Another way to toggle this setting is via the right-click menu on the frequency display widget on the toolbar.
 
+## Using CAT with a Transverter
+
+If your transceiver does not understand VHF/UHF frequencies (e.g., a "dumb" HF rig connected
+via a transverter, or an HF rig such as the IC-7300), enable the **RX CAT Offset** and / or
+**TX CAT Offset** in the **Transverter** section of the Settings. SkyRoof will then send the
+IF frequency (e.g., 29.950 MHz) to the radio instead of the satellite RF (e.g., 145.950 MHz).
+Modern rigs with built-in XVRT support (e.g., the K3S) do their own conversion internally and
+should leave these offsets **disabled**.
+
+When a CAT offset is enabled but no transverter band covers the current frequency, the **RX CAT**
+or **TX CAT** label on the status bar turns **yellow** and SkyRoof skips the CAT command rather
+than send a frequency the radio cannot tune. Hover over the label to see the explanation.
+
+See [Setting Up Transverter](setting_up_transverter.md).
+
 ## Model-Specific Notes
 
 ### IC-9700

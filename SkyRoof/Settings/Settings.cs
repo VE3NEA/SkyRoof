@@ -55,6 +55,12 @@ namespace SkyRoof
     public Ft4ConsoleSettings Ft4Console { get; set; } = new ();
 
 
+    [DisplayName("Transverter")]
+    [Description("Settings for HF rigs and SDRs connected via a VHF/UHF transverter")]
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public TransverterSettings Transverter { get; set; } = new();
+
+
     private static string GetFileName()
     {
       return Path.Combine(Utils.GetUserDataFolder(), "Settings.json");
@@ -79,6 +85,7 @@ namespace SkyRoof
         Ui.DockingLayoutString = Ui.DefaultDockingString;
 
       Satellites.Sanitize(true);
+      Transverter.SetDefaults();
     }
   }
 }

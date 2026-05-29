@@ -21,6 +21,10 @@ namespace SkyRoof
     private readonly FrequencyEntryForm FrequencyDialog = new();
     private readonly Slicer.Mode[] LsbModes = [Slicer.Mode.LSB, Slicer.Mode.LSB_D];
 
+    // Transverter band the SDR is currently centered on (null when transverter is disabled
+    // or no SDR band matches the active RF). Updated by SetSlicerFrequency on band changes.
+    private TransverterBand? ActiveSdrBand;
+
     public FrequencyWidget()
     {
       InitializeComponent();
@@ -232,58 +236,151 @@ namespace SkyRoof
       // freq in slicer
       SetSlicerFrequency();
 
-      // freq in external radio
-      ctx.CatControl.Rx?.SetRxFrequency((long)Math.Truncate(RadioLink.CorrectedDownlinkFrequency));
-      if (RadioLink.CorrectedUplinkFrequency != 0)
-        ctx.CatControl.Tx?.SetTxFrequency((long)Math.Truncate(RadioLink.CorrectedUplinkFrequency));
+      // freq in external radio (with optional transverter CAT offset)
+      if (ctx.CatControl.Rx != null)
+        SendCatRxFrequency(RadioLink.CorrectedDownlinkFrequency);
+
+      if (RadioLink.CorrectedUplinkFrequency != 0 && ctx.CatControl.Tx != null)
+        SendCatTxFrequency(RadioLink.CorrectedUplinkFrequency);
+
+      // refresh the LED labels so the yellow "no matching CAT band" state tracks the active RF
+      var transverter = ctx.Settings.Transverter;
+      if (transverter.RxCatOffsetEnabled || transverter.TxCatOffsetEnabled)
+        ctx.MainForm?.ShowCatStatus();
     }
+
+    private void SendCatRxFrequency(double rxRf)
+    {
+      var transverter = ctx.Settings.Transverter;
+      if (transverter.RxCatOffsetEnabled)
+      {
+        var band = transverter.GetCatBand(rxRf);
+        if (band == null)
+          Serilog.Log.Warning($"RX CAT transverter offset enabled but no CAT band matches RF {rxRf:n0} Hz — skipping CAT command");
+        else
+          ctx.CatControl.Rx!.SetRxFrequency((long)Math.Truncate(rxRf - band.LoOffset));
+      }
+      else
+        ctx.CatControl.Rx!.SetRxFrequency((long)Math.Truncate(rxRf));
+    }
+
+    private void SendCatTxFrequency(double txRf)
+    {
+      var transverter = ctx.Settings.Transverter;
+      if (transverter.TxCatOffsetEnabled)
+      {
+        var band = transverter.GetCatBand(txRf);
+        if (band == null)
+          Serilog.Log.Warning($"TX CAT transverter offset enabled but no CAT band matches RF {txRf:n0} Hz — skipping CAT command");
+        else
+          ctx.CatControl.Tx!.SetTxFrequency((long)Math.Truncate(txRf - band.LoOffset));
+      }
+      else
+        ctx.CatControl.Tx!.SetTxFrequency((long)Math.Truncate(txRf));
+    }
+
+    // True when RX CAT transverter offset is enabled but the current downlink RF falls outside
+    // every configured CAT band — no CAT frequency is being sent in this state.
+    public bool IsRxCatTransverterOutOfBand =>
+      ctx.Settings.Transverter.RxCatOffsetEnabled &&
+      ctx.Settings.Transverter.GetCatBand(RadioLink.CorrectedDownlinkFrequency) == null;
+
+    // True when TX CAT transverter offset is enabled but the current uplink RF falls outside
+    // every configured CAT band — no CAT frequency is being sent in this state.
+    public bool IsTxCatTransverterOutOfBand =>
+      ctx.Settings.Transverter.TxCatOffsetEnabled &&
+      ctx.Settings.Transverter.GetCatBand(RadioLink.CorrectedUplinkFrequency) == null;
+
+    public string GetRxCatTransverterOutOfBandMessage() =>
+      $"RX CAT transverter offset is enabled, but no CAT transverter band covers the downlink frequency ({RadioLink.CorrectedDownlinkFrequency:n0} Hz). No frequency is being sent to the radio.";
+
+    public string GetTxCatTransverterOutOfBandMessage() =>
+      $"TX CAT transverter offset is enabled, but no CAT transverter band covers the uplink frequency ({RadioLink.CorrectedUplinkFrequency:n0} Hz). No frequency is being sent to the radio.";
 
     private void SetSlicerFrequency()
     {
       if (ctx.Sdr?.Enabled != true) return;
 
       double bandwidth = ctx.Sdr.Info.MaxBandwidth;
+      double rfFrequency = RadioLink.CorrectedDownlinkFrequency!;
+      var transverter = ctx.Settings.Transverter;
+
+      // Resolve transverter band (null if disabled or RF doesn't match any band)
+      TransverterBand? prevBand = ActiveSdrBand;
+      TransverterBand? band = transverter.SdrOffsetEnabled ? transverter.GetSdrBand(rfFrequency) : null;
+      ActiveSdrBand = band;
+      bool bandChanged = band != prevBand;
+
+      // IF frequency the SDR sees (= RF when no transverter offset applies)
+      long loOffset = band?.LoOffset ?? 0;
+      double ifFrequency = rfFrequency - loOffset;
+
+      // Determine the band-limit constraints for the SDR center
+      double bandIfLow, bandIfHigh;
+      if (band != null)
+      {
+        bandIfLow = band.RfLow - band.LoOffset;
+        bandIfHigh = band.RfHigh - band.LoOffset;
+      }
+      else if (SatnogsDbTransmitter.IsVhfFrequency(rfFrequency))
+      {
+        bandIfLow = SdrConst.VHF_CENTER_FREQUENCY - SdrConst.MAX_BANDWIDTH / 2;
+        bandIfHigh = SdrConst.VHF_CENTER_FREQUENCY + SdrConst.MAX_BANDWIDTH / 2;
+      }
+      else if (SatnogsDbTransmitter.IsUhfFrequency(rfFrequency))
+      {
+        bandIfLow = SdrConst.UHF_CENTER_FREQUENCY - SdrConst.MAX_BANDWIDTH / 2;
+        bandIfHigh = SdrConst.UHF_CENTER_FREQUENCY + SdrConst.MAX_BANDWIDTH / 2;
+      }
+      else
+      {
+        // unknown / non-ham band: no constraint, let the SDR tune directly
+        bandIfLow = ifFrequency - bandwidth;
+        bandIfHigh = ifFrequency + bandwidth;
+      }
+
+      // Transverter mode: on first activation or band crossing, retune SDR to the IF center
+      // of the new band so the entire IF band is in view (when bandwidth allows).
+      if (band != null && bandChanged)
+      {
+        double ifCenter = (bandIfLow + bandIfHigh) / 2;
+        if (ctx.Sdr.IsFrequencySupported(ifCenter))
+        {
+          ctx.Sdr.Frequency = ifCenter;
+          ctx.WaterfallPanel?.SetCenterFrequency(GetSdrRfCenter());
+        }
+      }
+
       double low = ctx.Sdr.Frequency - bandwidth / 2;
       double high = ctx.Sdr.Frequency + bandwidth / 2;
 
-      double targetFrequency = RadioLink.CorrectedDownlinkFrequency!;
-
-      if (targetFrequency < low || targetFrequency > high)
-        if (ctx.Sdr.IsFrequencySupported(targetFrequency))
+      // Signal outside current SDR passband: reposition SDR center (constrained by band)
+      if (ifFrequency < low || ifFrequency > high)
+        if (ctx.Sdr.IsFrequencySupported(ifFrequency))
         {
-          BringToPassband(targetFrequency);
-          ctx.WaterfallPanel?.SetCenterFrequency(ctx.Sdr.Info.Frequency);
+          BringToPassband(ifFrequency, bandIfLow, bandIfHigh);
+          ctx.WaterfallPanel?.SetCenterFrequency(GetSdrRfCenter());
         }
         else
           return;
 
-      if (targetFrequency >= low && targetFrequency <= high)
+      low = ctx.Sdr.Frequency - bandwidth / 2;
+      high = ctx.Sdr.Frequency + bandwidth / 2;
+
+      if (ifFrequency >= low && ifFrequency <= high)
         if (ctx.Slicer?.Enabled == true)
-          ctx.Slicer.SetOffset(targetFrequency - ctx.Sdr.Frequency);
+          ctx.Slicer.SetOffset(ifFrequency - ctx.Sdr.Frequency);
     }
 
-    private bool BringToPassband(double frequency)
+    private bool BringToPassband(double frequency, double bandLow, double bandHigh)
     {
-      double bandWing = SdrConst.MAX_BANDWIDTH / 2;
       double sdrWing = ctx.Sdr!.Info.MaxBandwidth / 2;
 
-      bool uhf = frequency >= SdrConst.UHF_CENTER_FREQUENCY - bandWing &&
-        frequency <= SdrConst.UHF_CENTER_FREQUENCY + bandWing;
-
-      if (uhf)
+      // constrain the new SDR center so the passband stays within [bandLow, bandHigh]
+      if (bandHigh - bandLow >= 2 * sdrWing)
       {
-        double minCenter = SdrConst.UHF_CENTER_FREQUENCY - bandWing + sdrWing;
-        double maxCenter = SdrConst.UHF_CENTER_FREQUENCY + bandWing - sdrWing;
-        frequency = Math.Max(minCenter, Math.Min(maxCenter, frequency));
-      }
-
-      bool vhf = frequency >= SdrConst.VHF_CENTER_FREQUENCY - bandWing &&
-        frequency <= SdrConst.VHF_CENTER_FREQUENCY + bandWing;
-
-      if (vhf)
-      {
-        double minCenter = SdrConst.VHF_CENTER_FREQUENCY - bandWing + sdrWing;
-        double maxCenter = SdrConst.VHF_CENTER_FREQUENCY + bandWing - sdrWing;
+        double minCenter = bandLow + sdrWing;
+        double maxCenter = bandHigh - sdrWing;
         frequency = Math.Max(minCenter, Math.Min(maxCenter, frequency));
       }
 
@@ -293,6 +390,15 @@ namespace SkyRoof
         return true;
       }
       else return false;
+    }
+
+    // Returns the RF center frequency of the SDR.
+    // When the transverter is active on a band, adds the LO offset back to the SDR's IF center
+    // so callers see the displayed RF (e.g., for waterfall scale and ham-band detection).
+    public double GetSdrRfCenter()
+    {
+      if (ctx?.Sdr == null) return 0;
+      return ctx.Sdr.Info.Frequency + (ActiveSdrBand?.LoOffset ?? 0);
     }
 
 
@@ -451,6 +557,14 @@ namespace SkyRoof
       if (RadioLink.IsTransponder)
         tooltip += $"Transponder offset:     {RadioLink.TransponderOffset:n0} Hz\n";
 
+      var transverter = ctx.Settings.Transverter;
+      if (transverter.TxCatOffsetEnabled)
+      {
+        var catBand = transverter.GetCatBand(RadioLink.CorrectedUplinkFrequency);
+        if (catBand != null)
+          tooltip += $"CAT Transverter IF: {(RadioLink.CorrectedUplinkFrequency - catBand.LoOffset) / 1e6:F6} MHz\n";
+      }
+
       return tooltip + "\nRight-click for options";
     }
 
@@ -466,6 +580,20 @@ namespace SkyRoof
 
       if (RadioLink.XitOffset != 0)
         tooltip += $"XIT offset:     {RadioLink.XitOffset:n0} Hz\n";
+
+      var transverter = ctx.Settings.Transverter;
+      if (transverter.SdrOffsetEnabled)
+      {
+        var sdrBand = transverter.GetSdrBand(RadioLink.CorrectedDownlinkFrequency);
+        if (sdrBand != null)
+          tooltip += $"SDR Transverter IF: {(RadioLink.CorrectedDownlinkFrequency - sdrBand.LoOffset) / 1e6:F6} MHz\n";
+      }
+      if (transverter.RxCatOffsetEnabled)
+      {
+        var catBand = transverter.GetCatBand(RadioLink.CorrectedDownlinkFrequency);
+        if (catBand != null)
+          tooltip += $"CAT Transverter IF: {(RadioLink.CorrectedDownlinkFrequency - catBand.LoOffset) / 1e6:F6} MHz\n";
+      }
 
       return tooltip + "\nClick for manual entry\nRight-click for options";
     }

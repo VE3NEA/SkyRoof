@@ -3,6 +3,7 @@ using System.Runtime;
 using CSCore.CoreAudioAPI;
 using MathNet.Numerics;
 using Serilog;
+using SGPdotNET.Observation;
 using VE3NEA;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -65,7 +66,6 @@ namespace SkyRoof
       ctx.CatControl.ApplySettings();
       ctx.RotatorControl.ApplySettings();
 
-      Resize += (s, e) => UpdateSatellitePhotoVisibility();
       UpdateSatellitePhotoVisibility();
     }
 
@@ -705,6 +705,14 @@ namespace SkyRoof
         ctx.RecorderPanel.Close();
     }
 
+    private void QsoSchedulerMNU_Click(object sender, EventArgs e)
+    {
+      if (ctx.QsoSchedulerPanel == null)
+        ShowFloatingPanel(new QsoSchedulerPanel(ctx));
+      else
+        ctx.QsoSchedulerPanel.Close();
+    }
+
     private void SettingsMNU_Click(object sender, EventArgs e)
     {
       new SettingsDialog(ctx).ShowDialog();
@@ -855,23 +863,37 @@ namespace SkyRoof
 
     public void ShowCatStatus()
     {
+      bool rxOutOfBand = ctx.FrequencyControl.IsRxCatTransverterOutOfBand;
+      bool txOutOfBand = ctx.FrequencyControl.IsTxCatTransverterOutOfBand;
+
       if (ctx.CatControl.Rx == null) RxCatLedLabel.ForeColor = Color.Gray;
       else if (!ctx.CatControl.Rx!.IsRunning) RxCatLedLabel.ForeColor = Color.Red;
+      else if (rxOutOfBand) RxCatLedLabel.ForeColor = Color.Yellow;
       else RxCatLedLabel.ForeColor = Color.Lime;
 
       if (!ctx.Settings.Cat.TxCat.Enabled) TxCatLedLabel.ForeColor = Color.Gray;
       else if (!ctx.FrequencyControl.RadioLink.HasUplink) TxCatLedLabel.ForeColor = Color.Black;
       else if (!ctx.CatControl.Tx?.IsRunning ?? false) TxCatLedLabel.ForeColor = Color.Red;
+      else if (txOutOfBand) TxCatLedLabel.ForeColor = Color.Yellow;
       else TxCatLedLabel.ForeColor = Color.Lime;
 
-      RxCatStatusLabel.ToolTipText = ctx.CatControl.Rx?.GetStatusString() ?? "Disabled";
+      string rxTip = rxOutOfBand
+        ? ctx.FrequencyControl.GetRxCatTransverterOutOfBandMessage()
+        : ctx.CatControl.Rx?.GetStatusString() ?? "Disabled";
+      RxCatStatusLabel.ToolTipText = rxTip;
+      RxCatLedLabel.ToolTipText = rxTip;
 
+      string txTip;
       if (!ctx.Settings.Cat.TxCat.Enabled)
-        TxCatStatusLabel.ToolTipText = "Disabled";
+        txTip = "Disabled";
       else if (!ctx.FrequencyControl.RadioLink.HasUplink)
-        TxCatStatusLabel.ToolTipText = "No Uplink";
+        txTip = "No Uplink";
+      else if (txOutOfBand)
+        txTip = ctx.FrequencyControl.GetTxCatTransverterOutOfBandMessage();
       else
-        TxCatStatusLabel.ToolTipText = ctx.CatControl.Tx?.GetStatusString();
+        txTip = ctx.CatControl.Tx?.GetStatusString();
+      TxCatStatusLabel.ToolTipText = txTip;
+      TxCatLedLabel.ToolTipText = txTip;
     }
 
     public void ShowRotatorStatus()
@@ -921,6 +943,7 @@ namespace SkyRoof
         case "SkyRoof.QsoEntryPanel": return new QsoEntryPanel(ctx);
         case "SkyRoof.Ft4ConsolePanel": return new Ft4ConsolePanel(ctx);
         case "SkyRoof.RecorderPanel": return new RecorderPanel(ctx);
+        case "SkyRoof.QsoSchedulerPanel": return new QsoSchedulerPanel(ctx);
 
         default: return null;
       }
@@ -1042,6 +1065,8 @@ namespace SkyRoof
       ctx.Settings.Satellites.DeleteInvalidData(ctx.SatnogsDb);
 
       SatelliteSelecionWidget.LoadSatelliteGroups();
+      SatellitePhotoWidget.SetSatellite(ctx.SatelliteSelector.SelectedSatellite);
+
       ctx.HamPasses.FullRebuild();
       ctx.GroupPasses.FullRebuild();
       ctx.SdrPasses.FullRebuild();
@@ -1051,6 +1076,7 @@ namespace SkyRoof
       ctx.SkyViewPanel?.ClearPass();
       ctx.WaterfallPanel?.ScaleControl?.BuildLabels();
       SatellitePhotoWidget.SetSatellite(ctx.SatelliteSelector.SelectedSatellite);
+      ctx.QsoSchedulerPanel?.SetSatelliteList();
 
       ShowSatDataStatus();
     }
@@ -1075,6 +1101,7 @@ namespace SkyRoof
       ctx.PassesPanel?.ShowPasses();
       ctx.EarthViewPanel?.SetGridSquare();
       ctx.SkyViewPanel?.ClearPass();
+      ctx.QsoSchedulerPanel?.UpdatePredictions();
     }
 
     private void SatnogsDb_TleUpdated(object? sender, EventArgs e)
@@ -1092,6 +1119,7 @@ namespace SkyRoof
       ctx.PassesPanel?.ShowPasses();
       ctx.SkyViewPanel?.ClearPass();
       ctx.WaterfallPanel?.ScaleControl?.BuildLabels();
+      ctx.QsoSchedulerPanel?.UpdatePredictions();
     }
 
     private void SatelliteSelector_SelectedGroupChanged(object sender, EventArgs e)
@@ -1100,6 +1128,7 @@ namespace SkyRoof
       ctx.GroupPasses.FullRebuild();
       ctx.PassesPanel?.ShowPasses();
       ctx.SkyViewPanel?.ClearPass();
+      ctx.QsoSchedulerPanel?.SetSatelliteList();
     }
 
     private void SatelliteSelector_SelectedSatelliteChanged(object sender, EventArgs e)
@@ -1227,7 +1256,8 @@ namespace SkyRoof
     {
       if (SatellitePhotoWidget == null) return;
 
-      // Show only when toolbar is wide enough to fit everything (keep existing widgets visible first).
+      // show photo only if the toolbar can fit every widget; include the photo's own width
+      // unconditionally so the test answers "would it fit if shown", not "does it fit hidden"
       int required =
         panel2.Width +
         SatellitePhotoWidget.Width +
@@ -1242,6 +1272,12 @@ namespace SkyRoof
         ClockPanel.Width;
 
       SatellitePhotoWidget.Visible = Toolbar.ClientSize.Width >= required + 10;
+      SatellitePhotoSeparator.Visible = SatellitePhotoWidget.Visible;
+    }
+
+    private void Toolbar_Resize(object sender, EventArgs e)
+    {
+      UpdateSatellitePhotoVisibility();
     }
   }
 }

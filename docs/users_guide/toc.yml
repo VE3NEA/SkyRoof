@@ -27,6 +27,8 @@ items:
       href: setting_up_cat_control.md
     - name: Setting Up Rotator Control
       href: setting_up_rotator_control.md
+    - name: Setting Up Transverter
+      href: setting_up_transverter.md
     - name: Setting Up FT4 Console
       href: setting_up_ft4_console.md
   - name: User Interface
@@ -43,6 +45,8 @@ items:
     items:
     - name: Satellite Selector
       href: satellite_selector.md
+    - name: Satellite Photo
+      href: satellite_photo.md
     - name: Frequency Control
       href: frequency_control.md
     - name: Gain Control
@@ -71,6 +75,8 @@ items:
       href: earth_view_panel.md
     - name: QSO Entry
       href: qso_entry_panel.md
+    - name: QSO Scheduler
+      href: qso_scheduler_panel.md
     - name: FT4 Console
       href: ft4_console_panel.md
     - name: Recorder

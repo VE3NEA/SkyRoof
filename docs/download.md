@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.29](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.29/SkyRoofSetup-v.1.29.zip)
+[SkyRoof v.1.32](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.32/SkyRoofSetup-v.1.32.zip)
 
 <br>
 
@@ -15,6 +15,22 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.32
+
+- added QSO Scheduler panel
+- added support of decimal comma on non-English systems
+- fixed item drawing in Passes panel
+- audio recording file names now contain recording start time
+
+#### v.1.31
+
+- added satellite image panel on the toolbar - contributed by [cozmogeek](https://github.com/cozmogeek)
+- reduced the minimum antenna tracking step to 0.01°
+
+#### v.1.30
+
+- added support of transverter offset
 
 #### v.1.29
 

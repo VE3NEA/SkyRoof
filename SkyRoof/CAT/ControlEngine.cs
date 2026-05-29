@@ -21,6 +21,10 @@ namespace SkyRoof
     protected TcpClient? TcpClient;
     protected bool stopping = false;
     protected bool ErrorLogged = false;
+    private readonly int sendTimeout;
+    private readonly int receiveTimeout;
+    private readonly int reconnectDelay;
+    private readonly ManualResetEventSlim stopEvent = new ManualResetEventSlim(false);
 
     public event EventHandler? StatusChanged;
     public bool IsRunning {get; private set;}
@@ -32,6 +36,9 @@ namespace SkyRoof
       Port = port;
       Delay = settings.Delay;
       log = settings.LogTraffic;
+      sendTimeout = settings.SendTimeout;
+      receiveTimeout = settings.ReceiveTimeout;
+      reconnectDelay = settings.ReconnectDelay;
     }
 
 
@@ -50,16 +57,18 @@ namespace SkyRoof
       if (processingThread != null) return;
 
       stopping = false;
+      stopEvent.Reset();
       processingThread = new Thread(new ThreadStart(ThreadProcedure));
       processingThread.IsBackground = true;
       processingThread.Name = GetType().Name;
-      processingThread.Start();      
+      processingThread.Start();
     }
 
     protected void StopThread()
     {
       if (stopping) return;
       stopping = true;
+      stopEvent.Set();
       processingThread?.Join();
       processingThread = null;
     }
@@ -68,32 +77,48 @@ namespace SkyRoof
     {
       processingThread!.Priority = ThreadPriority.Highest;
 
-      if (Connect() && Setup())
-      {
-        IsRunning = true;
-        OnStatusChanged();
+      bool lastReportedRunning = false;
+      bool everConnected = false;
 
-        while (!stopping)
-          try
-          {
-            Cycle();
-            Thread.Sleep(Delay);
-          }
-          catch (SocketException ex)
-          {
-            Log.Error(ex, $"Socket error in {GetType().Name}");
-            break;
-          }
-          catch (Exception ex)
-          {
-            Log.Error(ex, $"Error in {GetType().Name}");
-          }
+      while (!stopping)
+      {
+        if (Connect() && Setup())
+        {
+          IsRunning = true;
+          ErrorLogged = false;
+          everConnected = true;
+          if (!lastReportedRunning) { lastReportedRunning = true; OnStatusChanged(); }
+
+          while (!stopping && TcpClient != null && TcpClient.Connected)
+            try
+            {
+              Cycle();
+              Thread.Sleep(Delay);
+            }
+            catch (SocketException ex)
+            {
+              Log.Error(ex, $"Socket error in {GetType().Name}");
+              break;
+            }
+            catch (Exception ex)
+            {
+              Log.Error(ex, $"Error in {GetType().Name}");
+            }
+        }
+
+        Disconnect();
+        IsRunning = false;
+        if (lastReportedRunning) { lastReportedRunning = false; OnStatusChanged(); }
+
+        if (!stopping)
+        {
+          string state = everConnected ? "connection lost" : "initial connection failed";
+          Log.Information($"{GetType().Name}: {state}, retrying in {reconnectDelay / 1000} seconds");
+          stopEvent.Wait(reconnectDelay);
+        }
       }
 
-      Disconnect();
-      IsRunning = false;
       processingThread = null;
-      OnStatusChanged();
     }
 
     protected abstract bool Setup();
@@ -108,8 +133,8 @@ namespace SkyRoof
     private bool Connect()
     {
       TcpClient = new();
-      TcpClient.SendTimeout = 1000;
-      TcpClient.ReceiveTimeout = 3000;
+      TcpClient.SendTimeout = sendTimeout;
+      TcpClient.ReceiveTimeout = receiveTimeout;
 
       try
       {
@@ -190,15 +215,13 @@ namespace SkyRoof
     {
       var reply = SendCommand(command);
       if (reply == "RPRT 0\n") return true;
-
-      else if (reply != null) BadReply(reply);
+      BadReply(reply);
       return false;
     }
 
     protected string? SendReadCommand(string command)
     {
       var reply = SendCommand(command);
-      if (reply == null) return null;
       if (reply.EndsWith("\n"))
       {
         reply = reply.Substring(0, reply.Length - 1);
@@ -210,7 +233,7 @@ namespace SkyRoof
       return null;
     }
 
-    protected string? SendCommand(string command)
+    protected string SendCommand(string command)
     {
       try
       {
@@ -269,6 +292,7 @@ namespace SkyRoof
     public virtual void Dispose()
     {
       StopThread();
+      stopEvent.Dispose();
     }
   }
 }

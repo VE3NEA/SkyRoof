@@ -6,7 +6,7 @@ namespace SkyRoof
   public partial class WaterfallPanel : DockContent
   {
     public Context ctx;
-    private double SdrCenterFrequency => ctx?.Sdr?.Info?.Frequency ?? SdrConst.UHF_CENTER_FREQUENCY;
+    private double SdrCenterFrequency => ctx?.FrequencyControl?.GetSdrRfCenter() ?? ctx?.Sdr?.Info?.Frequency ?? SdrConst.UHF_CENTER_FREQUENCY;
     private double MaxBandwidth => ctx?.Sdr?.Info?.MaxBandwidth ?? SdrConst.MAX_BANDWIDTH;
     private double SamplingRate => ctx?.Sdr?.Info?.SampleRate ?? SdrConst.MAX_BANDWIDTH;
 
@@ -71,7 +71,7 @@ namespace SkyRoof
 
     internal void SetPassband()
     {
-      ScaleControl.CenterFrequency = ctx.Sdr.Info.Frequency;
+      ScaleControl.CenterFrequency = SdrCenterFrequency;
       ScaleControl.VisibleBandwidth = ctx.Sdr.Info.MaxBandwidth;
 
       WaterfallControl.Zoom = ctx.Sdr.Info.SampleRate / ctx.Sdr.Info.MaxBandwidth;
@@ -90,7 +90,7 @@ namespace SkyRoof
 
       if (ctx.Sdr != null)
       {
-        WaterfallControl.Pan = (ctx.Sdr.Info.Frequency - ScaleControl.CenterFrequency) / ScaleControl.VisibleBandwidth * 2;
+        WaterfallControl.Pan = (SdrCenterFrequency - ScaleControl.CenterFrequency) / ScaleControl.VisibleBandwidth * 2;
         WaterfallControl.OpenglControl.Refresh();
       }
     }

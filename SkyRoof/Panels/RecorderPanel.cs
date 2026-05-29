@@ -1,3 +1,4 @@
+using CSCore.SoundIn;
 using MathNet.Numerics;
 using MultimediaTimer;
 using NAudio.MediaFoundation;
@@ -18,6 +19,7 @@ namespace SkyRoof
     private System.Windows.Forms.Timer? playbackUiTimer;
     private MultimediaTimer.Timer? playbackTimer;
     private RecordingManager recordingManager = null!;
+    private DateTime RecordingStart;
 
     public RecordingEvents RecordingEvents => recordingManager.RecordingEvents;
     internal bool isPlayingBack => recordingManager?.IsPlayingBack == true;
@@ -189,6 +191,7 @@ namespace SkyRoof
       recordingManager.StartRecording(isAudio);
       StatusLabel.Text = recordingManager.GetRecordingStatus();
       recordingTimer?.Start();
+      RecordingStart = DateTime.Now;
 
       // Disable controls during recording
       RecordMenuBtn.Enabled = false;
@@ -399,7 +402,7 @@ namespace SkyRoof
 
     private string BuildRecordingFileName(string ext, bool isIqWav)
     {
-      string fileName = $"{DateTime.Now:yyyy-MM-dd_HH_mm_ss}";
+      string fileName = $"{RecordingStart:yyyy-MM-dd_HH_mm_ss}";
       string? satelliteName = recordingManager.RecordingEvents.GetSingleSatelliteName();
       if (!string.IsNullOrWhiteSpace(satelliteName)) fileName += "_" + Utils.SanitizeFileNamePart(satelliteName);
 

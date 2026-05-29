@@ -54,6 +54,14 @@ The two settings, common to all radios, are:
   This is the recommended setting. When it is set to false, the settings in the **Stage Gains** are applied to the
   individual stages of the SDR, and the gain slider is disabled.
 
+## Using an SDR with a Transverter
+
+If you connect your SDR to the IF output of a VHF/UHF transverter (so the SDR is tuned to
+28–30 MHz while it actually receives 144/432 MHz signals), enable the **SDR Offset** in the
+**Transverter** section of the Settings. SkyRoof will tune the SDR to the IF band while the
+waterfall scale and the frequency display continue to show the actual satellite RF.
+See [Setting Up Transverter](setting_up_transverter.md).
+
 ## Using Remote SDR
 
 SkyRoof can use SDR devices connected to a remote (or local) computer via the

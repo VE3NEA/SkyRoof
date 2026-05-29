@@ -34,4 +34,6 @@ SkyRoof keeps all of its data in the **data folder**.
 - **Downloads** - a copy of the satellite data downloaded from various sources, kept for troubleshooting;
 - **Palettes** - definition of the color palettes used by the waterfall display. Add your own
     palette as a text file with "html" color codes. Pick the color codes at
-    [htmlcolorcodes.com](https://htmlcolorcodes.com/).
+    [htmlcolorcodes.com](https://htmlcolorcodes.com/);
+- **sat_images** - cached satellite thumbnails shown by the
+    [Satellite Photo](satellite_photo.md) widget. Delete this folder to force re-download.

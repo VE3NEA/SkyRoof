@@ -1,41 +1,33 @@
-using System.Net.Http;
+using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Net.Http;
+using SGPdotNET.Observation;
 using VE3NEA;
 
 namespace SkyRoof
 {
-  public class SatellitePhotoWidget : UserControl
+  public partial class SatellitePhotoWidget : UserControl
   {
     public Context ctx;
 
-    private readonly PictureBox picture = new();
-    private readonly ToolTip toolTip = new();
-
-    private static readonly HttpClient Http = new HttpClient();
+    private static readonly HttpClient Http = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
     private CancellationTokenSource? Cts;
     private string? CurrentSatId;
+    private string? Url;
 
     public static readonly Size CacheImageSize = new(160, 160);
     private const int CacheVersion = 2;
 
     public SatellitePhotoWidget()
     {
-      BorderStyle = BorderStyle.FixedSingle;
-      BuildUi();
-    }
-
-    private void BuildUi()
-    {
-      picture.Dock = DockStyle.Fill;
-      picture.SizeMode = PictureBoxSizeMode.Zoom;
-      // Let the toolbar background show through cached PNG alpha.
-      picture.BackColor = Color.Transparent;
-      Controls.Add(picture);
+      InitializeComponent();
     }
 
     public void SetSatellite(SatnogsDbSatellite? sat)
     {
+      Url = null;
+
       if (sat == null)
       {
         CurrentSatId = null;
@@ -46,7 +38,7 @@ namespace SkyRoof
       if (sat.sat_id == CurrentSatId) return;
       CurrentSatId = sat.sat_id;
 
-      toolTip.SetToolTip(picture, sat.name);
+      Tooltip.SetToolTip(Picture, sat.name);
 
       if (string.IsNullOrEmpty(sat.image))
       {
@@ -54,14 +46,16 @@ namespace SkyRoof
         return;
       }
 
-      var url = $"https://db-satnogs.freetls.fastly.net/media/{sat.image}";
-      LoadOrDownloadAsync(sat, url).DoNotAwait();
+      Url = $"https://db-satnogs.freetls.fastly.net/media/{sat.image}";
+      LoadOrDownloadAsync(sat, Url).DoNotAwait();
     }
 
     private async Task LoadOrDownloadAsync(SatnogsDbSatellite sat, string url)
     {
-      Cts?.Cancel();
+      var oldCts = Cts;
       Cts = new CancellationTokenSource();
+      oldCts?.Cancel();
+      oldCts?.Dispose();
       var ct = Cts.Token;
 
       try
@@ -69,6 +63,7 @@ namespace SkyRoof
         string cacheFile = GetCacheFilePath(sat.sat_id);
         if (File.Exists(cacheFile))
         {
+          ct.ThrowIfCancellationRequested();
           SetImage(LoadBitmapNoLock(cacheFile));
           return;
         }
@@ -145,10 +140,15 @@ namespace SkyRoof
         return;
       }
 
-      var old = picture.Image;
-      picture.Image = img;
+      var old = Picture.Image;
+      Picture.Image = img;
       old?.Dispose();
+    }
+
+    private void Picture_Click(object sender, EventArgs e)
+    {
+      if (Url != null)
+        Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
     }
   }
 }
-

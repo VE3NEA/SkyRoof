@@ -13,12 +13,24 @@ namespace VE3NEA
     //--------------------------------------------------------------------------------------------------------------
     //                 prevent flicker: https://stackoverflow.com/questions/2751686
     //--------------------------------------------------------------------------------------------------------------
+    // WinForms' ControlStyles.OptimizedDoubleBuffer | AllPaintingInWmPaint conflicts with the native
+    // ListView owner-draw dispatch and causes some items to be skipped on paint (especially after
+    // scrolling/resize). Use the native LVS_EX_DOUBLEBUFFER instead - it eliminates flicker without
+    // breaking owner-draw.
     private const int WM_ERASEBKGND = 0x14;
+    private const int LVM_FIRST = 0x1000;
+    private const int LVM_SETEXTENDEDLISTVIEWSTYLE = LVM_FIRST + 54;
+    private const int LVS_EX_DOUBLEBUFFER = 0x00010000;
 
     public ListViewEx()
     {
-      SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
       SetStyle(ControlStyles.EnableNotifyMessage, true);
+    }
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+      base.OnHandleCreated(e);
+      SendMessage(Handle, LVM_SETEXTENDEDLISTVIEWSTYLE, LVS_EX_DOUBLEBUFFER, LVS_EX_DOUBLEBUFFER);
     }
 
     protected override void OnNotifyMessage(Message m)

@@ -95,9 +95,9 @@ namespace SkyRoof
       double endFrequency = 0;
 
       if (ctx.WaterfallPanel != null && ctx.Sdr != null &&
-        !SatnogsDbTransmitter.IsHamFrequency(ctx.Sdr.Info.Frequency))
+        !SatnogsDbTransmitter.IsHamFrequency(ctx.FrequencyControl.GetSdrRfCenter()))
       {
-        double centerFrequency = ctx.Sdr.Info.Frequency;
+        double centerFrequency = ctx.FrequencyControl.GetSdrRfCenter();
         double wing = ctx.Sdr.Info.MaxBandwidth / 2;
         startFrequency = centerFrequency - wing;
         endFrequency = centerFrequency + wing;

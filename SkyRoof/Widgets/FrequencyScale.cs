@@ -318,7 +318,7 @@ namespace SkyRoof
       var now = DateTime.UtcNow;
       Labels.Clear();
 
-      bool hamBand = ctx.Sdr == null || SatnogsDbTransmitter.IsHamFrequency(ctx.Sdr.Info.Frequency);
+      bool hamBand = ctx.Sdr == null || SatnogsDbTransmitter.IsHamFrequency(ctx.FrequencyControl.GetSdrRfCenter());
       SatellitePasses passes = hamBand ? ctx.HamPasses : ctx.SdrPasses;
       
       foreach (var pass in passes.Passes)
