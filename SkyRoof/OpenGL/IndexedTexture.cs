@@ -9,7 +9,7 @@ using VE3NEA;
 
 namespace SkyRoof
 {
-  public class IndexedTexture
+  public class IndexedTexture : IDisposable
   {
     public const int PALETTE_SIZE = 256;
     
@@ -19,6 +19,7 @@ namespace SkyRoof
     private readonly int Height;
     private int[] IntBuffer;
     private uint[] fraameBufferIds = new uint[1];
+    private bool disposed;
 
     public IndexedTexture(OpenGL gl, int width, int height)
     {
@@ -123,12 +124,15 @@ namespace SkyRoof
       SetRows(rowIndex, rowCount, data, data.Length);
     }
 
-    public void SetRows(int rowIndex, int rowCount, float[] data, int dataCount)
+    public void SetRows(int rowIndex, int rowCount, float[] data, int srcFloatCount)
     {
+      int expectedFloats = Width * rowCount;
+      if (srcFloatCount != expectedFloats)
+        throw new ArgumentException($"Expected {expectedFloats} floats (Width * rowCount), got {srcFloatCount}.", nameof(srcFloatCount));
+
       // TexSubImage2D in SharpGL accepts only int[], so give it floats in an int[] buffer
-      if (dataCount <= 0) return;
-      if ((IntBuffer?.Length ?? 0) < dataCount) IntBuffer = new int[dataCount];
-      Buffer.BlockCopy(data, 0, IntBuffer, 0, dataCount * sizeof(float));
+      if ((IntBuffer?.Length ?? 0) < srcFloatCount) IntBuffer = new int[srcFloatCount];
+      Buffer.BlockCopy(data, 0, IntBuffer, 0, srcFloatCount * sizeof(float));
 
       gl.BindTexture(OpenGL.GL_TEXTURE_2D, textureIds[0]);
 #if DEBUG
@@ -149,6 +153,25 @@ namespace SkyRoof
 
       gl.ActiveTexture(OpenGL.GL_TEXTURE1);
       gl.BindTexture(OpenGL.GL_TEXTURE_2D, textureIds[1]);
+    }
+
+    public void Dispose()
+    {
+      if (disposed) return;
+      disposed = true;
+
+      if (textureIds[0] != 0 || textureIds[1] != 0)
+      {
+        gl.DeleteTextures(2, textureIds);
+        textureIds[0] = 0;
+        textureIds[1] = 0;
+      }
+
+      if (fraameBufferIds[0] != 0)
+      {
+        gl.DeleteFramebuffersEXT(1, fraameBufferIds);
+        fraameBufferIds[0] = 0;
+      }
     }
 
     private void CheckError(OpenGL gl, bool log = true)

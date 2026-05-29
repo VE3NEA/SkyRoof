@@ -145,7 +145,8 @@ namespace SkyRoof
 
       if (!changed) return false;
 
-      // Reallocate texture. Note: old textures are not explicitly deleted (rare quality changes only).
+      DiscardPendingSpectrum();
+      IndexedTexture?.Dispose();
       IndexedTexture = new(OpenglControl.OpenGL, TextureWidth, TextureHeight);
       SetPalette(Palette);
 
@@ -413,6 +414,20 @@ namespace SkyRoof
     ArrayPool<float> ArrayPool = ArrayPool<float>.Shared;
     public int Row;                // write positon, 0..TEXTURE_HEIGHT-1
     private double ScrollPos = 0;  // display position in texture, 0..1
+
+    private void DiscardPendingSpectrum()
+    {
+      lock (uploadGate)
+      {
+        if (pendingSpectrum != null)
+        {
+          ArrayPool.Return(pendingSpectrum);
+          pendingSpectrum = null;
+          pendingSpectrumCount = 0;
+        }
+        uploadPending = false;
+      }
+    }
 
     // Coalesce uploads: keep latest spectrum only, avoid BeginInvoke backlog.
     private readonly object uploadGate = new();

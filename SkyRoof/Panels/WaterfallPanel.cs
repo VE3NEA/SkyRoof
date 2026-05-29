@@ -58,6 +58,7 @@ namespace SkyRoof
     }
 
     private WaterfallQuality lastAppliedQuality = WaterfallQuality.Auto;
+    private WaterfallSildersDlg? openSlidersDlg;
 
     public void ApplySettings()
     {
@@ -71,6 +72,7 @@ namespace SkyRoof
       WaterfallControl.Refresh();
 
       ctx.MainForm.SetWaterfallSpeed();
+      openSlidersDlg?.SyncPerformanceCountersFromSettings();
 
       if (sett.Quality != lastAppliedQuality)
       {
@@ -119,9 +121,11 @@ namespace SkyRoof
 
     private void SlidersBtn_Click(object sender, EventArgs e)
     {
-      var dlg = new WaterfallSildersDlg(ctx);
-      dlg.Location = WaterfallControl.PointToScreen(new Point(2, 2));
-      dlg.Show();
+      openSlidersDlg?.Close();
+      openSlidersDlg = new WaterfallSildersDlg(ctx);
+      openSlidersDlg.FormClosed += (_, _) => openSlidersDlg = null;
+      openSlidersDlg.Location = WaterfallControl.PointToScreen(new Point(2, 2));
+      openSlidersDlg.Show();
     }
 
     private const double MinHzPerPixel = 20;
