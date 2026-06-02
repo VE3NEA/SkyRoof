@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -25,6 +25,7 @@ namespace SkyRoof
     private int SortColumn;
     private Context ctx;
     private bool Changed;
+    private bool UpdatingChecks;
 
     public SatelliteGroupsForm()
     {
@@ -66,6 +67,7 @@ namespace SkyRoof
 
       switch (column)
       {
+        // 0 = Name, 1 = NORAD, 2 = Launched, 3 = Service
         case 0:
           FilteredItems = FilteredItems.OrderBy(s => ((SatnogsDbSatellite)s.Tag).name).ToList();
           break;
@@ -93,6 +95,7 @@ namespace SkyRoof
         ]);
 
       item.Tag = sat;
+      item.Checked = IsMonitored(sat);
 
       // highlighting
 
@@ -150,10 +153,12 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     private void ApplyFilter()
     {
+      UpdatingChecks = true;
       FilteredItems = AllItems.Where(IsItemVisible).ToList();
       listView1.VirtualListSize = FilteredItems.Count;
       CountLabel.Text = $"{FilteredItems.Count} of {AllItems.Count}";
       SortSatellites(SortColumn);
+      UpdatingChecks = false;
     }
 
     private bool IsItemVisible(ListViewItem item)
@@ -205,6 +210,13 @@ namespace SkyRoof
     private void listView1_ColumnClick(object sender, ColumnClickEventArgs e)
     {
       SortSatellites(e.Column);
+    }
+
+    private void listView1_ItemChecked(object sender, ItemCheckedEventArgs e)
+    {
+      if (UpdatingChecks) return;
+      if (e.Item?.Tag is not SatnogsDbSatellite sat) return;
+      SetMonitored(sat, e.Item.Checked);
     }
 
     // sat rename finished
@@ -419,6 +431,28 @@ namespace SkyRoof
     {
       if (Changed && MessageBox.Show("Save changes?", "SkyRoof", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
         SaveGroups();
+    }
+
+    private bool IsMonitored(SatnogsDbSatellite sat) => IsMonitored(sat.sat_id);
+    private bool IsMonitored(string satId) => ctx.Settings.Satellites.MonitoredSatelliteIds.Contains(satId);
+
+    private void SetMonitored(SatnogsDbSatellite sat, bool monitored)
+    {
+      var list = ctx.Settings.Satellites.MonitoredSatelliteIds;
+      if (monitored)
+      {
+        if (!list.Contains(sat.sat_id))
+          list.Add(sat.sat_id); // add as lowest priority; can be reprioritized in the monitored panel
+      }
+      else
+        list.RemoveAll(id => id == sat.sat_id);
+
+      ctx.Settings.SaveToFile();
+      ctx.MonitoredPasses?.FullRebuild();
+      ctx.MonitoredSatellitesPanel?.RefreshList();
+
+      listView1.Invalidate();
+      Changed = true;
     }
 
 

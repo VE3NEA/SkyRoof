@@ -76,6 +76,15 @@ namespace SkyRoof
       UpdatePathOptimizerForm();
     }
 
+    public void Park()
+    {
+      if (engine == null || !ctx.Settings.Rotator.Enabled) return;
+
+      var sett = ctx.Settings.Rotator;
+      var bearing = new Bearing(sett.ParkAzimuth * Trig.RinD, sett.ParkElevation * Trig.RinD);
+      RotateTo(bearing);
+    }
+
     internal void Advance()
     {
       if (Path == null) return;

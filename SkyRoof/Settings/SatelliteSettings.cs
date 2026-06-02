@@ -46,11 +46,33 @@ namespace SkyRoof
     public string SelectedGroupId;
     public string SelectedSatelliteId;
 
+    /// <summary>
+    /// satellite IDs selected for monitoring, ordered by priority (index 0 = highest).
+    /// </summary>
+    public List<string> MonitoredSatelliteIds = new();
+
+    /// <summary>
+    /// when enabled, SkyRoof automatically selects the highest-priority monitored satellite
+    /// during an active pass (and applies its last-selected transmitter).
+    /// </summary>
+    public bool AutoMonitorEnabled = false;
+
+    /// <summary>
+    /// minimum pass max elevation (degrees) required before auto-monitoring will switch away
+    /// from a higher-priority satellite to a lower-priority one.
+    /// </summary>
+    public int AutoMonitorMinElevationDeg = 0;
+
     public void DeleteInvalidData(SatnogsDb db)
     {
       // remove deleted sats
       foreach (var group in SatelliteGroups)
         group.SatelliteIds.RemoveAll(id => db.GetSatellite(id)?.Tle == null);
+
+      MonitoredSatelliteIds.RemoveAll(id => db.GetSatellite(id) == null);
+
+      if (!string.IsNullOrEmpty(SelectedSatelliteId) && db.GetSatellite(SelectedSatelliteId) == null)
+        SelectedSatelliteId = null;
 
       Sanitize();
     }
@@ -84,8 +106,38 @@ namespace SkyRoof
 
       // ensure there is a selected sat in each group
       foreach (var group in SatelliteGroups)
+      {
+        if (group.SatelliteIds.Count == 0) continue;
         if (string.IsNullOrEmpty(group.SelectedSatId) || !group.SatelliteIds.Contains(group.SelectedSatId))
           group.SelectedSatId = group.SatelliteIds[0];
+      }
+
+      if (string.IsNullOrEmpty(SelectedSatelliteId) ||
+          !SatelliteGroups.Any(g => g.SatelliteIds.Contains(SelectedSatelliteId)))
+      {
+        SelectedSatelliteId = SatelliteGroups.FirstOrDefault(g => g.SatelliteIds.Count > 0)?.SelectedSatId;
+      }
+
+      // remove monitored sats not present in any data (will be pruned later when db is available)
+      MonitoredSatelliteIds = MonitoredSatelliteIds.Where(id => !string.IsNullOrWhiteSpace(id)).Distinct().ToList();
+
+      AutoMonitorMinElevationDeg = Math.Max(0, Math.Min(90, AutoMonitorMinElevationDeg));
+
+      SanitizeTransmitterModes();
+    }
+
+    private void SanitizeTransmitterModes()
+    {
+      foreach (var tx in TransmitterCustomizations.Values)
+      {
+        tx.DownlinkMode = SanitizeMode(tx.DownlinkMode);
+        tx.UplinkMode = SanitizeMode(tx.UplinkMode);
+      }
+    }
+
+    private static Slicer.Mode SanitizeMode(Slicer.Mode mode)
+    {
+      return Enum.IsDefined(mode) ? mode : Slicer.Mode.USB;
     }
   }
 
@@ -105,6 +157,11 @@ namespace SkyRoof
     public string? Name;
     public string? SelectedTransmitterId;
 
+    /// <summary>
+    /// recording preference for auto-recording when this satellite is selected/auto-selected.
+    /// </summary>
+    public AutoRecordMode AutoRecordMode = AutoRecordMode.Off;
+
     public bool DownlinkDopplerCorrectionEnabled = true;
     public bool DownlinkManualCorrectionEnabled = true;
     public int DownlinkManualCorrection;
@@ -112,6 +169,13 @@ namespace SkyRoof
     public bool UplinkDopplerCorrectionEnabled = true;
     public bool UplinkManualCorrectionEnabled = true;
     public int UplinkManualCorrection;
+  }
+
+  public enum AutoRecordMode
+  {
+    Off = 0,
+    Audio = 1,
+    Iq = 2,
   }
 
   public class TransmitterCustomization

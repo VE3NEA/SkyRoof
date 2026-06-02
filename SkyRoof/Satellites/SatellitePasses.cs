@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -122,6 +122,25 @@ namespace SkyRoof
   }
 
 
+  //----------------------------------------------------------------------------------------------
+  //                              MonitoredSatellitePasses
+  //----------------------------------------------------------------------------------------------
+  public class MonitoredSatellitePasses : SatellitePasses
+  {
+    public MonitoredSatellitePasses(Context ctx) : base(ctx)
+    {
+      PredictionTimeSpan = TimeSpan.FromDays(2);
+    }
+
+    protected override IEnumerable<SatnogsDbSatellite> ListSatellites()
+    {
+      var ids = ctx.Settings.Satellites.MonitoredSatelliteIds;
+      if (ids == null || ids.Count == 0) return Array.Empty<SatnogsDbSatellite>();
+      return ids.Select(id => ctx.SatnogsDb.GetSatellite(id)).Where(s => s != null)!;
+    }
+  }
+
+
 
 
   //----------------------------------------------------------------------------------------------
@@ -138,6 +157,9 @@ namespace SkyRoof
     private DateTime LastPredictionTime = DateTime.MinValue;
 
     public List<SatellitePass> Passes = new();
+
+    /// <summary>snapshot for UI enumeration while <see cref="Passes"/> may be rebuilt on another thread.</summary>
+    public SatellitePass[] GetPassesSnapshot() => Passes.ToArray();
 
     public SatellitePasses(Context ctx)
     {

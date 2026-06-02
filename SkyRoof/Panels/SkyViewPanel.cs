@@ -184,7 +184,7 @@ namespace SkyRoof
     private void DrawRealTime(Graphics g)
     {
       var now = DateTime.UtcNow;
-      var passes = ctx.GroupPasses.Passes.Where(p => now > p.StartTime && now < p.EndTime);
+      var passes = ctx.GroupPasses.GetPassesSnapshot().Where(p => now > p.StartTime && now < p.EndTime);
       foreach (var pass in passes) DrawPass(g, pass);
     }
 
@@ -426,7 +426,7 @@ namespace SkyRoof
     private void ShowSatLabels()
     {
       var now = DateTime.UtcNow;
-      var passes = ctx.GroupPasses.Passes.Where(p => now > p.StartTime && now < p.EndTime).ToArray();
+      var passes = ctx.GroupPasses.GetPassesSnapshot().Where(p => now > p.StartTime && now < p.EndTime).ToArray();
 
       EnsureLabels(passes.Length * 3);
 

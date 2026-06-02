@@ -1,4 +1,4 @@
-﻿namespace SkyRoof
+namespace SkyRoof
 {
   partial class SatelliteGroupsForm
   {
@@ -337,6 +337,7 @@
       // 
       listView1.Activation = ItemActivation.OneClick;
       listView1.AllowDrop = true;
+      listView1.CheckBoxes = true;
       listView1.Columns.AddRange(new ColumnHeader[] { columnHeader1, columnHeader2, columnHeader3, columnHeader4 });
       listView1.ContextMenuStrip = SatelliteListPopupMenu;
       listView1.Dock = DockStyle.Fill;
@@ -357,6 +358,7 @@
       listView1.ColumnClick += listView1_ColumnClick;
       listView1.ItemDrag += listView1_ItemDrag;
       listView1.RetrieveVirtualItem += listView1_RetrieveVirtualItem;
+      listView1.ItemChecked += listView1_ItemChecked;
       listView1.DoubleClick += AddSatBtn_Click;
       // 
       // columnHeader1

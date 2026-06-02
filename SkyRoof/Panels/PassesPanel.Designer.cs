@@ -28,6 +28,7 @@
     /// </summary>
     private void InitializeComponent()
     {
+      components = new System.ComponentModel.Container();
       flowLayoutPanel1 = new FlowLayoutPanel();
       CurrentSatBtn = new RadioButton();
       GroupBtn = new RadioButton();
@@ -35,8 +36,11 @@
       panel1 = new Panel();
       listViewEx1 = new VE3NEA.ListViewEx();
       columnHeader1 = new ColumnHeader();
+      contextMenuStrip1 = new ContextMenuStrip(components);
+      MonitorSatelliteMNU = new ToolStripMenuItem();
       flowLayoutPanel1.SuspendLayout();
       panel1.SuspendLayout();
+      contextMenuStrip1.SuspendLayout();
       SuspendLayout();
       // 
       // flowLayoutPanel1
@@ -100,6 +104,7 @@
       // listViewEx1
       // 
       listViewEx1.Columns.AddRange(new ColumnHeader[] { columnHeader1 });
+      listViewEx1.ContextMenuStrip = contextMenuStrip1;
       listViewEx1.Dock = DockStyle.Fill;
       listViewEx1.FullRowSelect = true;
       listViewEx1.HeaderStyle = ColumnHeaderStyle.None;
@@ -119,6 +124,20 @@
       listViewEx1.MouseDown += listViewEx1_MouseDown;
       listViewEx1.Resize += listViewEx1_Resize;
       // 
+      // contextMenuStrip1
+      // 
+      contextMenuStrip1.Items.AddRange(new ToolStripItem[] { MonitorSatelliteMNU });
+      contextMenuStrip1.Name = "contextMenuStrip1";
+      contextMenuStrip1.Size = new Size(198, 26);
+      contextMenuStrip1.Opening += contextMenuStrip1_Opening;
+      // 
+      // MonitorSatelliteMNU
+      // 
+      MonitorSatelliteMNU.Name = "MonitorSatelliteMNU";
+      MonitorSatelliteMNU.Size = new Size(197, 22);
+      MonitorSatelliteMNU.Text = "Monitor Satellite";
+      MonitorSatelliteMNU.Click += MonitorSatelliteMNU_Click;
+      // 
       // PassesPanel
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
@@ -132,6 +151,7 @@
       flowLayoutPanel1.ResumeLayout(false);
       flowLayoutPanel1.PerformLayout();
       panel1.ResumeLayout(false);
+      contextMenuStrip1.ResumeLayout(false);
       ResumeLayout(false);
       PerformLayout();
     }
@@ -145,5 +165,7 @@
     private RadioButton AllBtn;
     private VE3NEA.ListViewEx listViewEx1;
     private ColumnHeader columnHeader1;
+    private ContextMenuStrip contextMenuStrip1;
+    private ToolStripMenuItem MonitorSatelliteMNU;
   }
 }

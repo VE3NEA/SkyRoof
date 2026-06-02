@@ -37,6 +37,7 @@
       columnHeader4 = new ColumnHeader();
       contextMenuStrip1 = new ContextMenuStrip(components);
       SatelliteDetailsMNU = new ToolStripMenuItem();
+      MonitorSatelliteMNU = new ToolStripMenuItem();
       imageList1 = new ImageList(components);
       GroupNameLabel = new Label();
       contextMenuStrip1.SuspendLayout();
@@ -66,6 +67,7 @@
       listView1.ColumnClick += listView1_ColumnClick;
       listView1.RetrieveVirtualItem += listView1_RetrieveVirtualItem;
       listView1.SelectedIndexChanged += listView1_SelectedIndexChanged;
+      listView1.MouseDown += listView1_MouseDown;
       // 
       // columnHeader1
       // 
@@ -91,17 +93,24 @@
       // 
       // contextMenuStrip1
       // 
-      contextMenuStrip1.Items.AddRange(new ToolStripItem[] { SatelliteDetailsMNU });
+      contextMenuStrip1.Items.AddRange(new ToolStripItem[] { SatelliteDetailsMNU, MonitorSatelliteMNU });
       contextMenuStrip1.Name = "contextMenuStrip1";
-      contextMenuStrip1.Size = new Size(160, 26);
+      contextMenuStrip1.Size = new Size(198, 48);
       contextMenuStrip1.Opening += contextMenuStrip1_Opening;
       // 
       // SatelliteDetailsMNU
       // 
       SatelliteDetailsMNU.Name = "SatelliteDetailsMNU";
       SatelliteDetailsMNU.Size = new Size(159, 22);
-      SatelliteDetailsMNU.Text = "SatelltieDetails...";
+      SatelliteDetailsMNU.Text = "Satellite Details...";
       SatelliteDetailsMNU.Click += SatelliteDetailsMNU_Click;
+      // 
+      // MonitorSatelliteMNU
+      // 
+      MonitorSatelliteMNU.Name = "MonitorSatelliteMNU";
+      MonitorSatelliteMNU.Size = new Size(197, 22);
+      MonitorSatelliteMNU.Text = "Monitor Satellite";
+      MonitorSatelliteMNU.Click += MonitorSatelliteMNU_Click;
       // 
       // imageList1
       // 
@@ -149,5 +158,6 @@
     private ColumnHeader columnHeader4;
     private ContextMenuStrip contextMenuStrip1;
     private ToolStripMenuItem SatelliteDetailsMNU;
+    private ToolStripMenuItem MonitorSatelliteMNU;
   }
 }

@@ -86,6 +86,44 @@ namespace SkyRoof
         ctx.SatelliteSelector.SetSelectedSatellite(sat);
         ctx.SatelliteSelector.SetSelectedPass(pass);
       }
+      else if (item != null && e.Button == MouseButtons.Right)
+      {
+        // ensure context menu applies to the row that was right-clicked
+        listViewEx1.SelectedIndices.Clear();
+        item.Selected = true;
+      }
+    }
+
+    private void contextMenuStrip1_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+    {
+      if (listViewEx1.SelectedIndices.Count == 0) { e.Cancel = true; return; }
+
+      var pass = (SatellitePass)Items[listViewEx1.SelectedIndices[0]].Tag!;
+      bool monitored = ctx.Settings.Satellites.MonitoredSatelliteIds.Contains(pass.Satellite.sat_id);
+      MonitorSatelliteMNU.Text = monitored ? "Unmonitor Satellite" : "Monitor Satellite";
+    }
+
+    private void MonitorSatelliteMNU_Click(object sender, EventArgs e)
+    {
+      if (listViewEx1.SelectedIndices.Count == 0) return;
+      int idx = listViewEx1.SelectedIndices[0];
+      if (idx < 0 || idx >= Items.Count) return;
+
+      var pass = (SatellitePass)Items[idx].Tag!;
+      ToggleMonitored(pass.Satellite);
+    }
+
+    private void ToggleMonitored(SatnogsDbSatellite sat)
+    {
+      var ids = ctx.Settings.Satellites.MonitoredSatelliteIds;
+      if (ids.Contains(sat.sat_id))
+        ids.RemoveAll(id => id == sat.sat_id);
+      else
+        ids.Add(sat.sat_id); // add as lowest priority
+
+      ctx.Settings.SaveToFile();
+      ctx.MonitoredPasses?.FullRebuild();
+      ctx.MonitoredSatellitesPanel?.RefreshList();
     }
 
 
@@ -95,7 +133,7 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     internal void ShowPasses()
     {
-      IEnumerable<SatellitePass> passes = ctx.GroupPasses.Passes;
+      IEnumerable<SatellitePass> passes = ctx.GroupPasses.GetPassesSnapshot();
       var startTime = DateTime.UtcNow;
       var endTime = startTime + TimeSpan.FromDays(2);
 
@@ -105,7 +143,7 @@ namespace SkyRoof
 
         // sat in group, show 3-day prediction
         if (!ctx.SatelliteSelector.GroupSatellites.Contains(sat))
-          passes = ctx.HamPasses.Passes;
+          passes = ctx.HamPasses.GetPassesSnapshot();
         // else show 2-hour prediction
         passes = passes.Where(p => p.Satellite == sat);
       }
@@ -116,7 +154,7 @@ namespace SkyRoof
 
       else
       {
-        passes = ctx.HamPasses.Passes;
+        passes = ctx.HamPasses.GetPassesSnapshot();
         endTime = startTime + TimeSpan.FromHours(2);
       }
 

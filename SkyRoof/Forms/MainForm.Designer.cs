@@ -32,6 +32,8 @@
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
       Toolbar = new Panel();
       RotatorWidget = new RotatorWidget();
+      AutoMonitorBannerWidget = new AutoMonitorBannerWidget();
+      SatellitePhotoWidget = new SatellitePhotoWidget();
       panel7 = new Panel();
       GainWidget = new GainWidget();
       panel3 = new Panel();
@@ -53,6 +55,7 @@
       GroupViewPanelMNU = new ToolStripMenuItem();
       GroupViewMNU = new ToolStripMenuItem();
       SatelliteDetailsMNU = new ToolStripMenuItem();
+      MonitoredSatellitesMNU = new ToolStripMenuItem();
       TransmittersMNU = new ToolStripMenuItem();
       SatellitePassesMNU = new ToolStripMenuItem();
       WaterfallMNU = new ToolStripMenuItem();
@@ -104,6 +107,8 @@
       RotatorDropdownBtn = new ToolStripDropDownButton();
       EnableRotatorMNU = new ToolStripMenuItem();
       TrackRotatorMNU = new ToolStripMenuItem();
+      AutoMonitorLedLabel = new ToolStripStatusLabel();
+      AutoMonitorStatusLabel = new ToolStripStatusLabel();
       NoiseFloorLabel = new ToolStripStatusLabel();
       CpuLoadlabel = new ToolStripStatusLabel();
       UpdateLabel = new ToolStripStatusLabel();
@@ -118,6 +123,8 @@
       // 
       // Toolbar
       // 
+      Toolbar.Controls.Add(panel5);
+      Toolbar.Controls.Add(ClockPanel);
       Toolbar.Controls.Add(RotatorWidget);
       Toolbar.Controls.Add(panel7);
       Toolbar.Controls.Add(GainWidget);
@@ -125,11 +132,10 @@
       Toolbar.Controls.Add(FrequencyWidget);
       Toolbar.Controls.Add(panel1);
       Toolbar.Controls.Add(SatellitePhotoWidget);
-      Toolbar.Controls.Add(ClockPanel);
-      Toolbar.Controls.Add(panel5);
       Toolbar.Controls.Add(SatellitePhotoSeparator);
       Toolbar.Controls.Add(SatelliteSelecionWidget);
       Toolbar.Controls.Add(panel2);
+      Toolbar.Controls.Add(AutoMonitorBannerWidget);
       Toolbar.Dock = DockStyle.Top;
       Toolbar.Location = new Point(0, 24);
       Toolbar.Name = "Toolbar";
@@ -145,6 +151,25 @@
       RotatorWidget.Name = "RotatorWidget";
       RotatorWidget.Size = new Size(210, 78);
       RotatorWidget.TabIndex = 8;
+      // 
+      // SatellitePhotoWidget
+      // 
+      SatellitePhotoWidget.BorderStyle = BorderStyle.FixedSingle;
+      SatellitePhotoWidget.Dock = DockStyle.Left;
+      SatellitePhotoWidget.Location = new Point(4, 0);
+      SatellitePhotoWidget.Name = "SatellitePhotoWidget";
+      SatellitePhotoWidget.Size = new Size(90, 78);
+      SatellitePhotoWidget.TabIndex = 11;
+      // 
+      // AutoMonitorBannerWidget
+      // 
+      AutoMonitorBannerWidget.BorderStyle = BorderStyle.FixedSingle;
+      AutoMonitorBannerWidget.Dock = DockStyle.Left;
+      AutoMonitorBannerWidget.Location = new Point(0, 0);
+      AutoMonitorBannerWidget.Name = "AutoMonitorBannerWidget";
+      AutoMonitorBannerWidget.Size = new Size(420, 78);
+      AutoMonitorBannerWidget.TabIndex = 12;
+      AutoMonitorBannerWidget.Visible = false;
       // 
       // panel7
       // 
@@ -304,7 +329,7 @@
       // 
       // GroupViewPanelMNU
       // 
-      GroupViewPanelMNU.DropDownItems.AddRange(new ToolStripItem[] { GroupViewMNU, SatelliteDetailsMNU, TransmittersMNU, SatellitePassesMNU, WaterfallMNU, TimelineMNU, SkyViewMNU, EarthViewMNU, QsoEntryMNU, Ft4ConsoleMNU, RecorderMNU, QsoSchedulerMNU, toolStripMenuItem4, ResetWindowLayoutMNU });
+      GroupViewPanelMNU.DropDownItems.AddRange(new ToolStripItem[] { GroupViewMNU, SatelliteDetailsMNU, MonitoredSatellitesMNU, TransmittersMNU, SatellitePassesMNU, WaterfallMNU, TimelineMNU, SkyViewMNU, EarthViewMNU, QsoEntryMNU, Ft4ConsoleMNU, RecorderMNU, toolStripMenuItem4, ResetWindowLayoutMNU });
       GroupViewPanelMNU.Name = "GroupViewPanelMNU";
       GroupViewPanelMNU.Size = new Size(44, 20);
       GroupViewPanelMNU.Text = "&View";
@@ -322,6 +347,13 @@
       SatelliteDetailsMNU.Size = new Size(188, 22);
       SatelliteDetailsMNU.Text = "Satellite &Details";
       SatelliteDetailsMNU.Click += SatelliteDetailsMNU_Click;
+      // 
+      // MonitoredSatellitesMNU
+      // 
+      MonitoredSatellitesMNU.Name = "MonitoredSatellitesMNU";
+      MonitoredSatellitesMNU.Size = new Size(194, 22);
+      MonitoredSatellitesMNU.Text = "&Monitored Satellites";
+      MonitoredSatellitesMNU.Click += MonitoredSatellitesMNU_Click;
       // 
       // TransmittersMNU
       // 
@@ -520,7 +552,7 @@
       // StatusStrip
       // 
       StatusStrip.ImageScalingSize = new Size(24, 24);
-      StatusStrip.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel2, SatDataLedLabel, SatDataStatusLabel, SdrLedLabel, SdrStatusLabel, SoundcardLedLabel, SoundcardStatusLabel, SoundcardDropdownBtn, VacLedLabel, VacStatusLabel, RxCatLedLabel, RxCatStatusLabel, TxCatLedLabel, TxCatStatusLabel, IqOutputLedLabel, IqOutputStatusLabel, RotatorLedLabel, RotatorStatusLabel, RotatorDropdownBtn, NoiseFloorLabel, CpuLoadlabel, UpdateLabel });
+      StatusStrip.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel2, SatDataLedLabel, SatDataStatusLabel, SdrLedLabel, SdrStatusLabel, SoundcardLedLabel, SoundcardStatusLabel, SoundcardDropdownBtn, VacLedLabel, VacStatusLabel, RxCatLedLabel, RxCatStatusLabel, TxCatLedLabel, TxCatStatusLabel, IqOutputLedLabel, IqOutputStatusLabel, RotatorLedLabel, RotatorStatusLabel, RotatorDropdownBtn, AutoMonitorLedLabel, AutoMonitorStatusLabel, NoiseFloorLabel, CpuLoadlabel, UpdateLabel });
       StatusStrip.Location = new Point(0, 926);
       StatusStrip.Name = "StatusStrip";
       StatusStrip.ShowItemToolTips = true;
@@ -739,6 +771,28 @@
       TrackRotatorMNU.Text = "Track";
       TrackRotatorMNU.Click += RotatorTrackMNU_CheckedChanged;
       // 
+      // AutoMonitorLedLabel
+      // 
+      AutoMonitorLedLabel.Font = new Font("Webdings", 9F);
+      AutoMonitorLedLabel.ForeColor = Color.Gray;
+      AutoMonitorLedLabel.Name = "AutoMonitorLedLabel";
+      AutoMonitorLedLabel.Size = new Size(21, 30);
+      AutoMonitorLedLabel.Text = "n";
+      AutoMonitorLedLabel.Click += AutoMonitorLabel_Click;
+      AutoMonitorLedLabel.MouseEnter += StatusLabel_MouseEnter;
+      AutoMonitorLedLabel.MouseLeave += StatusLabel_MouseLeave;
+      // 
+      // AutoMonitorStatusLabel
+      // 
+      AutoMonitorStatusLabel.Font = new Font("Segoe UI", 10F);
+      AutoMonitorStatusLabel.Name = "AutoMonitorStatusLabel";
+      AutoMonitorStatusLabel.Size = new Size(95, 30);
+      AutoMonitorStatusLabel.Text = "Auto Tuning";
+      AutoMonitorStatusLabel.TextAlign = ContentAlignment.MiddleLeft;
+      AutoMonitorStatusLabel.Click += AutoMonitorLabel_Click;
+      AutoMonitorStatusLabel.MouseEnter += StatusLabel_MouseEnter;
+      AutoMonitorStatusLabel.MouseLeave += StatusLabel_MouseLeave;
+      // 
       // NoiseFloorLabel
       // 
       NoiseFloorLabel.Name = "NoiseFloorLabel";
@@ -830,6 +884,7 @@
     public ToolStripMenuItem WaterfallMNU;
     public ToolStripMenuItem GroupViewMNU;
     public ToolStripMenuItem SatelliteDetailsMNU;
+    public ToolStripMenuItem MonitoredSatellitesMNU;
     public ToolStripMenuItem SatellitePassesMNU;
     private System.Windows.Forms.Timer timer;
     public ToolStripMenuItem TimelineMNU;
@@ -865,6 +920,7 @@
     private ToolStripStatusLabel RxCatStatusLabel;
     private RotatorWidget RotatorWidget;
     public SatellitePhotoWidget SatellitePhotoWidget;
+    public AutoMonitorBannerWidget AutoMonitorBannerWidget;
     private Panel panel5;
     private Panel panel4;
     private ToolStripStatusLabel RotatorLedLabel;
@@ -881,6 +937,8 @@
     private ToolStripDropDownButton RotatorDropdownBtn;
     private ToolStripMenuItem EnableRotatorMNU;
     private ToolStripMenuItem TrackRotatorMNU;
+    private ToolStripStatusLabel AutoMonitorLedLabel;
+    private ToolStripStatusLabel AutoMonitorStatusLabel;
     public ToolStripMenuItem Ft4ConsoleMNU;
     public ToolStripMenuItem RecorderMNU;
     public ToolStripMenuItem QsoSchedulerMNU;

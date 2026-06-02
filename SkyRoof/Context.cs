@@ -16,6 +16,7 @@ namespace SkyRoof
     public GroupSatellitePasses GroupPasses;
     public HamSatellitePasses HamPasses;
     public SdrSatellitePasses SdrPasses;
+    public MonitoredSatellitePasses MonitoredPasses;
     public AmsatStatusLoader AmsatStatusLoader = new();
     public LoggerInterface LoggerInterface;
 
@@ -25,6 +26,7 @@ namespace SkyRoof
     public FrequencyWidget FrequencyControl;
     public RotatorWidget RotatorControl;
     public SatellitePhotoWidget SatellitePhotoWidget;
+    public AutoMonitorBannerWidget AutoMonitorBannerWidget;
 
     // panels
     public GroupViewPanel? GroupViewPanel;
@@ -34,6 +36,7 @@ namespace SkyRoof
     public SkyViewPanel? SkyViewPanel;
     public EarthViewPanel? EarthViewPanel;
     public TransmittersPanel? TransmittersPanel;
+    public MonitoredSatellitesPanel? MonitoredSatellitesPanel;
     public WaterfallPanel? WaterfallPanel;
     public QsoEntryPanel? QsoEntryPanel;
     public Ft4ConsolePanel? Ft4ConsolePanel;
@@ -51,6 +54,7 @@ namespace SkyRoof
     public readonly OutputSoundcard<Complex32> IqVacSoundcard = new();
     public readonly Announcer Announcer = new();
     public UdpStreamSender UdpStreamSender = new();
+    public AutoRecorder AutoRecorder;
     
     public void ClosePanels()
     {
@@ -61,6 +65,7 @@ namespace SkyRoof
       TimelinePanel?.Close();
       SkyViewPanel?.Close();
       EarthViewPanel?.Close();
+      MonitoredSatellitesPanel?.Close();
       TransmittersPanel?.Close();
       WaterfallPanel?.Close();
       QsoEntryPanel?.Close();
