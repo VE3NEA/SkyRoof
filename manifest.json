@@ -232,10 +232,20 @@
     },
     {
       "type": "Resource",
-      "source_relative_path": "images/earth_view.png",
+      "source_relative_path": "images/earth_view_pass.png",
       "output": {
         "resource": {
-          "relative_path": "images/earth_view.png"
+          "relative_path": "images/earth_view_pass.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/earth_view_realtime.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/earth_view_realtime.png"
         }
       },
       "version": ""
@@ -516,6 +526,16 @@
       "output": {
         "resource": {
           "relative_path": "images/overlapping_transponders.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/pass_coverage.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/pass_coverage.png"
         }
       },
       "version": ""
