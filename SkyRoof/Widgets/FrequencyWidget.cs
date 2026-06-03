@@ -62,7 +62,7 @@ namespace SkyRoof
     {
       SettingsToRadioLink(false);
       RadioLinkToUi();
-      ctx.CatControl.ApplySettings();
+      ctx.CatControl.ApplyTune();
       ctx.RotatorControl.SetSatellite(ctx.SatelliteSelector.SelectedSatellite);
       RadioLinkToRadio();
       UpdateTxButton();
@@ -72,7 +72,7 @@ namespace SkyRoof
     {
       SettingsToRadioLink(true, frequency);
       RadioLinkToUi();
-      ctx.CatControl.ApplySettings();
+      ctx.CatControl.ApplyTune();
       ctx.RotatorControl.SetSatellite(null);
       RadioLinkToRadio();
       UpdateTxButton();
