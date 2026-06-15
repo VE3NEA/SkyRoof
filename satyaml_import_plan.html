@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Plan: fold gr-satellites satyaml data into SkyRoof&#39;s SatNOGS DB | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Plan: fold gr-satellites satyaml data into SkyRoof&#39;s SatNOGS DB | SkyRoof ">
+      
+      
+      <link rel="icon" href="images/SkyRoof.ico">
+      <link rel="stylesheet" href="public/docfx.min.css">
+      <link rel="stylesheet" href="public/main.css">
+      <meta name="docfx:navrel" content="toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/satyaml_import_plan.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MMW827H44"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-1MMW827H44');
+      </script>
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="index.html">
+            <img id="logo" class="svg" src="images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+
+      <div class="content">
+        <div class="actionbar">
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="plan-fold-gr-satellites-satyaml-data-into-skyroofs-satnogs-db">Plan: fold gr-satellites satyaml data into SkyRoof's SatNOGS DB</h1>
+
+<h2 id="goal">Goal</h2>
+<p>During SkyRoof's satellite-data download, also fetch the gr-satellites <code>satyaml/</code> files;
+during import, match them by NORAD and attach a nullable <strong><code>GrSatsInfo</code></strong> sub-object to each
+transmitter in <code>Satellites.json</code>. These are the fields a downstream consumer (FskDemod's
+<code>ParamResolver</code>) needs and that the SatNOGS DB does not carry — most importantly <strong>deviation</strong>.</p>
+<h2 id="field-decision-driven-by-fskdemod-code">Field decision (driven by FskDemod code)</h2>
+<p>From <code>FskDemod/Core/ParamResolver.cs</code>, the only yaml-sourced scalars used are
+<strong>deviation, framing, modulation</strong>, with <strong>baudrate</strong> used to pick the right transmitter.
+A <strong>telemetry</strong> decoder name is added as a forward-looking label (see below). Everything else
+in the yaml (frequency, alternative_names, image/files products) is ignored — SkyRoof already
+has names/frequencies, and there is no telemetry decoder yet.</p>
+<h3 id="grsatsinfo-nullable-sub-object-on-the-transmitter"><code>GrSatsInfo</code> (nullable sub-object on the transmitter)</h3>
+<pre><code class="lang-csharp">public class GrSatsInfo
+{
+  public string? modulation { get; set; }
+  public double? baudrate  { get; set; }
+  public double? deviation { get; set; }
+  public string? framing   { get; set; }
+  public string? telemetry { get; set; }   // real decoder name; null for ax25/csp/none
+}
+</code></pre>
+<h3 id="why-telemetry-is-a-single-nullable-string-not-a-list">Why <code>telemetry</code> is a single nullable string (not a list)</h3>
+<p>The satyaml <code>data:</code> block names data products, each tagged with a <code>telemetry:</code> decoder string
+that resolves to a Python <code>construct</code> beacon parser in <code>gr-satellites/python/telemetry/</code>.
+The <strong>yaml field is only a label/selector</strong> — the decode logic lives in ~53 Python modules,
+not in the yaml. Real engineering-value decode in C# would require porting those <code>construct</code>
+definitions and is a separate future project.</p>
+<p>Distribution across the 414-file snapshot:</p>
+<ul>
+<li><code>ax25</code> (248 sats) and <code>csp</code> (30 sats) are framing/transport, <strong>not</strong> engineering beacons —
+discarded here (SkyRoof/FskDemod already produce AX.25/CSP frames via deframers).</li>
+<li>Genuine per-satellite beacon decoders (<code>funcube</code>, <code>sat_1kuns_pf</code>, <code>snet</code>, …) exist in only
+~55 satellites, mostly one-offs.</li>
+</ul>
+<p>Verified by resolving each transmitter's <code>data:</code> key-name references against the satellite-level
+<code>data:</code> map: <strong>once <code>ax25</code>/<code>csp</code> are discarded, the max distinct real decoders on any single
+transmitter is 1; zero transmitters reference more than one.</strong> The only 3 sats listing two real
+decoders (SMOG-P, SMOG-1, ATL-1) split them across <em>different</em> transmitters. So a single string
+suffices. As defensive insurance against future yaml changes, the importer <strong>logs a warning and
+keeps the first</strong> if it ever sees &gt;1 real decoder on one transmitter.</p>
+<p>Import rule for <code>telemetry</code>: resolve the transmitter's <code>data:</code> references, take the single
+<code>telemetry:</code> value, and <strong>store null if it is <code>ax25</code> or <code>csp</code></strong>.</p>
+<h2 id="changes-skyroof-only--fskdemod-consumption-is-a-separate-follow-up">Changes (SkyRoof only — FskDemod consumption is a separate follow-up)</h2>
+<h3 id="1-download--fetch-the-satyaml-zip">1. Download — fetch the satyaml zip</h3>
+<p>In <code>SkyRoof/Satellites/SatnogsDb.cs</code>:</p>
+<ul>
+<li>Add <code>DownloadSatyaml()</code>: one <code>GetByteArrayAsync</code> of
+<code>https://codeload.github.com/daniestevez/gr-satellites/zip/refs/heads/main</code>,
+saved to <code>Downloads/gr-satellites.zip</code>.</li>
+<li>Call it from <code>DownloadAll()</code> as a 4th step (re-number the progress events).</li>
+<li>Wrap so a satyaml failure is <strong>non-fatal</strong> — log and continue (enrichment, not core data;
+unlike JE9PEL it must not block the import).</li>
+<li>Extract <code>python/satyaml/*.yml</code> into <code>Downloads/satyaml/</code> using
+<code>System.IO.Compression.ZipFile</code>/<code>ZipArchive</code> (built into .NET 10), filtering entries whose
+path contains <code>/python/satyaml/</code> and ends with <code>.yml</code>.</li>
+</ul>
+<h3 id="2-new-parser--satyamldbcs-port-from-fskdemod-no-new-dependency">2. New parser — <code>SatyamlDb.cs</code> (port from FskDemod, no new dependency)</h3>
+<p>Add <code>SkyRoof/Satellites/SatyamlDb.cs</code>. Port the tiny line-based parser from
+<code>FskDemod/IO/SatyamlDb.cs</code> (no YamlDotNet dependency; SkyRoof has no YAML lib).
+Extend it to also resolve the per-transmitter <code>telemetry</code> decoder:</p>
+<ul>
+<li>Parse the top-level <code>data:</code> map (key name -&gt; telemetry decoder string).</li>
+<li>For each transmitter, resolve its <code>data:</code> key references to a single real decoder
+(discard <code>ax25</code>/<code>csp</code>; warn + keep first if &gt;1).</li>
+<li>Build <code>Dictionary&lt;int norad, List&lt;GrSatsInfo&gt;&gt;</code>.</li>
+<li>Keep <code>Find(norad, baud)</code> &quot;nearest baudrate&quot; logic to pair a yaml transmitter to a
+SatNOGS transmitter.</li>
+</ul>
+<h3 id="3-data-model--nullable-grsatsinfo-on-the-transmitter">3. Data model — nullable <code>GrSatsInfo</code> on the transmitter</h3>
+<p>In <code>SkyRoof/Satellites/SatnogsDbTransmitter.cs</code>:</p>
+<pre><code class="lang-csharp">public GrSatsInfo? gr_sats { get; set; }   // null when no satyaml match
+</code></pre>
+<p>plus the <code>GrSatsInfo</code> class above. Nullable ⇒ absent/<code>null</code> in JSON for the majority of
+transmitters with no yaml entry; no schema break for existing readers.</p>
+<h3 id="4-import--match-by-norad-attach-per-transmitter">4. Import — match by NORAD, attach per transmitter</h3>
+<p>In <code>SatnogsDb.cs</code>, add <code>ImportSatyaml()</code> and call it from <code>ImportAll()</code> after
+<code>ImportSatnogsTransmitters()</code> (so transmitters exist):</p>
+<ul>
+<li>Load the parsed <code>SatyamlDb</code> from <code>Downloads/satyaml/</code>.</li>
+<li>For each satellite with a <code>norad_cat_id</code> that has a yaml entry, for each of its
+<code>Transmitters</code>, pick the nearest-baud <code>GrSatsInfo</code> (<code>tx.baud</code> -&gt; <code>Find</code>) and assign
+<code>tx.gr_sats</code>.</li>
+<li>Non-fatal if the satyaml folder is missing. Leave <code>CheckFilesPresent()</code> unchanged
+(do not make satyaml required).</li>
+</ul>
+<h3 id="5-satellitesjson-output">5. <code>Satellites.json</code> output</h3>
+<p><code>SaveToFile()</code> already serializes the whole graph via Newtonsoft, so <code>gr_sats</code> flows through
+automatically — no serializer change. Result per transmitter:</p>
+<pre><code class="lang-json">{ &quot;description&quot;: &quot;1k2 BPSK downlink&quot;, &quot;mode&quot;: &quot;BPSK&quot;, &quot;baud&quot;: 1200,
+  &quot;gr_sats&quot;: { &quot;modulation&quot;: &quot;DBPSK&quot;, &quot;baudrate&quot;: 1200, &quot;deviation&quot;: null,
+               &quot;framing&quot;: &quot;AO-40 FEC&quot;, &quot;telemetry&quot;: &quot;funcube&quot; } }
+</code></pre>
+<h2 id="follow-up-out-of-scope-noted">Follow-up (out of scope, noted)</h2>
+<p>FskDemod's <code>SatnogsDb.Load</code> and <code>ParamResolver</code> would later be updated to read <code>gr_sats</code>
+straight from <code>Satellites.json</code>, retiring the hardcoded
+<code>c:\Proj\Forks\gr-satellites\python\satyaml</code> path in <code>FskDemod/IO/SatyamlDb.cs</code>. Real telemetry
+decoding (porting <code>construct</code> beacon definitions to C#) is a separate future project; the
+<code>telemetry</code> field is only a label/selector for it.</p>
+<h2 id="risks--decisions-baked-in">Risks / decisions baked in</h2>
+<ul>
+<li><strong>NORAD-only matching</strong>: yaml is keyed by <code>norad</code>; satyaml's name-based fallback is dropped
+since SkyRoof transmitters always have a satellite NORAD. Satellites missing <code>norad_cat_id</code>
+get no enrichment.</li>
+<li><strong>Multiple yaml transmitters per satellite</strong> are disambiguated by nearest baud — same
+heuristic FskDemod already trusts.</li>
+<li><strong>Non-fatal enrichment</strong>: any satyaml download/parse failure must not break the existing
+satellites/transmitters/tle/JE9PEL import.</li>
+<li><strong><code>telemetry</code> <code>&gt;1</code> guard</strong>: importer logs a warning and keeps the first if a single
+transmitter ever resolves to more than one real decoder (not seen in the current snapshot).</li>
+</ul>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
