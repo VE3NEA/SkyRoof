@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Setting Up Telemetry Decoding | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Setting Up Telemetry Decoding | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/setting_up_telemetry_decoding.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MMW827H44"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-1MMW827H44');
+      </script>
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="setting-up-telemetry-decoding">Setting Up Telemetry Decoding</h1>
+
+<p>These settings control the optional outputs of the built-in telemetry decoder used by the
+<a href="telemetry_panel.html">Telemetry panel</a> — saving decoded frames to a file, sharing them over a KISS
+server, and uploading them to the SatNOGS database.</p>
+<h2 id="decoder-settings">Decoder Settings</h2>
+<p><img src="../images/telemetry_settings.png" alt="Telemetry Settings"></p>
+<p>The outputs are configured on the <strong>Telemetry</strong> page of the <a href="settings_window.html">Settings window</a>
+(<strong>Tools / Settings</strong>):</p>
+<ul>
+<li><p><strong>Save to File</strong> — when enabled, every decoded frame is appended to a daily log file in the
+<code>TelemetryDecodes</code> subfolder of the <a href="data_folder.html">data folder</a>. The file contains the same
+information that is shown in the panel: the time, satellite, transmitter, frame length and address,
+the decoded telemetry, and the ASCII, HEX and META views of the frame.</p>
+</li>
+<li><p><strong>KISS Server</strong> — makes the decoded frames available to other telemetry software over a
+KISS-over-TCP server:</p>
+<ul>
+<li><strong>Enabled</strong> — turns the server on;</li>
+<li><strong>TCP Port</strong> — the TCP port to listen on (8100 by default).</li>
+</ul>
+<p>Point any program that reads KISS frames over TCP — for example a satellite telemetry decoder or a
+custom logging script — at <code>localhost</code> and this port to receive the frames as SkyRoof decodes them.</p>
+</li>
+<li><p><strong>SatNOGS Upload</strong> — forwards each decoded frame to the <a href="https://db.satnogs.org/">SatNOGS DB</a>,
+contributing your telemetry to the community database:</p>
+<ul>
+<li><strong>Enabled</strong> — turns uploading on;</li>
+<li><strong>API Key</strong> — your personal SatNOGS DB API key (see below).</li>
+</ul>
+</li>
+</ul>
+<h2 id="uploading-to-satnogs">Uploading to SatNOGS</h2>
+<p>The <a href="https://db.satnogs.org/">SatNOGS DB</a> is a community database of satellite telemetry. To
+contribute the frames that SkyRoof decodes:</p>
+<ol>
+<li><p><strong>Create an account.</strong> Go to <a href="https://db.satnogs.org/">db.satnogs.org</a>, click <strong>Login</strong>, and
+register (the SatNOGS network uses a single account across all of its sites). Confirm your e-mail
+address and log in.</p>
+</li>
+<li><p><strong>Copy your API key.</strong> Open your account page (your callsign or name in the top-right corner) and
+go to <strong>Settings</strong>. Your <strong>API Key</strong> is shown there as a long string of letters and digits. Copy it.</p>
+</li>
+<li><p><strong>Configure SkyRoof.</strong> In <strong>Tools / Settings</strong>:</p>
+<ul>
+<li>on the <strong>User</strong> page, fill in your <strong>Callsign</strong> and your Maidenhead <strong>Grid Square</strong> — both are
+required, because each uploaded frame is tagged with the observer's call and location;</li>
+<li>on the <strong>Telemetry</strong> page, expand <strong>SatNOGS Upload</strong>, set <strong>Enabled</strong> to true, and paste the
+API key into the <strong>API Key</strong> field.</li>
+</ul>
+</li>
+<li><p><strong>Decode some frames.</strong> Open the <a href="telemetry_panel.html">Telemetry panel</a> and decode a pass of a
+supported satellite. Each frame that passes its integrity (CRC) check is uploaded automatically;
+frames that fail the check are not sent.</p>
+</li>
+<li><p><strong>Verify on the server.</strong> Confirm that your frames arrived, either way:</p>
+<ul>
+<li><p><strong>Web:</strong> open the satellite's page on <a href="https://db.satnogs.org/">db.satnogs.org</a>
+(for example, by clicking on the <strong>SatNOGS</strong> link in the <a href="satellite_details_panel.html">Satellite Details panel</a>),
+click on <strong>Data</strong> and see if you are listed under <strong>Most Recent Observers</strong>.</p>
+</li>
+<li><p><strong>API:</strong> query the telemetry endpoint for that satellite and look for your callsign in the
+<code>source</code> field of the most recent frames, for example:</p>
+<pre><code class="lang-bash">curl -H &quot;Authorization: Token YOUR_API_KEY&quot; &quot;https://db.satnogs.org/api/telemetry/?satellite=NORAD_ID&quot;
+</code></pre>
+<p>Replace <code>YOUR_API_KEY</code> with your key and <code>NORAD_ID</code> with the satellite's NORAD catalog number.</p>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="telemetry_panel.html">Telemetry Panel</a></li>
+</ul>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -94,6 +94,16 @@
         <article data-uid="">
 <h1 id="how-to-decode-telemetry-from-pearl-1c">How to Decode Telemetry from PEARL-1C</h1>
 
+<div class="NOTE">
+<h5>Note</h5>
+<p>This approach is <strong>deprecated</strong>. SkyRoof now has a <a href="setting_up_telemetry_decoding.html">built-in telemetry decoder</a>
+that needs no external program, Virtual Audio Cable, or output stream — use it whenever the
+satellite's modulation is supported. The instructions below are kept for satellites and formats
+that the built-in decoder does not yet handle, where an external decoder such as gr_satellites is
+still useful.</p>
+<p>Note also that <strong>PEARL-1C is no longer active</strong>; the NORAD ID and parameters in the commands below
+are only an example — substitute the values of a satellite that is currently transmitting.</p>
+</div>
 <p>I/Q or Audio data, streamed via VAC or UDP, may be used to decode telemetry transmitted by the satellites.
 There is a number of telemetry decoders to choose from. One such decoder is
 <a href="https://gr-satellites.readthedocs.io/en/latest/command_line.html">gr_satellites.exe</a> command line tool,

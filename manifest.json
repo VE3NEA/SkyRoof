@@ -1022,6 +1022,26 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/telemetry_panel.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/telemetry_panel.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/telemetry_settings.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/telemetry_settings.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/time_line.png",
       "output": {
         "resource": {
@@ -1615,6 +1635,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "users_guide/setting_up_telemetry_decoding.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/setting_up_telemetry_decoding.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "users_guide/setting_up_transverter.md",
       "output": {
         ".html": {
@@ -1679,6 +1709,16 @@
       "output": {
         ".html": {
           "relative_path": "users_guide/system_requirements.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/telemetry_panel.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/telemetry_panel.html"
         }
       },
       "version": ""

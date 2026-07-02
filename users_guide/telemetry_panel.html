@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Telemetry Panel | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Telemetry Panel | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/telemetry_panel.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MMW827H44"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-1MMW827H44');
+      </script>
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="telemetry-panel">Telemetry Panel</h1>
+
+<p>The Telemetry panel shows the telemetry frames that SkyRoof decodes from the satellite signal.
+SkyRoof can decode the telemetry transmitted by many satellites without any external software: the
+built-in decoder demodulates and deframes the signal directly from the SDR, right inside the program.
+Unlike the <a href="decode_telemetry.html">external decoder</a> and <a href="fsk_afsk_telemetry.html">sound modem</a> workflows,
+it needs no separate program, no Virtual Audio Cable, and no output stream — SkyRoof feeds the
+Doppler-corrected receiver passband straight to the decoder.</p>
+<p>The panel is opened from the <strong>View / Telemetry</strong> menu. Its optional outputs — saving to a file,
+sharing over a KISS server, and uploading to SatNOGS — are configured as described in
+<a href="setting_up_telemetry_decoding.html">Setting Up Telemetry Decoding</a>.</p>
+<p><img src="../images/telemetry_panel.png" alt="Telemetry panel"></p>
+<h2 id="supported-signals">Supported Signals</h2>
+<p>The decoder supports the <strong>FSK</strong>, <strong>GFSK</strong>, <strong>MSK</strong>, <strong>GMSK</strong>, <strong>AFSK</strong>, <strong>BPSK</strong> and <strong>DBPSK</strong> modulations with the framing
+formats used by the supported satellites. The modulation, baud rate, and framing are looked up
+automatically from the transmitter description in the satellite database, so there is nothing to
+configure for the signal itself — you only have to select the right transmitter.</p>
+<p>If the selected transmitter uses an unsupported modulation, or its parameters are unknown, the panel
+reports <code>format not supported</code>, and no decoding takes place.</p>
+<h2 id="decoding-a-pass">Decoding a Pass</h2>
+<ol>
+<li><p>Open the Telemetry panel from the <strong>View / Telemetry</strong> menu.</p>
+</li>
+<li><p>Select the satellite in the <a href="satellite_selector.html">Satellite Selector</a> on the toolbar.</p>
+</li>
+<li><p>Select a data transmitter for that satellite. The decoder follows the transmitter selection, so
+pick the transmitter whose telemetry you want to decode. You can select it in the
+<a href="satellite_transmitters_panel.html">Satellite Transmitters</a> panel, or by clicking on its label on the
+<a href="frequency_scale.html">frequency scale</a>. The panel header shows the satellite name and the selected
+transmitter; hover over it to see the resolved signal parameters.</p>
+<p>Many satellites have several transmitters on the same frequency, and only some of them may be
+supported by the decoder. The label you click on the frequency scale is not necessarily the one
+that gets selected, so after clicking check that the right transmitter is highlighted in the
+<a href="satellite_transmitters_panel.html">Satellite Transmitters</a> panel.</p>
+</li>
+<li><p>Make sure the SDR is running and tuned to the satellite. The decoder uses the same
+Doppler-corrected passband as the receiver, so the satellite's signal must be visible on the
+<a href="waterfall_display.html">waterfall</a> at the tuned frequency.</p>
+</li>
+</ol>
+<p>That is all that is needed to start decoding. When the satellite is above the horizon and a
+supported transmitter is selected, frames are decoded automatically and appear in the panel.</p>
+<h2 id="layout">Layout</h2>
+<ul>
+<li><p>The <strong>header</strong> at the top shows the selected satellite and transmitter. Hover over it to see the
+resolved signal parameters (modulation, baud rate, framing).</p>
+</li>
+<li><p>The <strong>status line</strong> below the header shows the current state of the decoder:</p>
+<ul>
+<li><strong>satellite below horizon</strong> — the format is supported and the decoder is waiting for AOS;
+decoding starts when the satellite rises above the horizon;</li>
+<li><strong>ready to decode</strong> — the satellite is up and the decoder is listening;</li>
+<li><strong>decoding...</strong> — a burst is being processed;</li>
+<li><strong>format not supported</strong> — the transmitter's modulation or framing is not supported;</li>
+<li><strong>not decoded</strong> — a terrestrial link is selected, which the decoder does not handle.</li>
+</ul>
+</li>
+<li><p>The <strong>tree</strong> on the left lists the decoded passes and frames.</p>
+</li>
+<li><p>The <strong>detail pane</strong> on the right shows the contents of the pass or frame selected in the tree.</p>
+</li>
+</ul>
+<h2 id="passes-and-frames">Passes and Frames</h2>
+<p>The frames are grouped by pass. Each top-level node in the tree is one pass of one transmitter,
+labeled with the start time, satellite name, and transmitter description. A pass node is created as
+soon as the first burst is detected and stays grayed out until the first valid frame is decoded.</p>
+<p>Each child node is a single decoded frame, labeled with the time of arrival, the frame length in
+bytes, and, for AX.25 frames, the source and destination addresses. The newest pass is expanded
+automatically, and the view scrolls to follow new frames as long as the latest frame is selected.</p>
+<p>Select a <strong>pass</strong> node to see a summary in the detail pane: the start time, satellite, transmitter,
+orbit number, the number of bursts and frames decoded, and the signal parameters.</p>
+<p>Select a <strong>frame</strong> node to see its full contents:</p>
+<ul>
+<li><strong>TELEMETRY</strong> — the named telemetry values decoded from the frame (battery voltage, temperatures,
+and so on), shown only for satellites that SkyRoof has a telemetry definition for;</li>
+<li><strong>ASCII</strong> — the frame bytes rendered as text;</li>
+<li><strong>HEX</strong> — a hex dump of the frame bytes;</li>
+<li><strong>META</strong> — the carrier frequency offset (CFO), signal-to-noise ratio (SNR), CRC check result, and
+the number of corrected bits and erased bytes from forward error correction.</li>
+</ul>
+<h2 id="sharing-the-frames">Sharing the Frames</h2>
+<p>As each frame is decoded it is also, depending on the
+<a href="setting_up_telemetry_decoding.html#decoder-settings">decoder settings</a>:</p>
+<ul>
+<li>appended to a log file in the <code>TelemetryDecodes</code> subfolder of the <a href="data_folder.html">data folder</a>;</li>
+<li>sent to any client connected to the KISS-over-TCP server;</li>
+<li>uploaded to the <a href="https://db.satnogs.org/">SatNOGS DB</a>.</li>
+</ul>
+<h2 id="clearing-the-list">Clearing the List</h2>
+<p>Right-click anywhere in the tree and choose <strong>Clear All</strong> to remove all passes and frames from the
+panel. This clears only the display; frames already saved to file or uploaded are not affected.</p>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
