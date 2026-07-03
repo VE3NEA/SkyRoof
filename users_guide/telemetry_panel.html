@@ -123,9 +123,10 @@ pick the transmitter whose telemetry you want to decode. You can select it in th
 <a href="frequency_scale.html">frequency scale</a>. The panel header shows the satellite name and the selected
 transmitter; hover over it to see the resolved signal parameters.</p>
 <p>Many satellites have several transmitters on the same frequency, and only some of them may be
-supported by the decoder. The label you click on the frequency scale is not necessarily the one
+supported by the decoder - for exmple, a CW beacon and a GMSK telemetry. The label you click on the frequency scale is not necessarily the one
 that gets selected, so after clicking check that the right transmitter is highlighted in the
 <a href="satellite_transmitters_panel.html">Satellite Transmitters</a> panel.</p>
+<p>Some satellites can transmit their telemetry at different Baud rates, selected by the ground station. Such satellites have multiple transmitters in the database, one per Baud rate. To switch to a different rate, just select the right transmitter.</p>
 </li>
 <li><p>Make sure the SDR is running and tuned to the satellite. The decoder uses the same
 Doppler-corrected passband as the receiver, so the satellite's signal must be visible on the
