@@ -402,16 +402,6 @@
     },
     {
       "type": "Resource",
-      "source_relative_path": "images/iss_sstv.png",
-      "output": {
-        "resource": {
-          "relative_path": "images/iss_sstv.png"
-        }
-      },
-      "version": ""
-    },
-    {
-      "type": "Resource",
       "source_relative_path": "images/letter-s-svgrepo-com.svg",
       "output": {
         "resource": {
@@ -1016,6 +1006,16 @@
       "output": {
         "resource": {
           "relative_path": "images/splitter.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/sstv_image.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/sstv_image.png"
         }
       },
       "version": ""

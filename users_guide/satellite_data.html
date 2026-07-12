@@ -104,8 +104,8 @@ about all satellites transmitting in the Ham bands;</p>
 <li><p><a href="https://www.ne.jp/asahi/hamradio/je9pel/satslist.htm">JE9PEL Satellite List</a> is another
 dataset with information about the satellites, maintained by Mineo Wakita JE9PEL, that,
 in particular,
-includes the callsigns of the satellites. This dataset presents the frequencies in an
-undocumented format, so its data are included in the SkyRoof database only FYI.</p>
+includes the callsigns of the satellites. SkyRoof also mines the JE9PEL mode descriptions to
+fill in the <a href="#signal-parameters">signal parameters</a> that SatNOGS leaves blank.</p>
 </li>
 <li><p><a href="https://www.arrl.org/quick-start">LoTW</a> - The ARRL LoTW service accepts satellite QSO
 only if the satellite abbreviation is one of those published on their
@@ -119,6 +119,35 @@ observations with their own satellite abbreviations, these abbreviations are sto
 <a href="data_folder.html">Data folder</a>.</p>
 </li>
 </ul>
+<h2 id="signal-parameters">Signal Parameters</h2>
+<p>To decode a satellite's telemetry, SkyRoof needs the <strong>modulation</strong>, <strong>baud rate</strong>, and <strong>framing</strong>
+of its downlink. These are resolved for each transmitter from several sources, in order of priority:</p>
+<ol>
+<li>your manual overrides (see below);</li>
+<li>the <a href="https://github.com/daniestevez/gr-satellites">gr-satellites</a> database;</li>
+<li>the <strong>JE9PEL</strong> satellite list;</li>
+<li>the <strong>SatNOGS DB</strong> transmitter description.</li>
+</ol>
+<p>The first source that specifies a given parameter wins, so a higher-priority source fills in only what
+the lower-priority ones leave unknown. The resolved values appear in the mouse tooltip of the
+transmitter on the <a href="frequency_scale.html">Frequency Scale</a>.</p>
+<h3 id="overriding-signal-parameters">Overriding Signal Parameters</h3>
+<p>When the automatic sources are wrong or incomplete, you can correct them in the
+<strong>transmitters-override.json</strong> file in the <a href="data_folder.html">Data folder</a>. Each entry is keyed by the
+transmitter UUID and lists only the fields to change, for example:</p>
+<pre><code class="lang-json">{
+  &quot;FdxJrwmqFrJnP3sd96Bip8&quot;: {
+    &quot;satellite&quot;: &quot;SITRO-AIS-56&quot;, &quot;norad&quot;: 59778,
+    &quot;modulation&quot;: &quot;GMSK&quot;, &quot;baudrate&quot;: 2400, &quot;framing&quot;: &quot;USP&quot;
+  }
+}
+</code></pre>
+<p>SkyRoof ships a default copy of this file and refreshes it as new corrections are published. To keep
+your own edits from being overwritten, add <code>&quot;read_only&quot;: true</code> to the entry — SkyRoof then never
+replaces it. Entries you add that are not in the shipped file are always kept.</p>
+<p>The telemetry definition files in the <strong>TelemetryRegistry</strong> folder work the same way: add
+<code>&quot;readOnly&quot;: true</code> (camelCase, to match those files' key style) to a definition to keep your edits when
+SkyRoof updates its bundled definitions.</p>
 <h2 id="tle">TLE</h2>
 <p>The satellite orbit elements (<a href="https://celestrak.org/columns/v04n03/">TLE</a> data)
 are downloaded from <strong>SatNOGS DB</strong>.</p>

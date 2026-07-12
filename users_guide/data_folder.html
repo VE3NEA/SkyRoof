@@ -117,6 +117,10 @@ to this page;</p>
 </li>
 <li><p><strong>Satellites.json</strong> - the satellite database compiled from the downloaded data;</p>
 </li>
+<li><p><strong>transmitters-override.json</strong> - hand-curated corrections to the transmitter
+<a href="satellite_data.html#signal-parameters">signal parameters</a>. Ships with a default set that SkyRoof
+keeps up to date; mark an entry <code>&quot;read_only&quot;: true</code> to protect your own edits;</p>
+</li>
 <li><p><strong>cat_info.json</strong> - lists the CAT capabilities of a generic simplex radio;</p>
 </li>
 <li><p><strong>wsjtx_wisdom.dat</strong> - optimal FFT transform settings found by automatic testing.</p>
@@ -139,6 +143,8 @@ palette as a text file with &quot;html&quot; color codes. Pick the color codes a
 <li><strong>TelemetryDecodes</strong> - decoded telemetry frames saved by the <a href="telemetry_panel.html">Telemetry</a>
 panel, when the <strong>Save to File</strong> option is enabled in the
 <a href="setting_up_telemetry_decoding.html#decoder-settings">telemetry settings</a>. One file is created per day;</li>
+<li><strong>SstvImages</strong> - <a href="recevie_sstv.html">SSTV images</a> decoded by the <a href="telemetry_panel.html">Telemetry</a>
+panel, saved automatically as PNG files with a JSON metadata sidecar;</li>
 <li><strong>TelemetryRegistry</strong> - the definitions used to decode raw telemetry frames into named values
 in the <a href="telemetry_panel.html">Telemetry</a> panel.</li>
 </ul>

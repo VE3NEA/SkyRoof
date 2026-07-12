@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>How to Receive SSTV from ISS | SkyRoof </title>
+      <title>Receive SSTV Images | SkyRoof </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="How to Receive SSTV from ISS | SkyRoof ">
+      <meta name="title" content="Receive SSTV Images | SkyRoof ">
       
       
       <link rel="icon" href="../images/SkyRoof.ico">
@@ -92,75 +92,55 @@
         </div>
 
         <article data-uid="">
-<h1 id="how-to-receive-sstv-from-iss">How to Receive SSTV from ISS</h1>
+<h1 id="receive-sstv-images">Receive SSTV Images</h1>
 
-<p>There are two popular programs that demodulate SSTV: <strong>MMSSTV</strong> and <strong>RX-SSTV</strong>,
-either one may be used with SkyRoof to receive SSTV transmissions form ISS.</p>
-<h2 id="installing-vac">Installing VAC</h2>
-<p>A virtual audio cable, VAC, is required to pass the satellite signals demodulated in SkyRoof to the SSTV decoding program. Download and install <a href="https://vb-audio.com/Cable/index.htm">VB-Audio</a> if you do not have it yet, and reboot your system. Be sure to get the latest version (2024) of VB-Audio, the old version may not work correctly.</p>
-<h2 id="setting-up-mmsstv">Setting Up MMSSTV</h2>
+<p>Some satellites transmit <strong>SSTV</strong> (Slow-Scan Television) images over an FM downlink. SkyRoof
+decodes these images with its built-in decoder, right inside the program — there is no need for an
+external SSTV program, a Virtual Audio Cable, or an output stream. The decoded image is built up
+line by line in the <a href="telemetry_panel.html">Telemetry</a> panel as the satellite passes overhead.</p>
+<p><img src="../images/sstv_image.png" alt="SSTV image"></p>
+<h2 id="supported-modes">Supported Modes</h2>
+<p>The decoder supports the YCrCb mode family used by satellites:</p>
 <ul>
-<li>download <a href="https://hamsoft.ca/pages/mmsstv.php">MMSSTV</a>, install it and run the program;</li>
-<li>click on <strong>Option / Setup MMSSTV</strong> in the menu to open the settings dialog, and:
-<ul>
-<li>click on the <strong>Misc</strong> tab;</li>
-<li>select your VAC in the <strong>Sound Card / In</strong> drop-down list;</li>
-<li>enter &quot;48000&quot; in the <strong>Clock / Hz</strong> box.</li>
+<li><strong>Robot 36</strong> and <strong>Robot 72</strong>;</li>
+<li><strong>PD 50</strong>, <strong>PD 90</strong>, <strong>PD 120</strong>, <strong>PD 160</strong>, <strong>PD 180</strong>, <strong>PD 240</strong>, and <strong>PD 290</strong>.</li>
 </ul>
+<p>The mode is detected automatically from the <strong>VIS</strong> header and the sync cadence of the received
+signal, so you do not have to select it by hand. The RGB Martin and Scottie modes, which are rarely
+used by satellites, are currently not supported.</p>
+<h2 id="decoding-an-image">Decoding an Image</h2>
+<ol>
+<li><p>Open the <a href="telemetry_panel.html">Telemetry</a> panel from the <strong>View / Telemetry</strong> menu.</p>
 </li>
-<li>in the main window:
-<ul>
-<li>click on the <strong>RX</strong> tab;</li>
-<li>in the <strong>RX Mode</strong> panel right-click on the second and third button, and select &quot;PD120&quot; and &quot;PD180&quot; respectively;</li>
-<li>click on <strong>RX Mode / Auto</strong>.</li>
-</ul>
+<li><p>Select the satellite in the <a href="satellite_selector.html">Satellite Selector</a> on the toolbar. If it is
+not in the current group, add it using the <a href="satellites_and_groups_window.html">Satellites and Groups</a>
+dialog.</p>
 </li>
-</ul>
-<h2 id="setting-up-rx-sstv">Setting Up RX-SSTV</h2>
-<ul>
-<li>download <a href="https://www.qsl.net/on6mu/rxsstv.htm">RX-SSTV</a>, install it and run the program;</li>
-<li>in the <strong>Sound Card Selection</strong> window that pops up on start-up select your VAC as <strong>Sound Input</strong>;</li>
-<li>click on <strong>Setup / SSTV Engine</strong> in the menu, click on the <strong>Misc</strong>  tab, and set <strong>Clock / Hz</strong> to &quot;12000&quot;;</li>
-<li>click on <strong>Setup / RX-SSTV</strong> in the menu, under <strong>User-defined buttons</strong> set the first two buttons to &quot;PD120&quot; and&quot; PD-180&quot;;</li>
-<li>in the main window:
-<ul>
-<li>click on the <strong>RX</strong> tab;</li>
-<li>click on the <strong>PD120</strong> or <strong>PD180</strong> button, depending on the mode used at ISS (see below).</li>
-</ul>
+<li><p>Select the satellite's <strong>SSTV transmitter</strong>. You can select it in the
+<a href="satellite_transmitters_panel.html">Satellite Transmitters</a> panel, or by clicking on its label on the
+<a href="frequency_scale.html">frequency scale</a>. The decoder follows the transmitter selection, so make sure
+the SSTV transmitter is the one highlighted in the
+<a href="satellite_transmitters_panel.html">Satellite Transmitters</a> panel.</p>
 </li>
-</ul>
-<h2 id="setting-up-skyroof">Setting Up SkyRoof</h2>
-<p>In SkyRoof:</p>
-<ul>
-<li>select the <strong>ARISS</strong> satellite. If it is not in the current group, add it using the
-<a href="satellites_and_groups_window.html">Satellites and Groups</a> dialog;</li>
-<li>Select ISS transmitter that is used to send SSTV (see below);</li>
-<li>Select <strong>FM</strong> downlink mode in the drop-down list on the toolbar;</li>
-<li>in the <strong>Output Stream</strong> section of the <a href="setting_up_output_stream.html">Settings</a> window:
-<ul>
-<li>select <strong>Audio to VAC</strong>;</li>
-<li>set Gain, dB to 0;</li>
-<li>select the VAC in the list of audio devices;</li>
-<li>click on the Output Stream label on the status bar to enable the output stream.</li>
-</ul>
+<li><p>Make sure the SDR is running and tuned to the satellite. The decoder uses the same
+Doppler-corrected passband as the receiver, so the satellite's signal must be visible on the
+<a href="waterfall_display.html">waterfall</a> at the tuned frequency.</p>
 </li>
-</ul>
-<h2 id="receiving-sstv">Receiving SSTV</h2>
-<p>Find out when the next SSTV activity on ISS will take place, usually it happens every few months and lasts for up to a week. One good source of information about such activities is the
-<a href="https://www.ariss.org/upcoming-sstv-events.html">ARISS web site</a>. You will need to know:</p>
-<ul>
-<li>when SSTV signals will be transmitted;</li>
-<li>which transmitter on ISS will be used, usually it is one of these:
-<ul>
-<li><strong>Mode U - SSTV</strong> on 437.800 MHz;</li>
-<li><strong>Mode V Imaging</strong> on 145.800 MHz;</li>
-</ul>
-</li>
-<li>which SSTV mode will be used, usually it is either <strong>PD120</strong> or <strong>PD180</strong>. In these modes the image transmission takes 120 s and 180 s respectively.</li>
-</ul>
-<p>In SkyRoof, select ARISS in the list of satellites, and the transmitter that is used in the current SSTV activity. When ISS rises above the horizon and its signals start to appear on the waterfall, the RX-SSTV or MMSSTV program automatically starts decoding the image. If for some reason it doesn't, click on the SSTV mode button (PD120 or PD180) to start it manually.</p>
-<p>Here is an example of an image received from ISS in July 2025. Both SSTV decoders seem to have the same image quality, which is mainly determined by the signal strength variations:</p>
-<p><img src="../images/iss_sstv.png" alt="SSTV"></p>
+</ol>
+<p>When the satellite is above the horizon and its signal starts to appear, the decoder detects the SSTV
+transmission and begins building the image. Each image appears as a node in the tree, under the pass
+node, and updates in place as new scan lines arrive. Select an image node to watch it build up in the
+detail pane on the right, together with a <strong>META</strong> section that shows the satellite, transmitter,
+mode, whether the VIS header was decoded, the number of rows received, and the decoding status.</p>
+<p>There is nothing to start or stop manually: the decoder rides through short signal fades and finalizes
+each image when it is complete or the signal is lost. A satellite whose transmitter alternates between
+telemetry and SSTV (such as UmKA-1) is handled automatically — the telemetry frames and the SSTV
+images both appear in the same panel.</p>
+<h2 id="saved-images">Saved Images</h2>
+<p>Each finalized image is saved automatically as a PNG file, with a JSON sidecar holding its metadata,
+in the <strong>SstvImages</strong> subfolder of the <a href="data_folder.html">data folder</a>. You can also right-click an
+image in the detail pane and choose <strong>Save As...</strong> to save it to a location of your choice, or
+<strong>Copy</strong> to copy it to the clipboard.</p>
 
 </article>
 
