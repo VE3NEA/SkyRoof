@@ -33,6 +33,20 @@ namespace SkyRoof
     private ILogger? FrameLogger;
     private DecodeSnapshot? CurrentDecode;
 
+    // provenance state for the SignalParams dialog's status dots and the gear button. All of it is per
+    // transmitter and reset on every transmitter change (see SetTransmitter). ResolvedSnapshot is the pristine
+    // DB-resolved params captured before the pipeline writes back any finding, used to tell a pipeline-discovered
+    // Differential from a curated one (Baud/Deviation carry their own ResolvedBaud/ResolvedDeviation instead).
+    private SignalParams? ResolvedSnapshot;
+    // names of the SignalParams fields the user has manually overridden (subset of the demod fields)
+    private readonly HashSet<string> UserChangedFields = new();
+    // a frame has decoded since the last demod override — turns the user-changed demod dots (and the gear) green
+    private bool DemodValidated;
+    // user-selected telemetry-format definition (null = resolve by NORAD) and whether a frame has parsed with it
+    private TelemetryDefinition? FormatOverride;
+    private string? FormatOverrideId;
+    private bool FormatValidated;
+
     // Identity of the transmitter a decoder was built for, captured when the pipeline is created and bound to
     // that pipeline's event handlers. Frames surface on the decode worker thread, possibly after the user has
     // switched to a different transmitter; carrying the snapshot with the frame keeps it attributed to the
@@ -184,6 +198,14 @@ namespace SkyRoof
       Transmitter = ctx.SatelliteSelector.SelectedTransmitter;
       Terrestrial = ctx.FrequencyControl.RadioLink.IsTerrestrial;
 
+      // a new transmitter discards any manual override / provenance state and resets the gear button color
+      UserChangedFields.Clear();
+      DemodValidated = false;
+      FormatOverride = null;
+      FormatOverrideId = null;
+      FormatValidated = false;
+      SettingsButton.BackColor = SystemColors.ButtonFace;
+
       if (Terrestrial) SatNameLabel.Text = "Terrestrial";
       else SatNameLabel.Text = $"{Satellite.name}  {Transmitter.description}";
 
@@ -201,27 +223,44 @@ namespace SkyRoof
       }
 
       SignalParams = SignalParamsResolver.Resolve(Transmitter);
+      // snapshot the pristine DB-resolved params before the pipeline writes any finding back into SignalParams
+      ResolvedSnapshot = SignalParams is null ? null : SignalParams with { };
       UpdateParamsTooltip();
     }
 
-    /// <summary>Refresh the params tooltip on both status labels: the resolved <see cref="SignalParams"/> (which
-    /// picks up the actual deviation the pipeline resolves for a blind FSK burst) plus the name of the telemetry
-    /// field-decoder definition its frames will be parsed with. Re-called when a frame arrives so the actual
-    /// deviation replaces the initial one once the pipeline locks it.</summary>
+    /// <summary>Refresh the params tooltip on both status labels with the same "name: value" fields the Signal
+    /// Details dialog shows (the values actually used for decoding, so the pipeline's locked deviation/baud
+    /// replace the curated ones once found), plus the telemetry format its frames are parsed with. Re-called
+    /// when a frame arrives so the actual values replace the initial ones once the pipeline locks them.</summary>
     private void UpdateParamsTooltip()
     {
-      string tooltip;
-      if (SignalParams == null)
-        tooltip = "Parameters unknown";
-      else
-      {
-        string paramsStr = JsonConvert.SerializeObject(SignalParams, Formatting.Indented, SerializerParams);
-        string telemetry = TelemetryRegistry?.ForNorad(Satellite?.norad_cat_id)?.Id ?? "none";
-        tooltip = $"{paramsStr}\nTelemetry: {telemetry}";
-      }
+      string tooltip = SignalParams == null ? "Parameters unknown" : DescribeSignalParams(SignalParams);
       toolTip1.SetToolTip(SatNameLabel, tooltip);
       toolTip1.SetToolTip(StatusLabel, tooltip);
     }
+
+    // the dialog's fields as "name: value" lines. Baud/Deviation show the pipeline finding when present, else the
+    // curated value; the telemetry format is the manual override when set, else the NORAD-resolved definition.
+    private string DescribeSignalParams(SignalParams p)
+    {
+      string format = FormatOverrideId ?? TelemetryRegistry?.ForNorad(Satellite?.norad_cat_id)?.Id ?? "none";
+      return
+        $"Modulation: {p.Modulation}\n" +
+        $"Framing: {p.Framing}\n" +
+        $"Baud rate: {FormatTlmNumber(p.ResolvedBaud ?? p.Baud)}\n" +
+        $"Deviation, Hz: {FormatTlmNullable(p.ResolvedDeviation ?? p.Deviation)}\n" +
+        $"AF carrier, Hz: {FormatTlmNullable(p.AfCarrier)}\n" +
+        $"Manchester: {FormatTriState(p.Manchester)}\n" +
+        $"Precoding (diff.): {FormatTriState(p.Differential)}\n" +
+        $"Telemetry format: {format}";
+    }
+
+    private static string FormatTlmNumber(double value) =>
+      value.ToString("0.###", System.Globalization.CultureInfo.CurrentCulture);
+
+    private static string FormatTlmNullable(double? value) => value is double v ? FormatTlmNumber(v) : "";
+
+    private static string FormatTriState(bool? value) => value switch { true => "On", false => "Off", null => "Auto" };
 
     private void CreatDestroyPipeline()
     {
@@ -323,6 +362,136 @@ namespace SkyRoof
 
 
     //----------------------------------------------------------------------------------------------
+    //                                   signal params override
+    //----------------------------------------------------------------------------------------------
+    // gear button: open the signal-details editor for the current transmitter and apply any manual override
+    private void SettingsButton_Click(object sender, EventArgs e)
+    {
+      if (SignalParams == null)
+      {
+        MessageBox.Show(this, "Signal parameters are unknown for this transmitter.", "Signal Details",
+          MessageBoxButtons.OK, MessageBoxIcon.Information);
+        return;
+      }
+
+      using var dlg = new SignalParamsDialog();
+      if (dlg.Open(BuildDialogView(), this) != DialogResult.OK) return;
+      ApplyDialogResult(dlg);
+    }
+
+    // package the current params, the available telemetry formats, and the per-field dot state for the dialog
+    private SignalParamsView BuildDialogView()
+    {
+      var formatIds = TelemetryRegistry?.AllDefinitions
+        .Select(d => d.Id).Where(id => !string.IsNullOrEmpty(id)).Select(id => id!)
+        .Distinct().OrderBy(id => id).ToList() ?? new List<string>();
+      string? dbFormatId = TelemetryRegistry?.ForNorad(Satellite?.norad_cat_id)?.Id;
+
+      return new SignalParamsView
+      {
+        Params = SignalParams!,
+        DbParams = ResolvedSnapshot ?? SignalParams!,
+        FormatIds = formatIds,
+        FormatId = FormatOverrideId ?? dbFormatId,
+        DbFormatId = dbFormatId,
+        ModulationDot = DotFor("Modulation"),
+        FramingDot = DotFor("Framing"),
+        BaudDot = DotFor("Baud"),
+        DeviationDot = DotFor("Deviation"),
+        AfCarrierDot = DotFor("AfCarrier"),
+        ManchesterDot = DotFor("Manchester"),
+        DifferentialDot = DotFor("Differential"),
+        FormatDot = FormatOverrideId == null ? SignalParamsDialog.FieldDot.None
+          : FormatValidated ? SignalParamsDialog.FieldDot.Confirmed : SignalParamsDialog.FieldDot.Edited
+      };
+    }
+
+    // dot state for one demod field: a user override (yellow until a frame confirms it, then green) takes
+    // precedence over a pipeline finding (green — a finding only exists once a frame locked it).
+    private SignalParamsDialog.FieldDot DotFor(string field)
+    {
+      if (UserChangedFields.Contains(field))
+        return DemodValidated ? SignalParamsDialog.FieldDot.Confirmed : SignalParamsDialog.FieldDot.Edited;
+      return PipelineFound(field) ? SignalParamsDialog.FieldDot.Confirmed : SignalParamsDialog.FieldDot.None;
+    }
+
+    // whether the pipeline discovered this field's value at run time (implies a frame decoded). Baud/Deviation
+    // carry an explicit ResolvedBaud/ResolvedDeviation; Differential is overwritten in place, so it is detected
+    // by comparison against the pristine DB-resolved snapshot.
+    private bool PipelineFound(string field) => field switch
+    {
+      "Baud" => SignalParams?.ResolvedBaud != null,
+      "Deviation" => SignalParams?.ResolvedDeviation != null,
+      "Differential" => SignalParams?.Differential != ResolvedSnapshot?.Differential,
+      _ => false
+    };
+
+    // apply the dialog result: the telemetry-format override takes a lightweight path (no pipeline rebuild,
+    // future frames only); any demod-field change replaces the params and rebuilds the pipeline.
+    private void ApplyDialogResult(SignalParamsDialog dlg)
+    {
+      if (dlg.ChangedFields.Contains("TelemetryFormat"))
+      {
+        FormatOverrideId = dlg.ResultFormatId;
+        FormatOverride = TelemetryRegistry?.ById(FormatOverrideId);
+        FormatValidated = false;
+      }
+      else if (dlg.ResetFields.Contains("TelemetryFormat"))
+      {
+        // reset back to NORAD resolution — drop the manual format override
+        FormatOverride = null;
+        FormatOverrideId = null;
+        FormatValidated = false;
+      }
+
+      bool demodChanged = dlg.ChangedFields.Concat(dlg.ResetFields).Any(f => f != "TelemetryFormat");
+      if (demodChanged)
+      {
+        foreach (var f in dlg.ChangedFields) if (f != "TelemetryFormat") UserChangedFields.Add(f);
+        foreach (var f in dlg.ResetFields) if (f != "TelemetryFormat") UserChangedFields.Remove(f);
+        DemodValidated = false;
+        ApplySignalParamsOverride(dlg.Result);
+      }
+
+      UpdateGearButton();
+      UpdateParamsTooltip();
+    }
+
+    // adopt the user-edited params and rebuild the pipeline so they take effect immediately. CreatDestroyPipeline
+    // keeps the existing decoder while the transmitter is unchanged, so the decoder is torn down explicitly here
+    // to force a fresh one built from the overridden params.
+    private void ApplySignalParamsOverride(SignalParams newParams)
+    {
+      SignalParams = newParams;
+
+      if (Decoder != null)
+      {
+        Decoder.Purge();
+        var old = Decoder;
+        Decoder = null;
+        CurrentDecode = null;
+        old.Dispose();
+      }
+      CreatDestroyPipeline();
+    }
+
+    // gear button color mirrors the dots: neutral with no override, yellow while any override is pending a
+    // confirming frame, green once every pending override has produced one.
+    private void UpdateGearButton()
+    {
+      bool anyChange = UserChangedFields.Count > 0 || FormatOverrideId != null;
+      if (!anyChange) { SettingsButton.BackColor = SystemColors.ButtonFace; return; }
+
+      bool demodOk = UserChangedFields.Count == 0 || DemodValidated;
+      bool formatOk = FormatOverrideId == null || FormatValidated;
+      SettingsButton.BackColor = demodOk && formatOk
+        ? SignalParamsDialog.ConfirmedColor : SignalParamsDialog.EditedColor;
+    }
+
+
+
+
+    //----------------------------------------------------------------------------------------------
     //                                       treeview
     //----------------------------------------------------------------------------------------------
     private void AddFrame(Frame frame, DecodeSnapshot snapshot)
@@ -334,6 +503,15 @@ namespace SkyRoof
       {
         txPassInfo.HasValidFrame = true;
         CurrentPassNode!.ForeColor = Color.Empty;
+      }
+
+      // a frame decoded with the current (overridden) pipeline confirms the demod override worked. Gated on the
+      // current decoder's snapshot so a late frame from a pre-override pipeline (or a different transmitter)
+      // can't confirm it. Turns the user-changed demod dots and the gear button green.
+      if (ReferenceEquals(snapshot, CurrentDecode) && UserChangedFields.Count > 0 && !DemodValidated)
+      {
+        DemodValidated = true;
+        UpdateGearButton();
       }
 
       string addr = (snapshot.SignalParams.Framing == Framing.AX25G3RUH ? Ax25Address.Describe(frame.Bytes) : "") ?? "";
@@ -400,14 +578,22 @@ namespace SkyRoof
     private string BuildFrameText(Frame frame, DecodeSnapshot snapshot)
     {
       string tlm = "";
-      var def = TelemetryRegistry?.ForNorad(snapshot.Satellite?.norad_cat_id);
+      var def = FormatFor(snapshot);
       if (def != null)
       {
         var record = TelemetryParser.Parse(def, frame.Bytes);
         if (record != null)
+        {
           tlm = "TELEMETRY:\n" +
             string.Join("", record.Fields.Select(f => $"  {f.Name}: {f.Value}{(f.Units.Length > 0 ? " " + f.Units : "")}\n")) +
             "\n";
+          // a frame parsing into fields with the manual format override confirms it — turn its dot/gear green
+          if (ReferenceEquals(def, FormatOverride) && record.Fields.Count > 0 && !FormatValidated)
+          {
+            FormatValidated = true;
+            UpdateGearButton();
+          }
+        }
       }
 
       var chars = frame.Ascii;
@@ -430,6 +616,14 @@ namespace SkyRoof
         $"  Erasures: {frame.ErasedBytes}\n";
 
       return tlm + asc + hex + meta;
+    }
+
+    // the telemetry format for a frame: the manual override (only for the current transmitter's decoder), else
+    // the NORAD-resolved definition. A late frame from a previous transmitter falls back to NORAD resolution.
+    private TelemetryDefinition? FormatFor(DecodeSnapshot snapshot)
+    {
+      if (FormatOverride != null && ReferenceEquals(snapshot, CurrentDecode)) return FormatOverride;
+      return TelemetryRegistry?.ForNorad(snapshot.Satellite?.norad_cat_id);
     }
 
 
