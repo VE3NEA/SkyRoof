@@ -32,7 +32,8 @@ namespace SkyRoof
     private TreeNode? CurrentPassNode => Current?.Parent ?? Current;
     private ILogger? FrameLogger;
     private DecodeSnapshot? CurrentDecode;
-
+    // the status label's default text color, captured before any status update recolors it
+    
     // provenance state for the SignalParams dialog's status dots and the gear button. All of it is per
     // transmitter and reset on every transmitter change (see SetTransmitter). ResolvedSnapshot is the pristine
     // DB-resolved params captured before the pipeline writes back any finding, used to tell a pipeline-discovered
@@ -148,7 +149,7 @@ namespace SkyRoof
       this.ctx = ctx;
 
       InitializeComponent();
-
+      
       string path = Path.Combine(Utils.GetUserDataFolder(), "TelemetryRegistry");
       TelemetryRegistry = new TelemetryRegistry(path);
 
@@ -341,7 +342,7 @@ namespace SkyRoof
     {
       BeginInvoke(() =>
         {
-          StatusLabel.Text = "decoding...";
+          UpdateStatusLabel("DECODING...", Color.Green);
           // create the pass entry on the first burst (grayed until a valid frame arrives), not on the first frame
           var txPassInfo = EnsureCurrentPassNode(snapshot);
           txPassInfo.BurstCount++;
@@ -685,7 +686,7 @@ namespace SkyRoof
         CurrentPassNode!.ForeColor = Color.Empty;
       }
 
-      if (!evt.Final) StatusLabel.Text = "decoding...";
+      if (!evt.Final) UpdateStatusLabel("DECODING...", Color.Green);
 
       if (treeView1.SelectedNode == node) DisplayImageInfo(info);
       else if (treeView1.SelectedNode == CurrentPassNode) richTextBox1.Text = txPassInfo.Describe();
@@ -800,10 +801,16 @@ namespace SkyRoof
       SatAboveHorizon = ctx.SdrPasses.GetNextPass(Satellite)?.IsAboveHorizon() ?? false;
       CreatDestroyPipeline();
 
-      if (Terrestrial) StatusLabel.Text = "not decoded";
-      else if (!IsDecodable()) StatusLabel.Text = "format not supported";
-      else if (!SatAboveHorizon) StatusLabel.Text = "satellite below horizon";
-      else StatusLabel.Text = "ready to decode";
+      if (Terrestrial) UpdateStatusLabel("terrestrial, not decoded", Color.Red);
+      else if (!IsDecodable()) UpdateStatusLabel("format not supported", Color.Red);
+      else if (!SatAboveHorizon) UpdateStatusLabel("satellite below horizon", SystemColors.ControlText);
+      else UpdateStatusLabel("ready to decode", SystemColors.ControlText);
+    }
+
+    private void UpdateStatusLabel(string text, Color color)
+    {
+      StatusLabel.Text = text;
+      StatusLabel.ForeColor = color;
     }
 
     internal void ProcessSamples(DataEventArgs<Complex32> e)
