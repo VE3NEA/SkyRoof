@@ -18,7 +18,7 @@ namespace SkyRoof
     private static readonly string[] TriStateItems = { "Auto", "On", "Off" };
 
     // dot colors, shared with the caller so the gear button uses the same yellow/green
-    public static readonly Color EditedColor = Color.Gold;
+    public static readonly Color EditedColor = Color.Yellow;
     public static readonly Color ConfirmedColor = Color.LimeGreen;
 
     // provenance of a field's current value, mapped to a dot color

@@ -57,198 +57,198 @@ namespace SkyRoof
       OkBtn = new Button();
       panel1.SuspendLayout();
       SuspendLayout();
-      //
+      // 
       // ModulationLabel
-      //
+      // 
       ModulationLabel.AutoSize = true;
       ModulationLabel.Location = new Point(12, 18);
       ModulationLabel.Name = "ModulationLabel";
-      ModulationLabel.Size = new Size(72, 15);
+      ModulationLabel.Size = new Size(69, 15);
       ModulationLabel.TabIndex = 0;
       ModulationLabel.Text = "Modulation";
-      //
+      // 
       // FramingLabel
-      //
+      // 
       FramingLabel.AutoSize = true;
       FramingLabel.Location = new Point(12, 50);
       FramingLabel.Name = "FramingLabel";
-      FramingLabel.Size = new Size(52, 15);
+      FramingLabel.Size = new Size(51, 15);
       FramingLabel.TabIndex = 0;
       FramingLabel.Text = "Framing";
-      //
+      // 
       // BaudLabel
-      //
+      // 
       BaudLabel.AutoSize = true;
       BaudLabel.Location = new Point(12, 82);
       BaudLabel.Name = "BaudLabel";
-      BaudLabel.Size = new Size(69, 15);
+      BaudLabel.Size = new Size(57, 15);
       BaudLabel.TabIndex = 0;
       BaudLabel.Text = "Baud rate";
-      //
+      // 
       // DeviationLabel
-      //
+      // 
       DeviationLabel.AutoSize = true;
       DeviationLabel.Location = new Point(12, 114);
       DeviationLabel.Name = "DeviationLabel";
-      DeviationLabel.Size = new Size(83, 15);
+      DeviationLabel.Size = new Size(77, 15);
       DeviationLabel.TabIndex = 0;
       DeviationLabel.Text = "Deviation, Hz";
-      //
+      // 
       // AfCarrierLabel
-      //
+      // 
       AfCarrierLabel.AutoSize = true;
       AfCarrierLabel.Location = new Point(12, 146);
       AfCarrierLabel.Name = "AfCarrierLabel";
-      AfCarrierLabel.Size = new Size(90, 15);
+      AfCarrierLabel.Size = new Size(77, 15);
       AfCarrierLabel.TabIndex = 0;
       AfCarrierLabel.Text = "AF carrier, Hz";
-      //
+      // 
       // ManchesterLabel
-      //
+      // 
       ManchesterLabel.AutoSize = true;
       ManchesterLabel.Location = new Point(12, 178);
       ManchesterLabel.Name = "ManchesterLabel";
-      ManchesterLabel.Size = new Size(75, 15);
+      ManchesterLabel.Size = new Size(69, 15);
       ManchesterLabel.TabIndex = 0;
       ManchesterLabel.Text = "Manchester";
-      //
+      // 
       // DifferentialLabel
-      //
+      // 
       DifferentialLabel.AutoSize = true;
       DifferentialLabel.Location = new Point(12, 210);
       DifferentialLabel.Name = "DifferentialLabel";
-      DifferentialLabel.Size = new Size(101, 15);
+      DifferentialLabel.Size = new Size(93, 15);
       DifferentialLabel.TabIndex = 0;
       DifferentialLabel.Text = "Precoding (diff.)";
-      //
+      // 
       // TelemetryFormatLabel
-      //
+      // 
       TelemetryFormatLabel.AutoSize = true;
       TelemetryFormatLabel.Location = new Point(12, 242);
       TelemetryFormatLabel.Name = "TelemetryFormatLabel";
-      TelemetryFormatLabel.Size = new Size(96, 15);
+      TelemetryFormatLabel.Size = new Size(98, 15);
       TelemetryFormatLabel.TabIndex = 0;
       TelemetryFormatLabel.Text = "Telemetry format";
-      //
+      // 
       // ModulationCombo
-      //
+      // 
       ModulationCombo.DropDownStyle = ComboBoxStyle.DropDownList;
       ModulationCombo.Location = new Point(150, 15);
       ModulationCombo.Name = "ModulationCombo";
       ModulationCombo.Size = new Size(160, 23);
       ModulationCombo.TabIndex = 1;
-      //
+      // 
       // FramingCombo
-      //
+      // 
       FramingCombo.DropDownStyle = ComboBoxStyle.DropDownList;
       FramingCombo.Location = new Point(150, 47);
       FramingCombo.Name = "FramingCombo";
       FramingCombo.Size = new Size(160, 23);
       FramingCombo.TabIndex = 2;
-      //
+      // 
       // BaudTextBox
-      //
+      // 
       BaudTextBox.Location = new Point(150, 79);
       BaudTextBox.Name = "BaudTextBox";
       BaudTextBox.Size = new Size(160, 23);
       BaudTextBox.TabIndex = 3;
-      //
+      // 
       // DeviationTextBox
-      //
+      // 
       DeviationTextBox.Location = new Point(150, 111);
       DeviationTextBox.Name = "DeviationTextBox";
       DeviationTextBox.Size = new Size(160, 23);
       DeviationTextBox.TabIndex = 4;
-      //
+      // 
       // AfCarrierTextBox
-      //
+      // 
       AfCarrierTextBox.Location = new Point(150, 143);
       AfCarrierTextBox.Name = "AfCarrierTextBox";
       AfCarrierTextBox.Size = new Size(160, 23);
       AfCarrierTextBox.TabIndex = 5;
-      //
+      // 
       // ManchesterCombo
-      //
+      // 
       ManchesterCombo.DropDownStyle = ComboBoxStyle.DropDownList;
       ManchesterCombo.Location = new Point(150, 175);
       ManchesterCombo.Name = "ManchesterCombo";
       ManchesterCombo.Size = new Size(160, 23);
       ManchesterCombo.TabIndex = 6;
-      //
+      // 
       // DifferentialCombo
-      //
+      // 
       DifferentialCombo.DropDownStyle = ComboBoxStyle.DropDownList;
       DifferentialCombo.Location = new Point(150, 207);
       DifferentialCombo.Name = "DifferentialCombo";
       DifferentialCombo.Size = new Size(160, 23);
       DifferentialCombo.TabIndex = 7;
-      //
+      // 
       // TelemetryFormatCombo
-      //
+      // 
       TelemetryFormatCombo.DropDownStyle = ComboBoxStyle.DropDownList;
       TelemetryFormatCombo.Location = new Point(150, 239);
       TelemetryFormatCombo.Name = "TelemetryFormatCombo";
       TelemetryFormatCombo.Size = new Size(160, 23);
       TelemetryFormatCombo.TabIndex = 8;
-      //
+      // 
       // ModulationDot
-      //
+      // 
       ModulationDot.Location = new Point(320, 20);
       ModulationDot.Name = "ModulationDot";
       ModulationDot.Size = new Size(14, 14);
       ModulationDot.TabIndex = 20;
-      //
+      // 
       // FramingDot
-      //
+      // 
       FramingDot.Location = new Point(320, 52);
       FramingDot.Name = "FramingDot";
       FramingDot.Size = new Size(14, 14);
       FramingDot.TabIndex = 21;
-      //
+      // 
       // BaudDot
-      //
+      // 
       BaudDot.Location = new Point(320, 84);
       BaudDot.Name = "BaudDot";
       BaudDot.Size = new Size(14, 14);
       BaudDot.TabIndex = 22;
-      //
+      // 
       // DeviationDot
-      //
+      // 
       DeviationDot.Location = new Point(320, 116);
       DeviationDot.Name = "DeviationDot";
       DeviationDot.Size = new Size(14, 14);
       DeviationDot.TabIndex = 23;
-      //
+      // 
       // AfCarrierDot
-      //
+      // 
       AfCarrierDot.Location = new Point(320, 148);
       AfCarrierDot.Name = "AfCarrierDot";
       AfCarrierDot.Size = new Size(14, 14);
       AfCarrierDot.TabIndex = 24;
-      //
+      // 
       // ManchesterDot
-      //
+      // 
       ManchesterDot.Location = new Point(320, 180);
       ManchesterDot.Name = "ManchesterDot";
       ManchesterDot.Size = new Size(14, 14);
       ManchesterDot.TabIndex = 25;
-      //
+      // 
       // DifferentialDot
-      //
+      // 
       DifferentialDot.Location = new Point(320, 212);
       DifferentialDot.Name = "DifferentialDot";
       DifferentialDot.Size = new Size(14, 14);
       DifferentialDot.TabIndex = 26;
-      //
+      // 
       // TelemetryFormatDot
-      //
+      // 
       TelemetryFormatDot.Location = new Point(320, 244);
       TelemetryFormatDot.Name = "TelemetryFormatDot";
       TelemetryFormatDot.Size = new Size(14, 14);
       TelemetryFormatDot.TabIndex = 27;
-      //
+      // 
       // panel1
-      //
+      // 
       panel1.Controls.Add(CancelBtn);
       panel1.Controls.Add(OkBtn);
       panel1.Dock = DockStyle.Bottom;
@@ -256,9 +256,9 @@ namespace SkyRoof
       panel1.Name = "panel1";
       panel1.Size = new Size(344, 44);
       panel1.TabIndex = 9;
-      //
+      // 
       // CancelBtn
-      //
+      // 
       CancelBtn.DialogResult = DialogResult.Cancel;
       CancelBtn.Location = new Point(257, 9);
       CancelBtn.Name = "CancelBtn";
@@ -266,9 +266,9 @@ namespace SkyRoof
       CancelBtn.TabIndex = 1;
       CancelBtn.Text = "Cancel";
       CancelBtn.UseVisualStyleBackColor = true;
-      //
+      // 
       // OkBtn
-      //
+      // 
       OkBtn.Location = new Point(176, 9);
       OkBtn.Name = "OkBtn";
       OkBtn.Size = new Size(75, 23);
@@ -276,9 +276,9 @@ namespace SkyRoof
       OkBtn.Text = "OK";
       OkBtn.UseVisualStyleBackColor = true;
       OkBtn.Click += OkBtn_Click;
-      //
+      // 
       // SignalParamsDialog
-      //
+      // 
       AcceptButton = OkBtn;
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
