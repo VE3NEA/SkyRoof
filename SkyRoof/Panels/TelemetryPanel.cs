@@ -243,7 +243,7 @@ namespace SkyRoof
     // curated value; the telemetry format is the manual override when set, else the NORAD-resolved definition.
     private string DescribeSignalParams(SignalParams p)
     {
-      string format = FormatOverrideId ?? TelemetryRegistry?.ForNorad(Satellite?.norad_cat_id)?.Id ?? "none";
+      string format = FormatOverrideId ?? ResolveFormat(Satellite?.norad_cat_id, p.Framing)?.Id ?? "none";
       return
         $"Modulation: {p.Modulation}\n" +
         $"Framing: {p.Framing}\n" +
@@ -385,7 +385,7 @@ namespace SkyRoof
       var formatIds = TelemetryRegistry?.AllDefinitions
         .Select(d => d.Id).Where(id => !string.IsNullOrEmpty(id)).Select(id => id!)
         .Distinct().OrderBy(id => id).ToList() ?? new List<string>();
-      string? dbFormatId = TelemetryRegistry?.ForNorad(Satellite?.norad_cat_id)?.Id;
+      string? dbFormatId = ResolveFormat(Satellite?.norad_cat_id, SignalParams!.Framing)?.Id;
 
       return new SignalParamsView
       {
@@ -619,11 +619,24 @@ namespace SkyRoof
     }
 
     // the telemetry format for a frame: the manual override (only for the current transmitter's decoder), else
-    // the NORAD-resolved definition. A late frame from a previous transmitter falls back to NORAD resolution.
+    // the format resolved from the frame's satellite and framing. A late frame from a previous transmitter
+    // falls back to that same resolution.
     private TelemetryDefinition? FormatFor(DecodeSnapshot snapshot)
     {
       if (FormatOverride != null && ReferenceEquals(snapshot, CurrentDecode)) return FormatOverride;
-      return TelemetryRegistry?.ForNorad(snapshot.Satellite?.norad_cat_id);
+      return ResolveFormat(snapshot.Satellite?.norad_cat_id, snapshot.SignalParams.Framing);
+    }
+
+    // id of the shared Sputnix USP telemetry definition (usp.json), applied to any USP-framed signal.
+    private const string UspFormatId = "usp";
+
+    // resolve the telemetry definition for a satellite: an explicit NORAD mapping wins; otherwise a signal
+    // decoded with USP framing gets the shared USP definition, since USP framing carries USP telemetry even
+    // for satellites not listed in usp.json.
+    private TelemetryDefinition? ResolveFormat(int? noradId, Framing framing)
+    {
+      return TelemetryRegistry?.ForNorad(noradId)
+        ?? (framing == Framing.USP ? TelemetryRegistry?.ById(UspFormatId) : null);
     }
 
 
