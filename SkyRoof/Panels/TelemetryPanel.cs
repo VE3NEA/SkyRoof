@@ -13,9 +13,6 @@ namespace SkyRoof
 {
   public partial class TelemetryPanel : DockContent
   {
-    private static readonly JsonSerializerSettings SerializerParams =
-      new() { NullValueHandling = NullValueHandling.Ignore };
-
     private readonly Context ctx;
     private SatnogsDbSatellite? Satellite;
     private SatnogsDbTransmitter Transmitter;
@@ -117,10 +114,8 @@ namespace SkyRoof
         return Transmitter.uuid == transmitter.uuid && Orbit == orbit;
       }
 
-      internal string Describe()
+      internal string Describe(string paramsText)
       {
-        string paramsStr = JsonConvert.SerializeObject(SignalParams, Formatting.Indented, SerializerParams);
-
         return
           $"Start: {StartTime:yyyy-MM-dd HH:mm:ss}\n" +
           $"Sat: {Transmitter?.Satellite?.name ?? "Unknown"}\n" +
@@ -129,7 +124,7 @@ namespace SkyRoof
           $"Bursts: {BurstCount}\n" +
           $"Frames: {FrameCount}\n" +
           $"Images: {ImageCount}\n\n" +
-          $"Params:{paramsStr}";
+          $"{paramsText}";
       }
     }
 
@@ -235,10 +230,14 @@ namespace SkyRoof
     /// when a frame arrives so the actual values replace the initial ones once the pipeline locks them.</summary>
     private void UpdateParamsTooltip()
     {
-      string tooltip = SignalParams == null ? "Parameters unknown" : DescribeSignalParams(SignalParams);
+      string tooltip = DescribeSignalParamsOrUnknown(SignalParams);
       toolTip1.SetToolTip(SatNameLabel, tooltip);
       toolTip1.SetToolTip(StatusLabel, tooltip);
     }
+
+    // the tooltip-style params text, or "Parameters unknown" when there are none
+    private string DescribeSignalParamsOrUnknown(SignalParams? p) =>
+      p == null ? "Parameters unknown" : DescribeSignalParams(p);
 
     // the dialog's fields as "name: value" lines. Baud/Deviation show the pipeline finding when present, else the
     // curated value; the telemetry format is the manual override when set, else the NORAD-resolved definition.
@@ -347,7 +346,7 @@ namespace SkyRoof
           var txPassInfo = EnsureCurrentPassNode(snapshot);
           txPassInfo.BurstCount++;
           // refresh the right panel if this pass entry is the one currently selected
-          if (treeView1.SelectedNode == CurrentPassNode) richTextBox1.Text = txPassInfo.Describe();
+          if (treeView1.SelectedNode == CurrentPassNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
         }
        );
     }
@@ -530,7 +529,7 @@ namespace SkyRoof
       if (ReferenceEquals(snapshot, CurrentDecode)) UpdateParamsTooltip();
 
       AddLeaf(CurrentPassNode!, frameNode);
-      if (treeView1.SelectedNode == CurrentPassNode) richTextBox1.Text = txPassInfo.Describe();
+      if (treeView1.SelectedNode == CurrentPassNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
     }
 
     /// <summary>Returns the current pass node's info, creating the pass node (grayed until the first valid
@@ -689,7 +688,7 @@ namespace SkyRoof
       if (!evt.Final) UpdateStatusLabel("DECODING...", Color.Green);
 
       if (treeView1.SelectedNode == node) DisplayImageInfo(info);
-      else if (treeView1.SelectedNode == CurrentPassNode) richTextBox1.Text = txPassInfo.Describe();
+      else if (treeView1.SelectedNode == CurrentPassNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
     }
 
     private void DisplayImageInfo(SstvImageInfo info)
@@ -833,7 +832,7 @@ namespace SkyRoof
       if (node.Level == 0)
       {
         var info = node.Tag as TxPassInfo;
-        richTextBox1.Text = info!.Describe();
+        richTextBox1.Text = info!.Describe(DescribeSignalParamsOrUnknown(info.SignalParams));
       }
       else
         richTextBox1.Text = (string)node!.Tag!;
