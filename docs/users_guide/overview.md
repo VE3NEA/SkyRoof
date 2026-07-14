@@ -24,6 +24,11 @@ The main features of SkyRoof are:
 - SDR-based SSB/CW/FM receiver with RIT and Doppler tracking;
 - audio and I/Q output to external programs via VAC or UDP;
 - frequency scale with satellite names and transponder segments, Doppler-corrected;
+- built-in telemetry decoder for FSK, AFSK, GFSK, GMSK and BPSK downlinks, with automatic frame submission to the SatNOGS network;
+- built-in SSTV image decoder for the Robot and PD modes, with no external program required;
+- FT4 Console for making FT4 contacts through linear-transponder satellites, without an external program;
+- QSO logging with ADIF export, and a QSO Scheduler;
+- audio recording of satellite passes;
 - CAT control of an external transceiver;
 - antenna rotator control.
 
