@@ -33,6 +33,8 @@ namespace SkyRoof
       FrequencyWidget.ctx = ctx;
       GainWidget.ctx = ctx;
       ctx.Announcer.ctx = ctx;
+      ctx.AutoSelector.ctx = ctx;
+      ctx.AutoSelector.Initialize();
       ctx.CatControl.ctx = ctx;
       ctx.RotatorControl.ctx = ctx;
       SatellitePhotoWidget.ctx = ctx;
@@ -92,6 +94,9 @@ namespace SkyRoof
     {
       timer.Enabled = false;
       if (ctx.Slicer != null) ctx.Slicer.Enabled = false;
+
+      // stop auto-selection and flush any recording segment in progress (plan §1.8)
+      ctx.AutoSelector.SetEnabled(false);
 
       // save settings
       ctx.Settings.Ui.StoreDockingLayout(DockHost);
@@ -235,6 +240,7 @@ namespace SkyRoof
 
       ApplyIqOutputStreamGainAndRoute(e.Data, e.Count);
       ctx.RecorderPanel?.AddIqSamples(e);
+      ctx.AutoSelector.AddIqSamples(e);
       ctx.TelemetryPanel?.ProcessSamples(e);
     }
 
@@ -248,6 +254,7 @@ namespace SkyRoof
 
       ApplyAudioOutputStreamGainAndRoute(e.Data, e.Count);
       ctx.RecorderPanel?.AddAudioSamples(e);
+      ctx.AutoSelector.AddAudioSamples(e);
     }
 
     private void ApplyAudioOutputStreamGainAndRoute(float[] data, int count)
@@ -700,6 +707,14 @@ namespace SkyRoof
         ctx.TelemetryPanel.Close();
     }
 
+    private void AutoSelectionMNU_Click(object sender, EventArgs e)
+    {
+      if (ctx.AutoSelectionPanel == null)
+        ShowFloatingPanel(new AutoSelectionPanel(ctx));
+      else
+        ctx.AutoSelectionPanel.Close();
+    }
+
     private void SettingsMNU_Click(object sender, EventArgs e)
     {
       new SettingsDialog(ctx).ShowDialog();
@@ -970,6 +985,7 @@ namespace SkyRoof
         case "SkyRoof.RecorderPanel": return new RecorderPanel(ctx);
         case "SkyRoof.QsoSchedulerPanel": return new QsoSchedulerPanel(ctx);
         case "SkyRoof.TelemetryPanel": return new TelemetryPanel(ctx);
+        case "SkyRoof.AutoSelectionPanel": return new AutoSelectionPanel(ctx);
 
         default: return null;
       }
@@ -1019,6 +1035,8 @@ namespace SkyRoof
       ctx.CatControl.Rx?.Retry();
       ctx.CatControl.Tx?.Retry();
       ctx.Announcer.AnnouncePasses();
+      ctx.AutoSelector.Tick();
+      ctx.AutoSelectionPanel?.UpdateStatus();
       RotatorWidget.Retry();
       RotatorWidget.Advance();
       ctx.QsoEntryPanel?.SetUtc();

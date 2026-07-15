@@ -81,6 +81,7 @@ namespace SkyRoof
 
     public void SaveToFile()
     {
+      Satellites.AutoSelection.SyncToGroups(Satellites);
       File.WriteAllText(GetFileName(), JsonConvert.SerializeObject(this, Formatting.Indented));
     }
 
@@ -90,6 +91,7 @@ namespace SkyRoof
         Ui.DockingLayoutString = Ui.DefaultDockingString;
 
       Satellites.Sanitize(true);
+      Satellites.AutoSelection.SyncToGroups(Satellites);
       Transverter.SetDefaults();
     }
   }

@@ -237,6 +237,16 @@ namespace SkyRoof
       return recordingFileName + ".json";
     }
 
+    // shared file naming so the manual RecorderPanel and the headless AutoSelector name files identically:
+    // yyyy-MM-dd_HH_mm_ss[_<SatName>] with a .mp3 / .wav / .iq.wav extension
+    public static string BuildRecordingFileName(DateTime startLocal, string? satelliteName, string ext, bool isIqWav)
+    {
+      string fileName = $"{startLocal:yyyy-MM-dd_HH_mm_ss}";
+      if (!string.IsNullOrWhiteSpace(satelliteName)) fileName += "_" + Utils.SanitizeFileNamePart(satelliteName);
+
+      return isIqWav ? fileName + ".iq.wav" : fileName + "." + ext;
+    }
+
     private bool AddSamples<T>(T[] source, T[] buffer)
     {
       int samplesToWrite = Math.Min(source.Length, buffer.Length - samplesInBuffer);

@@ -42,6 +42,8 @@ namespace SkyRoof
     public Dictionary<string, SatelliteCustomization> SatelliteCustomizations = new();
     public Dictionary<string, TransmitterCustomization> TransmitterCustomizations = new();
 
+    public AutoSelectionSettings AutoSelection = new();
+
     // returns the saved customization for the transmitter, or, on first use, creates one with the
     // down/uplink modes mapped from the SatNOGS mode (mode_id), as if the user had set them manually
     public TransmitterCustomization GetOrCreateTransmitterCustomization(SatnogsDbTransmitter tx)
@@ -73,6 +75,9 @@ namespace SkyRoof
         group.SatelliteIds.RemoveAll(id => db.GetSatellite(id)?.Tle == null);
 
       Sanitize();
+
+      // reconcile auto-selection schedules now that the db is available (drops geostationary sats too)
+      AutoSelection.SyncToGroups(this, db);
     }
 
     public void Sanitize(bool useDefaultGroups = false)

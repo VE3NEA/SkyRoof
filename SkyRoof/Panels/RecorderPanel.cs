@@ -403,11 +403,8 @@ namespace SkyRoof
 
     private string BuildRecordingFileName(string ext, bool isIqWav)
     {
-      string fileName = $"{RecordingStart:yyyy-MM-dd_HH_mm_ss}";
       string? satelliteName = recordingManager.RecordingEvents.GetSingleSatelliteName();
-      if (!string.IsNullOrWhiteSpace(satelliteName)) fileName += "_" + Utils.SanitizeFileNamePart(satelliteName);
-
-      return isIqWav ? fileName + ".iq.wav" : fileName + "." + ext;
+      return RecordingManager.BuildRecordingFileName(RecordingStart, satelliteName, ext, isIqWav);
     }
 
 
