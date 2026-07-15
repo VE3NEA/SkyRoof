@@ -764,6 +764,26 @@ namespace SkyRoof
       if (ImageBox.Image != null) Clipboard.SetImage(ImageBox.Image);
     }
 
+    // gray the "Open in Viewer" item until the selected image has been auto-saved to a file on disk
+    private void ImageMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+    {
+      var info = treeView1.SelectedNode?.Tag as SstvImageInfo;
+      OpenImageMNU.Enabled = info?.SavedPath != null && File.Exists(info.SavedPath);
+    }
+
+    private void OpenImageMNU_Click(object sender, EventArgs e)
+    {
+      if (treeView1.SelectedNode?.Tag is not SstvImageInfo info || info.SavedPath == null) return;
+      try
+      {
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(info.SavedPath) { UseShellExecute = true });
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, "Failed to open SSTV image in viewer");
+      }
+    }
+
 
 
 

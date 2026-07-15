@@ -43,6 +43,7 @@ namespace SkyRoof
       ImageMenu = new ContextMenuStrip(components);
       SaveImageMNU = new ToolStripMenuItem();
       CopyImageMNU = new ToolStripMenuItem();
+      OpenImageMNU = new ToolStripMenuItem();
       MenuStrip.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
       splitContainer1.Panel1.SuspendLayout();
@@ -178,9 +179,10 @@ namespace SkyRoof
       // 
       // ImageMenu
       // 
-      ImageMenu.Items.AddRange(new ToolStripItem[] { SaveImageMNU, CopyImageMNU });
+      ImageMenu.Items.AddRange(new ToolStripItem[] { SaveImageMNU, CopyImageMNU, OpenImageMNU });
       ImageMenu.Name = "ImageMenu";
-      ImageMenu.Size = new Size(124, 48);
+      ImageMenu.Size = new Size(124, 70);
+      ImageMenu.Opening += ImageMenu_Opening;
       // 
       // SaveImageMNU
       // 
@@ -195,7 +197,14 @@ namespace SkyRoof
       CopyImageMNU.Size = new Size(123, 22);
       CopyImageMNU.Text = "Copy";
       CopyImageMNU.Click += CopyImageMNU_Click;
-      // 
+      //
+      // OpenImageMNU
+      //
+      OpenImageMNU.Name = "OpenImageMNU";
+      OpenImageMNU.Size = new Size(123, 22);
+      OpenImageMNU.Text = "Open in Viewer";
+      OpenImageMNU.Click += OpenImageMNU_Click;
+      //
       // TelemetryPanel
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
@@ -238,5 +247,6 @@ namespace SkyRoof
     private ContextMenuStrip ImageMenu;
     private ToolStripMenuItem SaveImageMNU;
     private ToolStripMenuItem CopyImageMNU;
+    private ToolStripMenuItem OpenImageMNU;
   }
 }
