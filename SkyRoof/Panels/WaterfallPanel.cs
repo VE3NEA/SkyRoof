@@ -6,9 +6,8 @@ namespace SkyRoof
   public partial class WaterfallPanel : DockContent
   {
     public Context ctx;
-    private double SdrCenterFrequency => ctx?.Sdr == null
-      ? DefaultNoSdrCenter()
-      : ctx.FrequencyControl.GetSdrRfCenter();
+    private double SdrCenterFrequency => ctx?.Sdr == null || !ctx.Sdr.Enabled ? 
+      DefaultNoSdrCenter() : ctx.FrequencyControl.GetSdrRfCenter();
     private double MaxBandwidth => ctx?.Sdr?.Info?.MaxBandwidth ?? SdrConst.MAX_BANDWIDTH;
     private double SamplingRate => ctx?.Sdr?.Info?.SampleRate ?? SdrConst.MAX_BANDWIDTH;
 
@@ -34,7 +33,7 @@ namespace SkyRoof
 
       ScaleControl.ctx = ctx;
       ScaleControl.BuildLabels();
-      if (ctx.Sdr == null) InitScaleForNoSdr();
+      if (ctx.Sdr == null || !ctx.Sdr.Enabled) InitScaleForNoSdr();
       ScaleControl.MouseMove += ScaleControl_MouseMove;
       ScaleControl.MouseDown += ScaleControl_MouseDown;
       ScaleControl.MouseUp += ScaleControl_MouseUp; 
