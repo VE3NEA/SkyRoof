@@ -972,6 +972,16 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/signal_details.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/signal_details.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/sky_view.png",
       "output": {
         "resource": {

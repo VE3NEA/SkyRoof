@@ -141,16 +141,18 @@ supported transmitter is selected, frames are decoded automatically and appear i
 <h2 id="layout">Layout</h2>
 <ul>
 <li><p>The <strong>header</strong> at the top shows the selected satellite and transmitter. Hover over it to see the
-resolved signal parameters (modulation, baud rate, framing).</p>
+resolved signal parameters (modulation, baud rate, framing). The <strong>gear button</strong> to its right opens
+the <a href="#signal-details">Signal Details</a> dialog.</p>
 </li>
-<li><p>The <strong>status line</strong> below the header shows the current state of the decoder:</p>
+<li><p>The <strong>status line</strong> below the header shows the current state of the decoder, in color:</p>
 <ul>
 <li><strong>satellite below horizon</strong> — the format is supported and the decoder is waiting for AOS;
 decoding starts when the satellite rises above the horizon;</li>
 <li><strong>ready to decode</strong> — the satellite is up and the decoder is listening;</li>
-<li><strong>decoding...</strong> — a burst is being processed;</li>
-<li><strong>format not supported</strong> — the transmitter's modulation or framing is not supported;</li>
-<li><strong>not decoded</strong> — a terrestrial link is selected, which the decoder does not handle.</li>
+<li><strong>DECODING...</strong> in green — a burst is being processed;</li>
+<li><strong>format not supported</strong> in red — the transmitter's modulation or framing is not supported;</li>
+<li><strong>terrestrial, not decoded</strong> in red — a terrestrial link is selected, which the decoder does not
+handle.</li>
 </ul>
 </li>
 <li><p>The <strong>tree</strong> on the left lists the decoded passes and frames.</p>
@@ -158,6 +160,46 @@ decoding starts when the satellite rises above the horizon;</li>
 <li><p>The <strong>detail pane</strong> on the right shows the contents of the pass or frame selected in the tree.</p>
 </li>
 </ul>
+<h2 id="signal-details">Signal Details</h2>
+<p>For most satellites the signal parameters resolved from the database are correct and there is nothing
+to do here. Occasionally a transmitter is described incorrectly in the database, or its description is
+incomplete, and the decoder needs a hand. The <strong>gear button</strong> in the header opens the <strong>Signal Details</strong>
+dialog, which shows the parameters actually in use for the selected transmitter and lets you override
+any of them:</p>
+<p><img src="../images/signal_details.png" alt="Signal Details dialog"></p>
+<ul>
+<li><strong>Modulation</strong> and <strong>Framing</strong> — the modulation and framing format of the signal;</li>
+<li><strong>Baud rate</strong> — the symbol rate;</li>
+<li><strong>Deviation, Hz</strong> — the FSK deviation;</li>
+<li><strong>AF carrier, Hz</strong> — the audio carrier frequency for AFSK downlinks;</li>
+<li><strong>Manchester</strong> and <strong>Precoding (diff.)</strong> — the line coding and the differential precoding. These are
+tri-state: <strong>Auto</strong> leaves the decision to the decoder, <strong>On</strong> and <strong>Off</strong> force it;</li>
+<li><strong>Telemetry format</strong> — the definition used to parse the decoded frames into named telemetry values.
+It is normally chosen from the satellite's NORAD number; select a different one here when the
+frames decode but their values do not. The field is empty, as in the picture above, when SkyRoof has
+no telemetry definition for the satellite — its frames are then shown without a PAYLOAD section.</li>
+</ul>
+<p>To undo a single override, right-click the field and choose <strong>Reset to database value</strong> — the field
+goes back to the value the database gave it, leaving your other overrides in place. <strong>Cancel</strong> discards
+every edit you made since opening the dialog.</p>
+<p>Click <strong>OK</strong> to apply your changes. A change to any of the demodulator fields rebuilds the decoder
+immediately, so it takes effect on the next burst. A change to the telemetry format applies to frames
+decoded from that point on and does not re-parse the frames already in the tree.</p>
+<p>Overrides are remembered per transmitter for the current session only. They are discarded when you
+select a different transmitter, and they are not saved between runs.</p>
+<h3 id="where-a-value-came-from">Where a Value Came From</h3>
+<p>The dot to the right of each field shows where its value came from:</p>
+<ul>
+<li><strong>no dot</strong> — the value from the satellite database, unchanged;</li>
+<li><strong>orange</strong> — a value you edited that has not yet produced a frame;</li>
+<li><strong>green</strong> — an override that has produced a valid frame, or a value the decoder itself discovered
+at run time (it locks the baud rate, deviation, and precoding as it decodes).</li>
+</ul>
+<p>An orange dot that turns green is the confirmation that your override was right. One that stays orange
+means no frame has decoded with it yet.</p>
+<p>The gear button's own color mirrors the dots, so you can see the state of the overrides without
+opening the dialog: gray when there is nothing to show, orange while an override is waiting for a
+confirming frame, and green once every override has produced one.</p>
 <h2 id="passes-and-frames">Passes and Frames</h2>
 <p>The frames are grouped by pass. Each top-level node in the tree is one pass of one transmitter,
 labeled with the start time, satellite name, and transmitter description. A pass node is created as
@@ -166,7 +208,7 @@ soon as the first burst is detected and stays grayed out until the first valid f
 bytes, and, for AX.25 frames, the source and destination addresses. The newest pass is expanded
 automatically, and the view scrolls to follow new frames as long as the latest frame is selected.</p>
 <p>Select a <strong>pass</strong> node to see a summary in the detail pane: the start time, satellite, transmitter,
-orbit number, the number of bursts and frames decoded, and the signal parameters.</p>
+orbit number, the number of bursts, frames, and images decoded, and the signal parameters.</p>
 <p>Select a <strong>frame</strong> node to see its full contents:</p>
 <ul>
 <li><strong>TELEMETRY</strong> — the named telemetry values decoded from the frame (battery voltage, temperatures,
