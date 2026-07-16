@@ -56,20 +56,70 @@ supported transmitter is selected, frames are decoded automatically and appear i
 ## Layout
 
 - The **header** at the top shows the selected satellite and transmitter. Hover over it to see the
-  resolved signal parameters (modulation, baud rate, framing).
+  resolved signal parameters (modulation, baud rate, framing). The **gear button** to its right opens
+  the [Signal Details](#signal-details) dialog.
 
-- The **status line** below the header shows the current state of the decoder:
+- The **status line** below the header shows the current state of the decoder, in color:
 
   - **satellite below horizon** — the format is supported and the decoder is waiting for AOS;
     decoding starts when the satellite rises above the horizon;
   - **ready to decode** — the satellite is up and the decoder is listening;
-  - **decoding...** — a burst is being processed;
-  - **format not supported** — the transmitter's modulation or framing is not supported;
-  - **not decoded** — a terrestrial link is selected, which the decoder does not handle.
+  - **DECODING...** in green — a burst is being processed;
+  - **format not supported** in red — the transmitter's modulation or framing is not supported;
+  - **terrestrial, not decoded** in red — a terrestrial link is selected, which the decoder does not
+    handle.
 
 - The **tree** on the left lists the decoded passes and frames.
 
 - The **detail pane** on the right shows the contents of the pass or frame selected in the tree.
+
+## Signal Details
+
+For most satellites the signal parameters resolved from the database are correct and there is nothing
+to do here. Occasionally a transmitter is described incorrectly in the database, or its description is
+incomplete, and the decoder needs a hand. The **gear button** in the header opens the **Signal Details**
+dialog, which shows the parameters actually in use for the selected transmitter and lets you override
+any of them:
+
+![Signal Details dialog](../images/signal_details.png)
+
+- **Modulation** and **Framing** — the modulation and framing format of the signal;
+- **Baud rate** — the symbol rate;
+- **Deviation, Hz** — the FSK deviation;
+- **AF carrier, Hz** — the audio carrier frequency for AFSK downlinks;
+- **Manchester** and **Precoding (diff.)** — the line coding and the differential precoding. These are
+  tri-state: **Auto** leaves the decision to the decoder, **On** and **Off** force it;
+- **Telemetry format** — the definition used to parse the decoded frames into named telemetry values.
+  It is normally chosen from the satellite's NORAD number; select a different one here when the
+  frames decode but their values do not. The field is empty, as in the picture above, when SkyRoof has
+  no telemetry definition for the satellite — its frames are then shown without a PAYLOAD section.
+
+To undo a single override, right-click the field and choose **Reset to database value** — the field
+goes back to the value the database gave it, leaving your other overrides in place. **Cancel** discards
+every edit you made since opening the dialog.
+
+Click **OK** to apply your changes. A change to any of the demodulator fields rebuilds the decoder
+immediately, so it takes effect on the next burst. A change to the telemetry format applies to frames
+decoded from that point on and does not re-parse the frames already in the tree.
+
+Overrides are remembered per transmitter for the current session only. They are discarded when you
+select a different transmitter, and they are not saved between runs.
+
+### Where a Value Came From
+
+The dot to the right of each field shows where its value came from:
+
+- **no dot** — the value from the satellite database, unchanged;
+- **orange** — a value you edited that has not yet produced a frame;
+- **green** — an override that has produced a valid frame, or a value the decoder itself discovered
+  at run time (it locks the baud rate, deviation, and precoding as it decodes).
+
+An orange dot that turns green is the confirmation that your override was right. One that stays orange
+means no frame has decoded with it yet.
+
+The gear button's own color mirrors the dots, so you can see the state of the overrides without
+opening the dialog: gray when there is nothing to show, orange while an override is waiting for a
+confirming frame, and green once every override has produced one.
 
 ## Passes and Frames
 
@@ -82,7 +132,7 @@ bytes, and, for AX.25 frames, the source and destination addresses. The newest p
 automatically, and the view scrolls to follow new frames as long as the latest frame is selected.
 
 Select a **pass** node to see a summary in the detail pane: the start time, satellite, transmitter,
-orbit number, the number of bursts and frames decoded, and the signal parameters.
+orbit number, the number of bursts, frames, and images decoded, and the signal parameters.
 
 Select a **frame** node to see its full contents:
 

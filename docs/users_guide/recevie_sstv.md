@@ -51,5 +51,10 @@ images both appear in the same panel.
 
 Each finalized image is saved automatically as a PNG file, with a JSON sidecar holding its metadata,
 in the **SstvImages** subfolder of the [data folder](data_folder.md). You can also right-click an
-image in the detail pane and choose **Save As...** to save it to a location of your choice, or
-**Copy** to copy it to the clipboard.
+image in the detail pane and choose:
+
+- **Save As...** — save the image to a location of your choice;
+- **Copy** — copy the image to the clipboard;
+- **Open in Viewer** — open the automatically saved PNG file in the program that Windows associates
+  with PNG images, where you can see it at full size. This command is available only after the image
+  has been finalized and saved, so it stays grayed out while an image is still being received.
