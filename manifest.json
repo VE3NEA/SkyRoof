@@ -102,6 +102,26 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/auto_selection_config.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/auto_selection_config.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/auto_selection_panel.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/auto_selection_panel.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/callsign_status.png",
       "output": {
         "resource": {
@@ -1249,6 +1269,16 @@
         },
         ".json": {
           "relative_path": "toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/auto_selection_panel.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/auto_selection_panel.html"
         }
       },
       "version": ""

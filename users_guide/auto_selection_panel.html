@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Auto Selection Panel | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Auto Selection Panel | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/auto_selection_panel.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MMW827H44"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-1MMW827H44');
+      </script>
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="auto-selection-panel">Auto Selection Panel</h1>
+
+<p>The Auto Selection panel lets SkyRoof automatically tune to each satellite in a schedule at the start of
+its pass (AOS) and hold it until the pass ends (LOS), cycling through a set of passes you choose. Each pass
+can optionally be recorded to its own file, and satellites can also take part without recording so their
+live telemetry is decoded as they pass over.</p>
+<p>Auto selection works on the <strong>current satellite group</strong>. Each group keeps its own schedule, so switching
+groups switches schedules.</p>
+<h2 id="status-panel">Status Panel</h2>
+<p><img src="../images/auto_selection_panel.png" alt="Auto Selection panel"></p>
+<p>The panel shows the live status of auto-selection for the current group:</p>
+<ul>
+<li><strong>Edit</strong> — opens the <a href="#the-schedule-dialog">schedule dialog</a> for the current group.</li>
+<li><strong>Auto Selection: ON / OFF</strong> — the master toggle. It is disabled until the current group has a
+schedule, and lights up in green while auto selection is running. Auto selection always starts <strong>OFF</strong>
+when the program launches; you turn it on deliberately each session.</li>
+<li><strong>Active</strong> — the pass currently tuned, with the time remaining until its LOS, or <strong>none</strong> when no pass
+is active.</li>
+<li><strong>Next</strong> — the next scheduled pass and the time until its AOS, or <strong>none</strong> when nothing is coming up.</li>
+<li><strong>Recording</strong> — the recording type and elapsed time while a pass is being recorded, or <strong>Off</strong> when
+nothing is being recorded.</li>
+</ul>
+<p>While auto selection is on, changing the satellite, transmitter, or group <strong>by hand</strong> stops auto selection
+and shows a message. Your manual change is applied normally; re-enable auto selection when you are ready.</p>
+<p>Closing the Auto Selection panel also stops auto selection, since there is no longer anywhere to monitor
+or control it.</p>
+<h2 id="the-schedule-dialog">The Schedule Dialog</h2>
+<p>Click <strong>Edit</strong> to open the schedule dialog for the current group.</p>
+<p><img src="../images/auto_selection_config.png" alt="Auto Selection schedule dialog"></p>
+<h3 id="rotation-tree">Rotation Tree</h3>
+<p>The tree lists every satellite in the group (except geostationary satellites, which have no passes) as a
+parent node, with its upcoming passes over the next 48 hours as child nodes. Each pass leaf shows its AOS
+local time, duration, and maximum elevation.</p>
+<p>Use the checkboxes to choose which passes take part in the rotation:</p>
+<ul>
+<li>clicking a <strong>satellite</strong> checkbox selects or clears all of its passes;</li>
+<li>clicking a <strong>pass</strong> checkbox selects that single pass;</li>
+<li>a satellite checkbox is shown in an <strong>indeterminate</strong> state when only some of its passes are selected.</li>
+</ul>
+<p>The order of the satellite nodes is the <strong>priority</strong> order (top = highest). Select a satellite and use
+<strong>Move Up</strong> / <strong>Move Down</strong> to change its priority.</p>
+<p>Use <strong>Select All</strong> to check every pass of the group at once, or <strong>Clear</strong> to uncheck them all. Clicking
+<strong>OK</strong> with no passes checked removes the current group's schedule.</p>
+<h3 id="satellite-settings">Satellite Settings</h3>
+<p>Select a satellite node to edit its settings:</p>
+<ul>
+<li><strong>Transmitter</strong> — the transmitter to tune when a pass of this satellite is selected.</li>
+<li><strong>Record</strong> — how to record each pass of this satellite:
+<ul>
+<li><strong>Off</strong> — do not record. The satellite is still tuned, so live telemetry is decoded during the pass.</li>
+<li><strong>Audio</strong> — record the demodulated audio as an <code>.mp3</code> file.</li>
+<li><strong>I/Q</strong> — record the complex baseband signal as an <code>.iq.wav</code> file.</li>
+</ul>
+</li>
+</ul>
+<h3 id="overlap-mode">Overlap Mode</h3>
+<p>When two selected passes are up at the same time, the <strong>overlap mode</strong> decides which one is tuned:</p>
+<ul>
+<li><strong>Finish current</strong> — once a pass is entered at its AOS, it is held until its LOS, then the next selected
+pass that is still up is entered.</li>
+<li><strong>Highest elevation</strong> — the currently-up selected pass with the greatest elevation is tuned, switching
+only when another pass is clearly higher (to avoid rapid switching back and forth).</li>
+<li><strong>Priority</strong> — the currently-up selected pass whose satellite has the highest priority is tuned; a
+higher-priority pass rising over the horizon takes over, and when it sets the next-highest still-up pass
+is entered.</li>
+</ul>
+<p>Click <strong>OK</strong> to save the schedule, or <strong>Cancel</strong> to discard your changes. Reopening the dialog extends the
+list to the next 48 hours and keeps your previously selected passes.</p>
+<h2 id="recordings">Recordings</h2>
+<p>Auto-selection recordings are saved into the <strong>Auto</strong> subfolder of the <strong>Recordings</strong> folder inside the
+<a href="data_folder.html">data folder</a>. Each contiguous segment becomes one file, named with its start time and the
+satellite name. Audio is saved as <code>.mp3</code> and I/Q as <code>.iq.wav</code>, the same formats as the
+<a href="recorder_panel.html">Recorder panel</a>.</p>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
