@@ -1,3 +1,4 @@
+using FontAwesome;
 using MathNet.Numerics;
 using Newtonsoft.Json;
 using Serilog;
@@ -101,6 +102,7 @@ namespace SkyRoof
       internal int BurstCount = 0;
       internal int FrameCount = 0;
       internal int ImageCount = 0;
+      internal double MaxSnrDb = double.NaN;
       internal bool HasValidFrame = false;
 
       internal TxPassInfo(SatnogsDbTransmitter transmitter, int orbit)
@@ -120,10 +122,14 @@ namespace SkyRoof
           $"Start: {StartTime:yyyy-MM-dd HH:mm:ss}\n" +
           $"Sat: {Transmitter?.Satellite?.name ?? "Unknown"}\n" +
           $"Tx: {Transmitter.description}\n" +
+          $"Norad: {Transmitter?.Satellite?.norad_cat_id}\n" +
+          $"Uuid: {Transmitter.uuid}\n" +
           $"Orbit: {Orbit}\n\n" +
           $"Bursts: {BurstCount}\n" +
           $"Frames: {FrameCount}\n" +
-          $"Images: {ImageCount}\n\n" +
+          $"Images: {ImageCount}\n" +
+          (double.IsNaN(MaxSnrDb) ? "" : $"Max. SNR: {MaxSnrDb:F1} dB\n") +
+          "\n" +
           $"{paramsText}";
       }
     }
@@ -144,7 +150,12 @@ namespace SkyRoof
       this.ctx = ctx;
 
       InitializeComponent();
-      
+
+      // gear button: draw the icon as an Awesome-font glyph so its state is shown via the foreground color
+      SettingsButton.Image = null;
+      SettingsButton.Font = ctx.AwesomeFont14;
+      SettingsButton.Text = FontAwesomeIcons.Gear;
+
       string path = Path.Combine(Utils.GetUserDataFolder(), "TelemetryRegistry");
       TelemetryRegistry = new TelemetryRegistry(path);
 
@@ -190,9 +201,27 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     internal void SetTransmitter()
     {
-      Satellite = ctx.SatelliteSelector.SelectedSatellite;
-      Transmitter = ctx.SatelliteSelector.SelectedTransmitter;
-      Terrestrial = ctx.FrequencyControl.RadioLink.IsTerrestrial;
+      var newSatellite = ctx.SatelliteSelector.SelectedSatellite;
+      var newTransmitter = ctx.SatelliteSelector.SelectedTransmitter;
+      bool newTerrestrial = ctx.FrequencyControl.RadioLink.IsTerrestrial;
+
+      // a redundant re-selection of the same transmitter (e.g. a band switch that re-raises the event) must keep
+      // the resolved params, the manual-override state and the pipeline's run-time findings intact. Otherwise the
+      // panel's SignalParams is replaced by a fresh copy while the still-running decoder keeps writing findings
+      // (locked baud/deviation) into the old object, so the tooltip / dialog dots / gear stop reflecting them.
+      bool sameTransmitter = !newTerrestrial && !Terrestrial && Transmitter != null
+        && Transmitter.uuid == newTransmitter.uuid && SignalParams != null;
+      if (sameTransmitter)
+      {
+        Satellite = newSatellite;
+        Transmitter = newTransmitter;
+        UpdateTxStatus();
+        return;
+      }
+
+      Satellite = newSatellite;
+      Transmitter = newTransmitter;
+      Terrestrial = newTerrestrial;
 
       // a new transmitter discards any manual override / provenance state and resets the gear button color
       UserChangedFields.Clear();
@@ -200,7 +229,7 @@ namespace SkyRoof
       FormatOverride = null;
       FormatOverrideId = null;
       FormatValidated = false;
-      SettingsButton.BackColor = SystemColors.ButtonFace;
+      SettingsButton.ForeColor = Color.Gray;
 
       if (Terrestrial) SatNameLabel.Text = "Terrestrial";
       else SatNameLabel.Text = $"{Satellite.name}  {Transmitter.description}";
@@ -241,18 +270,63 @@ namespace SkyRoof
 
     // the dialog's fields as "name: value" lines. Baud/Deviation show the pipeline finding when present, else the
     // curated value; the telemetry format is the manual override when set, else the NORAD-resolved definition.
+    // Fields without a value (unknown enums, null numerics, tri-states left on Auto, an unresolved format) are omitted.
     private string DescribeSignalParams(SignalParams p)
     {
-      string format = FormatOverrideId ?? ResolveFormat(Satellite?.norad_cat_id, p.Framing)?.Id ?? "none";
-      return
-        $"Modulation: {p.Modulation}\n" +
-        $"Framing: {p.Framing}\n" +
-        $"Baud rate: {FormatTlmNumber(p.ResolvedBaud ?? p.Baud)}\n" +
-        $"Deviation, Hz: {FormatTlmNullable(p.ResolvedDeviation ?? p.Deviation)}\n" +
-        $"AF carrier, Hz: {FormatTlmNullable(p.AfCarrier)}\n" +
-        $"Manchester: {FormatTriState(p.Manchester)}\n" +
-        $"Precoding (diff.): {FormatTriState(p.Differential)}\n" +
-        $"Telemetry format: {format}";
+      // baud/deviation carry their own run-time-vs-curated flag (self-contained), so a locked value shows with an
+      // asterisk here the same way the META block marks it
+      var lines = EnumSignalParamFields(p, null).Select(f => $"{f.Name}: {f.Value}{(f.Changed ? " *" : "")}").ToList();
+      string? format = FormatOverrideId ?? ResolveFormat(Satellite?.norad_cat_id, p.Framing)?.Id;
+      if (!string.IsNullOrEmpty(format)) lines.Add($"Telemetry format: {format}");
+      return string.Join("\n", lines);
+    }
+
+    // the "  name: value" signal-param lines for the META block: same fields, indented, and any value the
+    // pipeline resolved at run time to something other than the DB-resolved value flagged with a trailing '*'.
+    private string DescribeSignalParamsMeta(DecodeSnapshot snapshot)
+    {
+      var p = snapshot.SignalParams;
+      // the pristine DB snapshot is only known for the currently selected transmitter's decoder
+      var db = ReferenceEquals(snapshot, CurrentDecode) ? ResolvedSnapshot : null;
+
+      var lines = EnumSignalParamFields(p, db)
+        .Select(f => $"  {f.Name}: {f.Value}{(f.Changed ? " *" : "")}").ToList();
+
+      string? usedFormat = FormatFor(snapshot)?.Id;
+      if (!string.IsNullOrEmpty(usedFormat))
+      {
+        string? dbFormat = ResolveFormat(snapshot.Satellite?.norad_cat_id, p.Framing)?.Id;
+        lines.Add($"  Telemetry format: {usedFormat}{(usedFormat != dbFormat ? " *" : "")}");
+      }
+      return lines.Count == 0 ? "" : string.Join("\n", lines) + "\n";
+    }
+
+    // the valued signal-param fields as (name, value, changed) tuples, skipping any field without a value. When
+    // a DB-resolved snapshot is supplied, Changed marks a value the pipeline discovered at run time that differs
+    // from the curated one (a run-time baud/deviation lock, or a discovered precoding mode).
+    private IEnumerable<(string Name, string Value, bool Changed)> EnumSignalParamFields(SignalParams p, SignalParams? db)
+    {
+      if (p.Modulation != Modulation.Unknown)
+        yield return ("Modulation", p.Modulation.ToString(), false);
+      if (p.Framing != Framing.Unknown)
+        yield return ("Framing", p.Framing.ToString(), false);
+
+      double baud = p.ResolvedBaud ?? p.Baud;
+      if (baud != 0)
+        yield return ("Baud rate", FormatTlmNumber(baud), p.ResolvedBaud != null && p.ResolvedBaud != p.Baud);
+
+      double? deviation = p.ResolvedDeviation ?? p.Deviation;
+      if (deviation is double dev)
+        yield return ("Deviation, Hz", FormatTlmNumber(dev), p.ResolvedDeviation != null && p.ResolvedDeviation != p.Deviation);
+
+      if (p.AfCarrier is double afCarrier)
+        yield return ("AF carrier, Hz", FormatTlmNumber(afCarrier), false);
+
+      if (p.Manchester is bool manchester)
+        yield return ("Manchester", manchester ? "On" : "Off", false);
+
+      if (p.Differential is bool differential)
+        yield return ("Precoding (diff.)", differential ? "On" : "Off", db != null && differential != db.Differential);
     }
 
     private static string FormatTlmNumber(double value) =>
@@ -345,6 +419,8 @@ namespace SkyRoof
           // create the pass entry on the first burst (grayed until a valid frame arrives), not on the first frame
           var txPassInfo = EnsureCurrentPassNode(snapshot);
           txPassInfo.BurstCount++;
+          if (double.IsNaN(txPassInfo.MaxSnrDb) || report.Burst.SnrDb > txPassInfo.MaxSnrDb)
+            txPassInfo.MaxSnrDb = report.Burst.SnrDb;
           // refresh the right panel if this pass entry is the one currently selected
           if (treeView1.SelectedNode == CurrentPassNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
         }
@@ -475,16 +551,18 @@ namespace SkyRoof
       CreatDestroyPipeline();
     }
 
-    // gear button color mirrors the dots: neutral with no override, yellow while any override is pending a
-    // confirming frame, green once every pending override has produced one.
+    // gear glyph color mirrors the dots: neutral with nothing to show, orange while a user override is pending a
+    // confirming frame, green once every pending override has produced one, or when the pipeline discovered a value
+    // at run time (a locked baud/deviation, a resolved precoding) — which is itself a confirmed finding.
     private void UpdateGearButton()
     {
-      bool anyChange = UserChangedFields.Count > 0 || FormatOverrideId != null;
-      if (!anyChange) { SettingsButton.BackColor = SystemColors.ButtonFace; return; }
+      bool userChange = UserChangedFields.Count > 0 || FormatOverrideId != null;
+      bool pipelineFound = PipelineFound("Baud") || PipelineFound("Deviation") || PipelineFound("Differential");
+      if (!userChange && !pipelineFound) { SettingsButton.ForeColor = Color.Gray; return; }
 
       bool demodOk = UserChangedFields.Count == 0 || DemodValidated;
       bool formatOk = FormatOverrideId == null || FormatValidated;
-      SettingsButton.BackColor = demodOk && formatOk
+      SettingsButton.ForeColor = demodOk && formatOk
         ? SignalParamsDialog.ConfirmedColor : SignalParamsDialog.EditedColor;
     }
 
@@ -514,19 +592,23 @@ namespace SkyRoof
         UpdateGearButton();
       }
 
-      string addr = (snapshot.SignalParams.Framing == Framing.AX25G3RUH ? Ax25Address.Describe(frame.Bytes) : "") ?? "";
+      var (addr, addrLen) = ExtractAddress(frame, snapshot);
       string nodeText = $"{DateTime.Now:HH:mm:ss}  {frame.Length} bytes  {addr}";
       var frameNode = new TreeNode(nodeText);
-      string frameText = BuildFrameText(frame, snapshot);
+      string frameText = BuildFrameText(frame, snapshot, addr, addrLen);
       frameNode.Tag = frameText;
       txPassInfo.FrameCount++;
 
       SaveFrameToFile(frame, addr, frameText, snapshot);
 
-      // the pipeline may have locked a blind FSK burst's actual deviation while decoding this frame — refresh the
-      // tooltip so it shows the deviation actually used instead of the initial (unknown) one. only do this for the
-      // currently selected transmitter's decoder, so a late frame from a previous transmitter can't overwrite it.
-      if (ReferenceEquals(snapshot, CurrentDecode)) UpdateParamsTooltip();
+      // the pipeline may have locked a blind FSK burst's actual deviation/baud while decoding this frame — refresh
+      // the tooltip (so it shows the values actually used) and the gear (which turns green on such a finding). only
+      // for the currently selected transmitter's decoder, so a late frame from a previous transmitter can't overwrite it.
+      if (ReferenceEquals(snapshot, CurrentDecode))
+      {
+        UpdateParamsTooltip();
+        UpdateGearButton();
+      }
 
       AddLeaf(CurrentPassNode!, frameNode);
       if (treeView1.SelectedNode == CurrentPassNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
@@ -575,18 +657,35 @@ namespace SkyRoof
       TrackNewNode(leaf);
     }
 
-    private string BuildFrameText(Frame frame, DecodeSnapshot snapshot)
+    // the header source/destination address and the byte length of the address field, so the caller can label the
+    // frame and drop those bytes from the ASCII/HEX payload views. AX.25 G3RUH frames, and USP frames (which
+    // encapsulate an AX.25 UI frame), both begin with an AX.25 callsign address field. ("", 0) when none parses.
+    private static (string Addr, int AddrLen) ExtractAddress(Frame frame, DecodeSnapshot snapshot)
     {
-      string tlm = "";
+      switch (snapshot.SignalParams.Framing)
+      {
+        case Framing.AX25G3RUH:
+        case Framing.USP:
+          string? addr = Ax25Address.Describe(frame.Bytes);
+          return string.IsNullOrEmpty(addr) ? ("", 0) : (addr, Ax25Address.AddressFieldLength(frame.Bytes));
+
+        default:
+          return ("", 0);
+      }
+    }
+
+    private string BuildFrameText(Frame frame, DecodeSnapshot snapshot, string addr, int addrLen)
+    {
+      // telemetry section: the extracted address (when any) followed by the parsed telemetry fields (when a
+      // format matches). Only emitted when there is something to show.
+      string fields = "";
       var def = FormatFor(snapshot);
       if (def != null)
       {
         var record = TelemetryParser.Parse(def, frame.Bytes);
         if (record != null)
         {
-          tlm = "TELEMETRY:\n" +
-            string.Join("", record.Fields.Select(f => $"  {f.Name}: {f.Value}{(f.Units.Length > 0 ? " " + f.Units : "")}\n")) +
-            "\n";
+          fields = string.Join("", record.Fields.Select(f => $"  {f.Name}: {f.Value}{(f.Units.Length > 0 ? " " + f.Units : "")}\n"));
           // a frame parsing into fields with the manual format override confirms it — turn its dot/gear green
           if (ReferenceEquals(def, FormatOverride) && record.Fields.Count > 0 && !FormatValidated)
           {
@@ -596,24 +695,37 @@ namespace SkyRoof
         }
       }
 
-      var chars = frame.Ascii;
+      string tlm = "";
+      if (addr.Length > 0 || fields.Length > 0)
+      {
+        tlm = "PAYLOAD:\n";
+        if (addr.Length > 0) tlm += $"  Address: {addr}\n";
+        tlm += fields + "\n";
+      }
+
+      // ASCII and HEX are shown over the payload only — any header address bytes are removed and the HEX
+      // offsets renumbered from 0
+      var payload = addrLen > 0 ? frame.Bytes.Skip(addrLen).ToArray() : frame.Bytes;
+
+      string chars = new string(payload.Select(b => b >= 0x20 && b < 0x7f ? (char)b : '.').ToArray());
       string asc = "";
       for (int i = 0; i < chars.Length; i += 28)
         asc += "  " + chars.Substring(i, Math.Min(28, chars.Length - i)) + "\n";
       asc = "ASCII:\n" + asc + "\n";
 
-      var bytes = frame.Bytes;
       string hex = "";
-      for (int i = 0; i < bytes.Length; i += 8)
-        hex += $"  {i:X3}  " + string.Join(" ", bytes.Skip(i).Take(8).Select(b => b.ToString("X2"))) + "\n";
+      for (int i = 0; i < payload.Length; i += 8)
+        hex += $"  {i:X3}  " + string.Join(" ", payload.Skip(i).Take(8).Select(b => b.ToString("X2"))) + "\n";
       hex = "HEX:\n" + hex + "\n";
 
       string meta = "META:\n" +
+        $"  Bytes: {frame.Length}\n" +
         $"  CFO: {frame.CfoHz:F1} Hz\n" +
         $"  SNR: {frame.SnrDb:F1} dB\n" +
         $"  CRC: {frame.CrcValid switch { true => "OK", false => "FAIL", null => "n/a" }}\n" +
         $"  Corrections: {frame.CorrectedBits}\n" +
-        $"  Erasures: {frame.ErasedBytes}\n";
+        $"  Erasures: {frame.ErasedBytes}\n\n" +
+        DescribeSignalParamsMeta(snapshot);
 
       return tlm + asc + hex + meta;
     }

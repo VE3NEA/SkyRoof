@@ -57,5 +57,35 @@
     "satellite": "SNIPE B",
     "norad": 56745,
     "deviation": 2400
+  },
+  "ELmEGxaU8aiLrDps6gouPE": {
+    "satellite": "GALAPAGOS-UTE-SWSU",
+    "norad": 67279,
+    "modulation": "FSK",
+    "baudrate": 2400,
+    "deviation": 1200,
+    "framing": "USP",
+    "note": "not confirmed, might be wrong"
+  },
+  "4Qhn53gBfoXBKDanf6SYmG": {
+    "satellite": "GALAPAGOS-UTE-SWSU",
+    "norad": 67279,
+    "modulation": "FSK",
+    "baudrate": 1143,
+    "deviation": 3500,
+    "framing": "USP",
+    "note": "not confirmed, might be wrong"
+  },
+  "GRSo2nKULWLUFTWm8mV7ym": {
+    "satellite": "RS-66S (HyperView-1G)",
+    "norad": 61772,
+    "baudrate": 2400,
+    "note": "GMSK USP on 436.600; ~2400 Hz BW -> 2400 Bd"
+  },
+  "hFHR6LwsyKmzG7nPdKMMny": {
+    "satellite": "RS-66S (HyperView-1G)",
+    "norad": 61772,
+    "baudrate": 4800,
+    "note": "GMSK USP on 436.540; ~4800 Hz BW -> 4800 Bd (SatNOGS baud 2400 is wrong)"
   }
 }

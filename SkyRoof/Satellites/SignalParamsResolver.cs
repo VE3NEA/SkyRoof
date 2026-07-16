@@ -16,7 +16,9 @@ namespace SkyRoof.Satellites
       // satyaml layer; satnogs is the base DB. The value fields below take the first layer that supplies a
       // non-null value (Field); modulation and framing instead give manual priority and then classify the
       // remaining sources as a single string (see ResolveModulation/ResolveFraming).
-      var je9pel = Je9pelParser.BuildJe9pelLayer(tx);
+      // the JE9PEL Mode text is per-satellite, not per-transmitter, so it is ambiguous once a satellite
+      // carries more than one transmitter — skip that layer entirely in the multi-transmitter case
+      var je9pel = tx.Satellite?.Transmitters.Count > 1 ? null : Je9pelParser.BuildJe9pelLayer(tx);
       var layers = new List<GrSatsInfo?> { tx.manual, tx.gr_sats, je9pel, BuildSatnogsLayer(tx) };
 
       // Baud: prefer the curated satyaml baudrate, then the SatNOGS DB field,
@@ -231,6 +233,8 @@ namespace SkyRoof.Satellites
 
       if (s.Contains("SSTV")) return Modulation.SSTV;
       if (s.Contains("CW")) return Modulation.CW;
+      // analog FM last: "FM"/"FMN" are the only mode tokens containing "FM" (OFDM/MFSK/FFSK do not)
+      if (s.Contains("FM")) return Modulation.FM;
       return Modulation.Unknown;
     }
 
