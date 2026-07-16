@@ -259,23 +259,26 @@ namespace SkyRoof
     /// when a frame arrives so the actual values replace the initial ones once the pipeline locks them.</summary>
     private void UpdateParamsTooltip()
     {
-      string tooltip = DescribeSignalParamsOrUnknown(SignalParams);
+      // pass the pristine DB snapshot so a pipeline-discovered precoding (Differential, overwritten in place with
+      // no self-contained flag) is asterisked here too, the same way baud/deviation are
+      string tooltip = DescribeSignalParamsOrUnknown(SignalParams, ResolvedSnapshot);
       toolTip1.SetToolTip(SatNameLabel, tooltip);
       toolTip1.SetToolTip(StatusLabel, tooltip);
     }
 
-    // the tooltip-style params text, or "Parameters unknown" when there are none
-    private string DescribeSignalParamsOrUnknown(SignalParams? p) =>
-      p == null ? "Parameters unknown" : DescribeSignalParams(p);
+    // the tooltip-style params text, or "Parameters unknown" when there are none. db is the pristine DB-resolved
+    // baseline used to flag a pipeline-discovered precoding; null (the pass-summary callers) leaves it unflagged.
+    private string DescribeSignalParamsOrUnknown(SignalParams? p, SignalParams? db = null) =>
+      p == null ? "Parameters unknown" : DescribeSignalParams(p, db);
 
     // the dialog's fields as "name: value" lines. Baud/Deviation show the pipeline finding when present, else the
     // curated value; the telemetry format is the manual override when set, else the NORAD-resolved definition.
     // Fields without a value (unknown enums, null numerics, tri-states left on Auto, an unresolved format) are omitted.
-    private string DescribeSignalParams(SignalParams p)
+    private string DescribeSignalParams(SignalParams p, SignalParams? db = null)
     {
-      // baud/deviation carry their own run-time-vs-curated flag (self-contained), so a locked value shows with an
-      // asterisk here the same way the META block marks it
-      var lines = EnumSignalParamFields(p, null).Select(f => $"{f.Name}: {f.Value}{(f.Changed ? " *" : "")}").ToList();
+      // baud/deviation carry their own run-time-vs-curated flag (self-contained); precoding needs the db baseline
+      // to detect a run-time change. A changed value shows with an asterisk the same way the META block marks it.
+      var lines = EnumSignalParamFields(p, db).Select(f => $"{f.Name}: {f.Value}{(f.Changed ? " *" : "")}").ToList();
       string? format = FormatOverrideId ?? ResolveFormat(Satellite?.norad_cat_id, p.Framing)?.Id;
       if (!string.IsNullOrEmpty(format)) lines.Add($"Telemetry format: {format}");
       return string.Join("\n", lines);
