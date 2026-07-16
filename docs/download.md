@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.39](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.39/SkyRoofSetup-v.1.39.zip)
+[SkyRoof v.1.40](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.40/SkyRoofSetup-v.1.40.zip)
 
 <br>
 
@@ -15,6 +15,12 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.40
+
+- added auto selection of satellites by schedule
+- CAT band switching streamlined - contributed by [cozmogeek](https://github.com/cozmogeek)
+- improved telemetry decoding
 
 #### v.1.39
 
