@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
 using VE3NEA;
 
 namespace SkyRoof
@@ -130,22 +129,21 @@ namespace SkyRoof
       return $"{pass.StartTime.ToLocalTime():MM-dd HH:mm}   ·   {Utils.TimespanToString(pass.EndTime - pass.StartTime, false)}   ·   {pass.MaxElevation:F0}°";
     }
 
-    // three checkbox glyphs (unchecked / checked / indeterminate) for the tree's StateImageList
+    // three checkbox glyphs (unchecked / checked / indeterminate) for the tree's StateImageList,
+    // sliced from the 48x16 checkbox-3state strip (three 16x16 cells over a purple color key)
     private ImageList BuildStateImages()
     {
       var list = new ImageList { ImageSize = new Size(16, 16), ColorDepth = ColorDepth.Depth32Bit };
-      list.Images.Add(DrawCheckBox(CheckBoxState.UncheckedNormal));
-      list.Images.Add(DrawCheckBox(CheckBoxState.CheckedNormal));
-      list.Images.Add(DrawCheckBox(CheckBoxState.MixedNormal));
+      var strip = Properties.Resources.checkbox_3state;
+      for (int i = 0; i < 3; i++)
+      {
+        var glyph = new Bitmap(16, 16);
+        using (var g = Graphics.FromImage(glyph))
+          g.DrawImage(strip, new Rectangle(0, 0, 16, 16), new Rectangle(i * 16, 0, 16, 16), GraphicsUnit.Pixel);
+        glyph.MakeTransparent(Color.FromArgb(128, 0, 128));    // purple background -> transparent
+        list.Images.Add(glyph);
+      }
       return list;
-    }
-
-    private static Bitmap DrawCheckBox(CheckBoxState state)
-    {
-      var bmp = new Bitmap(16, 16);
-      using var g = Graphics.FromImage(bmp);
-      CheckBoxRenderer.DrawCheckBox(g, new Point(0, 1), state);
-      return bmp;
     }
 
 
@@ -161,6 +159,10 @@ namespace SkyRoof
 
       if (e.Node.Level == 0) ToggleParent(e.Node);
       else ToggleLeaf(e.Node);
+
+      // clicking the state-image region does not select the node, so the native TreeView never
+      // repaints it after a checkbox toggle; force the change to show (batch buttons redraw via EndUpdate)
+      RotationTree.Invalidate();
     }
 
     // a parent toggles all its leaves: checked/indeterminate -> clear all, unchecked -> check all
