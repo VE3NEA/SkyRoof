@@ -1144,8 +1144,21 @@ namespace SkyRoof
     {
       if (CurrentFmTranscript == null) return null;
       int i = richTextBox1.GetCharIndexFromPosition(location);
+
+      // GetCharIndexFromPosition snaps a click in the empty area below the transcript to the last
+      // character; ignore those so only clicks on an actual line row play
+      int last = richTextBox1.TextLength - 1;
+      if (last >= 0)
+      {
+        Point lastTop = richTextBox1.GetPositionFromCharIndex(last);
+        if (location.Y >= lastTop.Y + richTextBox1.Font.Height) return null;
+      }
+
+      // end is the index of the line's trailing newline; include it (i <= end) so a click low on or to the
+      // right of a line — which snaps to that newline — still hits the line. this is what made the last
+      // line, with nothing below to catch the snap, read as un-clickable
       foreach (var (start, end, line) in CurrentFmTranscript.Spans)
-        if (i >= start && i < end) return line;
+        if (i >= start && i <= end) return line;
       return null;
     }
 
