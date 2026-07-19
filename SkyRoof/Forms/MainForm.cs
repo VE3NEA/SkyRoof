@@ -749,6 +749,14 @@ namespace SkyRoof
           "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 
+    // download the FM speech-to-text model (integration plan C1). Routed through the Telemetry panel when it
+    // is open (so it refreshes and starts decoding once installed); otherwise the model just installs.
+    private void DownloadFmModelMNU_Click(object sender, EventArgs e)
+    {
+      if (ctx.TelemetryPanel != null) ctx.TelemetryPanel.DownloadFmModel();
+      else DownloadProgressForm.Install(this);
+    }
+
     private void ResetWindowLayoutMNU_Click(object sender, EventArgs e)
     {
       ctx.Settings.Ui.ResetDockingLayout(this);

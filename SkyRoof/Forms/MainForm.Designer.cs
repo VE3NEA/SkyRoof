@@ -75,6 +75,7 @@
       DownloadSatDataMNU = new ToolStripMenuItem();
       DownloadTleMNU = new ToolStripMenuItem();
       DownloadAmsatMNU = new ToolStripMenuItem();
+      DownloadFmModelMNU = new ToolStripMenuItem();
       toolStripMenuItem3 = new ToolStripSeparator();
       LoadTleMNU = new ToolStripMenuItem();
       helpToolStripMenuItem = new ToolStripMenuItem();
@@ -423,7 +424,7 @@
       // 
       // toolsToolStripMenuItem
       // 
-      toolsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { SatelliteGroupsMNU, SdrDevicesMNU, SettingsMNU, toolStripMenuItem1, DownloadSatDataMNU, DownloadTleMNU, DownloadAmsatMNU, toolStripMenuItem3, LoadTleMNU });
+      toolsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { SatelliteGroupsMNU, SdrDevicesMNU, SettingsMNU, toolStripMenuItem1, DownloadSatDataMNU, DownloadTleMNU, DownloadAmsatMNU, DownloadFmModelMNU, toolStripMenuItem3, LoadTleMNU });
       toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
       toolsToolStripMenuItem.Size = new Size(47, 20);
       toolsToolStripMenuItem.Text = "&Tools";
@@ -474,7 +475,14 @@
       DownloadAmsatMNU.Size = new Size(216, 22);
       DownloadAmsatMNU.Text = "Download &AMSAT Statuses";
       DownloadAmsatMNU.Click += DownloadAmsatMNU_Click;
-      // 
+      //
+      // DownloadFmModelMNU
+      //
+      DownloadFmModelMNU.Name = "DownloadFmModelMNU";
+      DownloadFmModelMNU.Size = new Size(216, 22);
+      DownloadFmModelMNU.Text = "Download &FM Speech Model";
+      DownloadFmModelMNU.Click += DownloadFmModelMNU_Click;
+      //
       // toolStripMenuItem3
       // 
       toolStripMenuItem3.Name = "toolStripMenuItem3";
@@ -890,6 +898,7 @@
     private ToolStripMenuItem LoadTleMNU;
     private ToolStripStatusLabel UpdateLabel;
     private ToolStripMenuItem DownloadAmsatMNU;
+    private ToolStripMenuItem DownloadFmModelMNU;
     private ToolStripSeparator toolStripMenuItem3;
     private ToolStripSeparator toolStripMenuItem4;
     private ToolStripMenuItem ResetWindowLayoutMNU;
