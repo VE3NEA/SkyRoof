@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Serilog;
 using SkyRoof.Satellites;
 using VE3NEA;
+using VE3NEA.SkyFM;
 using VE3NEA.SkySSTV;
 using VE3NEA.SkyTlm.Core;
 using VE3NEA.SkyTlm.Deframing;
@@ -45,6 +46,17 @@ namespace SkyRoof
     private TelemetryDefinition? FormatOverride;
     private string? FormatOverrideId;
     private bool FormatValidated;
+
+    // the FM speech-to-text engine (integration §10). It loads a large model (~71 MB, ~1.5 s), so a single
+    // instance is created lazily on first use and SHARED across transmitter changes rather than rebuilt with
+    // every decoder; disposed on panel close. Null until an FM transmitter is selected with the model present.
+    private SherpaOnnxEngine? FmSpeechEngine;
+    // the FM transcript currently shown in richTextBox1 (null while showing telemetry/SSTV) — routes the
+    // click-to-play mouse handling to the right content
+    private FmTranscriptInfo? CurrentFmTranscript;
+    // one-shot player for the click-to-play audio fragment (§10.4), replaced on each click
+    private NAudio.Wave.WaveOutEvent? FmClipPlayer;
+    private NAudio.Wave.RawSourceWaveStream? FmClipStream;
 
     // Identity of the transmitter a decoder was built for, captured when the pipeline is created and bound to
     // that pipeline's event handlers. Frames surface on the decode worker thread, possibly after the user has
@@ -90,6 +102,42 @@ namespace SkyRoof
           $"Rows: {Event.ValidRows} of {Event.Image.Height}\r\n" +
           $"Status: {(Event.Final ? "complete" : "receiving...")}\r\n" +
           (SavedPath != null ? $"Saved: {SavedPath}\r\n" : "");
+      }
+    }
+
+    // one FM-speech transcript, the Tag of the single "FM Speech" leaf node (§10.3): the pass's decoded
+    // lines appended in place, plus the in-progress open line. Each completed line carries the 16 kHz audio
+    // fragment that produced it (captured on the decode thread while the decoder is alive) so click-to-play
+    // works independently of the decoder's lifetime (§10.4).
+    private sealed class FmTranscriptInfo
+    {
+      internal readonly DecodeSnapshot Snapshot;
+      internal readonly int SampleRate;
+      internal TreeNode? Node;
+      internal readonly List<FmLineEntry> Lines = new();
+      internal FmTranscriptLine? Pending;
+      // char-range → audio map for the rendered richTextBox text, rebuilt on each render (completed lines only)
+      internal readonly List<(int Start, int End, FmLineEntry Line)> Spans = new();
+
+      internal FmTranscriptInfo(DecodeSnapshot snapshot, int sampleRate)
+      {
+        Snapshot = snapshot;
+        SampleRate = sampleRate;
+      }
+    }
+
+    // one completed transcript line: the display text, its time since decode start (for the MM:SS column),
+    // and the true-peak-normalized 16 kHz audio fragment that produced it
+    private sealed class FmLineEntry
+    {
+      internal readonly string Text;
+      internal readonly double StartSeconds;
+      internal readonly float[] Audio;
+      internal FmLineEntry(string text, double startSeconds, float[] audio)
+      {
+        Text = text;
+        StartSeconds = startSeconds;
+        Audio = audio;
       }
     }
 
@@ -164,6 +212,10 @@ namespace SkyRoof
 
       SatnogsUploader = new SatnogsUploader(ctx);
 
+      // FM speech transcript click-to-play (§10.4): hand cursor over a clickable line, play its audio on click
+      richTextBox1.MouseMove += richTextBox1_MouseMove;
+      richTextBox1.MouseClick += richTextBox1_MouseClick;
+
       SetTransmitter();
     }
 
@@ -185,6 +237,11 @@ namespace SkyRoof
       Decoder?.Dispose();
       Decoder = null;
       CurrentDecode = null;
+
+      // stop any click-to-play clip, then free the shared FM speech engine (the decoder above no longer uses it)
+      StopFmClip();
+      FmSpeechEngine?.Dispose();
+      FmSpeechEngine = null;
 
       SatnogsUploader?.Dispose();
       SatnogsUploader = null;
@@ -341,7 +398,13 @@ namespace SkyRoof
 
     private void CreatDestroyPipeline()
     {
-      bool needPipeline = !Terrestrial && IsDecodable() && SatAboveHorizon;
+      bool aboveAndUp = !Terrestrial && SatAboveHorizon;
+      bool telemetry = IsTelemetryDecodable();
+      bool sstv = IsSstvDecodable();
+      // the FM branch runs only with the model downloaded; the engine loads lazily here (once per session,
+      // then shared) so an FM transmitter with no model simply builds no FM branch (status reflects it)
+      var fmEngine = aboveAndUp && IsFmDecodable() ? EnsureFmEngine() : null;
+      bool needPipeline = aboveAndUp && (telemetry || sstv || fmEngine != null);
 
       // keep the existing decoder only if it was built for the currently selected transmitter. a transmitter
       // change must rebuild the pipeline: otherwise it keeps decoding with the previous transmitter's params
@@ -368,7 +431,7 @@ namespace SkyRoof
       {
         var snapshot = new DecodeSnapshot(Satellite, Transmitter, SignalParams!);
         CurrentDecode = snapshot;
-        Decoder = new(SignalParams!, IsTelemetryDecodable(), IsSstvDecodable());
+        Decoder = new(SignalParams!, telemetry, sstv, fmEngine);
         if (Decoder.Pipeline != null)
         {
           Decoder.Pipeline.FrameDecoded += frame => FrameDecodedHandler(frame, snapshot);
@@ -381,6 +444,15 @@ namespace SkyRoof
           var imageNodes = new Dictionary<int, TreeNode>();
           Decoder.Sstv.ImageUpdated += evt => SstvImageHandler(evt, snapshot, imageNodes);
           Decoder.Sstv.ImageCompleted += evt => SstvImageHandler(evt, snapshot, imageNodes);
+        }
+        if (Decoder.Fm != null)
+        {
+          // the single "FM Speech" leaf's state lives in this closure, so a disposed decoder's flush lines
+          // can never land in the next decoder's transcript node
+          var fm = Decoder.Fm;
+          var info = new FmTranscriptInfo(snapshot, fm.OutputSampleRate);
+          fm.LineCompleted += (line, index) => FmLineCompletedHandler(fm, line, info);
+          fm.LineUpdated += line => BeginInvoke(() => UpdateFmPending(line, info));
         }
       }
     }
@@ -395,7 +467,14 @@ namespace SkyRoof
 
     private bool IsDecodable()
     {
-      return IsTelemetryDecodable() || IsSstvDecodable();
+      return IsTelemetryDecodable() || IsSstvDecodable() || IsFmDecodable();
+    }
+
+    // FM voice is decodable to a speech transcript (§10) when the transmitter's mode is FM. Whether the
+    // decoder actually runs also needs the downloaded model (see FmModelPresent / EnsureFmEngine).
+    private bool IsFmDecodable()
+    {
+      return SignalParams?.Modulation == Modulation.FM;
     }
 
     private bool IsTelemetryDecodable()
@@ -903,6 +982,164 @@ namespace SkyRoof
 
 
     //----------------------------------------------------------------------------------------------
+    //                                      fm speech
+    //----------------------------------------------------------------------------------------------
+    // the downloaded sherpa model-pack folder (populated by the Download FM Speech Model menu command)
+    private static string FmModelDir => Path.Combine(Utils.GetUserDataFolder(), "SkyFmModel");
+
+    // whether the FM speech model has been downloaded (all pack files present)
+    private static bool FmModelPresent => SherpaModelPack.IsPresent(FmModelDir);
+
+    // lazily load the single shared FM speech engine (~71 MB model, ~1.5 s the first time). Null when the
+    // model is not downloaded or fails to load. Shared across transmitter changes so it loads at most once
+    // per session; disposed on panel close.
+    private SherpaOnnxEngine? EnsureFmEngine()
+    {
+      if (FmSpeechEngine != null) return FmSpeechEngine;
+      if (!FmModelPresent) return null;
+      try
+      {
+        SherpaOnnxEngine.ModelDirectory = FmModelDir;
+        FmSpeechEngine = SherpaOnnxEngine.Hotwords(int8: true, modelDir: FmModelDir);
+        Log.Information("Loaded FM speech model from {Dir}", FmModelDir);
+      }
+      catch (Exception e)
+      {
+        Log.Error(e, "Failed to load FM speech model");
+        FmSpeechEngine = null;
+      }
+      return FmSpeechEngine;
+    }
+
+    // a transcript line closed (decode worker thread): capture its 16 kHz audio now, while the decoder still
+    // holds the pass voice (§10.4 click-to-play), then marshal the completed line to the UI
+    private void FmLineCompletedHandler(SkySpeechDecoder fm, FmTranscriptLine line, FmTranscriptInfo info)
+    {
+      float[] audio = fm.GetAudio(line.StartSeconds, line.EndSeconds);
+      var entry = new FmLineEntry(line.Text, line.StartSeconds, audio);
+      BeginInvoke(() => AddFmLine(entry, info));
+    }
+
+    private void AddFmLine(FmLineEntry entry, FmTranscriptInfo info)
+    {
+      EnsureFmLeaf(info);
+      info.Lines.Add(entry);
+      info.Pending = null;   // the open line just closed into this completed entry
+      if (treeView1.SelectedNode == info.Node) RenderFmTranscript(info);
+    }
+
+    private void UpdateFmPending(FmTranscriptLine pending, FmTranscriptInfo info)
+    {
+      EnsureFmLeaf(info);
+      info.Pending = pending;
+      if (treeView1.SelectedNode == info.Node) RenderFmTranscript(info);
+    }
+
+    // create the pass node and the single "FM Speech" leaf on the first decoded content (§10.3), and un-gray
+    // the pass entry the way a valid frame/image does
+    private void EnsureFmLeaf(FmTranscriptInfo info)
+    {
+      var txPassInfo = EnsureCurrentPassNode(info.Snapshot);
+      if (info.Node == null)
+      {
+        info.Node = new TreeNode("FM Speech") { Tag = info };
+        AddLeaf(CurrentPassNode!, info.Node);
+      }
+      if (!txPassInfo.HasValidFrame)
+      {
+        txPassInfo.HasValidFrame = true;
+        CurrentPassNode!.ForeColor = Color.Empty;
+      }
+      UpdateStatusLabel("DECODING...", Color.Green);
+    }
+
+    // render the transcript into richTextBox1: one "MM:SS  text" line per decoded line, plus the in-progress
+    // open line; record each completed line's character range for click-to-play hit-testing
+    private void RenderFmTranscript(FmTranscriptInfo info)
+    {
+      ShowTelemetryText();
+      CurrentFmTranscript = info;
+      info.Spans.Clear();
+      var sb = new System.Text.StringBuilder();
+      foreach (var entry in info.Lines)
+      {
+        string prefix = $"{FormatMmss(entry.StartSeconds)}  ";
+        int textStart = sb.Length + prefix.Length;
+        sb.Append(prefix).Append(entry.Text).Append('\n');
+        info.Spans.Add((textStart, textStart + entry.Text.Length, entry));
+      }
+      if (info.Pending != null)
+        sb.Append($"{FormatMmss(info.Pending.StartSeconds)}  {info.Pending.Text}\n");
+      richTextBox1.Text = sb.ToString();
+    }
+
+    // seconds since decode start (≈ AOS) as MM:SS — the first column of each transcript line (§10.3)
+    private static string FormatMmss(double seconds)
+    {
+      int t = (int)seconds;
+      return $"{t / 60:00}:{t % 60:00}";
+    }
+
+
+    // ----- click-to-play (§10.4) -----
+    // the completed line whose text spans the mouse position, or null (the timestamp column and gaps are not
+    // clickable, and only completed lines carry audio)
+    private FmLineEntry? FmLineAt(Point location)
+    {
+      if (CurrentFmTranscript == null) return null;
+      int i = richTextBox1.GetCharIndexFromPosition(location);
+      foreach (var (start, end, line) in CurrentFmTranscript.Spans)
+        if (i >= start && i < end) return line;
+      return null;
+    }
+
+    private void richTextBox1_MouseMove(object sender, MouseEventArgs e)
+    {
+      richTextBox1.Cursor = FmLineAt(e.Location) != null ? Cursors.Hand : Cursors.Default;
+    }
+
+    private void richTextBox1_MouseClick(object sender, MouseEventArgs e)
+    {
+      var line = FmLineAt(e.Location);
+      if (line != null && line.Audio.Length > 0) PlayFmClip(line.Audio, CurrentFmTranscript!.SampleRate);
+    }
+
+    // play one transcript line's 16 kHz audio fragment through the default output device, replacing any clip
+    // already playing
+    private void PlayFmClip(float[] audio, int sampleRate)
+    {
+      try
+      {
+        StopFmClip();
+        var bytes = new byte[audio.Length * sizeof(float)];
+        Buffer.BlockCopy(audio, 0, bytes, 0, bytes.Length);
+        var wf = NAudio.Wave.WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 1);
+        var stream = new NAudio.Wave.RawSourceWaveStream(new MemoryStream(bytes), wf);
+        var player = new NAudio.Wave.WaveOutEvent();
+        player.Init(stream);
+        player.PlaybackStopped += (s, ev) => BeginInvoke(() => { if (ReferenceEquals(FmClipPlayer, player)) StopFmClip(); });
+        player.Play();
+        FmClipPlayer = player;
+        FmClipStream = stream;
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, "FM clip playback failed");
+      }
+    }
+
+    private void StopFmClip()
+    {
+      try { FmClipPlayer?.Dispose(); } catch { }
+      try { FmClipStream?.Dispose(); } catch { }
+      FmClipPlayer = null;
+      FmClipStream = null;
+    }
+
+
+
+
+    //----------------------------------------------------------------------------------------------
     //                                       save to file
     //----------------------------------------------------------------------------------------------
     // mirror everything shown in the tree to the file: the date and time, satellite, transmitter
@@ -937,6 +1174,9 @@ namespace SkyRoof
 
       if (Terrestrial) UpdateStatusLabel("terrestrial, not decoded", Color.Red);
       else if (!IsDecodable()) UpdateStatusLabel("format not supported", Color.Red);
+      // an FM-only transmitter needs the downloaded speech model; prompt for it instead of "ready to decode"
+      else if (IsFmDecodable() && !IsTelemetryDecodable() && !IsSstvDecodable() && !FmModelPresent)
+        UpdateStatusLabel("FM speech model not downloaded", Color.Red);
       else if (!SatAboveHorizon) UpdateStatusLabel("satellite below horizon", SystemColors.ControlText);
       else UpdateStatusLabel("ready to decode", SystemColors.ControlText);
     }
@@ -957,9 +1197,18 @@ namespace SkyRoof
       var node = e.Node;
       if (node == null) return;
 
+      // showing non-FM content clears the click-to-play routing; RenderFmTranscript re-arms it for an FM node
+      CurrentFmTranscript = null;
+
       if (node.Tag is SstvImageInfo imageInfo)
       {
         DisplayImageInfo(imageInfo);
+        return;
+      }
+
+      if (node.Tag is FmTranscriptInfo fmInfo)
+      {
+        RenderFmTranscript(fmInfo);
         return;
       }
 

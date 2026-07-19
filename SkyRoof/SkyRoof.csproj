@@ -256,6 +256,53 @@
     </Reference>
   </ItemGroup>
 
+  <!-- VE3NEA.SkyFM (the FM speech-to-text decoder) is vendored the same way as VE3NEA.SkyTlm/SkySSTV:
+       built by the VE3NEA.SkySignals sibling solution (net10.0, no -windows), refreshed date-gated when
+       the sibling build is present, otherwise the committed Vendor copy is used as-is. Unlike the other
+       two it carries a managed dependency (sherpa-onnx.dll) and two native P/Invoke DLLs (onnxruntime,
+       sherpa-onnx-c-api) that a HintPath <Reference> does not flow automatically, so they are refreshed
+       alongside the assembly and copied to output (the managed binding as a Private reference so it lands
+       in the deps.json TPA list; the natives next to the exe like the VE3NEA.Dsp libraries). The int8
+       GigaSpeech model itself is NOT bundled — it is downloaded by a menu command (integration plan
+       Phase C). -->
+  <PropertyGroup>
+    <SkyFmRepoDir>$(MSBuildThisFileDirectory)..\..\VE3NEA.SkySignals\VE3NEA.SkyFM\bin\x64\$(Configuration)\net10.0\</SkyFmRepoDir>
+    <SkyFmVendorDir>$(MSBuildThisFileDirectory)..\Vendor\VE3NEA.SkyFM\</SkyFmVendorDir>
+  </PropertyGroup>
+
+  <Target Name="RefreshVendoredSkyFm" BeforeTargets="ResolveAssemblyReferences"
+          Condition="Exists('$(SkyFmRepoDir)VE3NEA.SkyFM.dll')"
+          Inputs="$(SkyFmRepoDir)VE3NEA.SkyFM.dll" Outputs="$(SkyFmVendorDir)VE3NEA.SkyFM.dll">
+    <Copy SourceFiles="$(SkyFmRepoDir)VE3NEA.SkyFM.dll" DestinationFolder="$(SkyFmVendorDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(SkyFmRepoDir)sherpa-onnx.dll" DestinationFolder="$(SkyFmVendorDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(SkyFmRepoDir)runtimes\win-x64\native\onnxruntime.dll" DestinationFolder="$(SkyFmVendorDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(SkyFmRepoDir)runtimes\win-x64\native\sherpa-onnx-c-api.dll" DestinationFolder="$(SkyFmVendorDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <ItemGroup>
+    <Reference Include="VE3NEA.SkyFM">
+      <HintPath>$(SkyFmVendorDir)VE3NEA.SkyFM.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <!-- the sherpa-onnx managed binding: a Private reference so it copies local and enters deps.json,
+         letting the CLR resolve it when VE3NEA.SkyFM uses the engine (SkyRoof code never calls it). -->
+    <Reference Include="sherpa-onnx">
+      <HintPath>$(SkyFmVendorDir)sherpa-onnx.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- the sherpa native P/Invoke DLLs next to the exe (the OS loader / .NET native-lib resolver finds
+         them in the app directory), like the VE3NEA.Dsp libfftw/libliquid block above. -->
+    <None Include="..\Vendor\VE3NEA.SkyFM\onnxruntime.dll" Link="onnxruntime.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Vendor\VE3NEA.SkyFM\sherpa-onnx-c-api.dll" Link="sherpa-onnx-c-api.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <Target Name="ExcludeRootSystemSpeechFromBuildOutput" AfterTargets="ResolveReferences">
     <ItemGroup>
       <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)' == 'System.Speech.dll' and '%(ReferenceCopyLocalPaths.DestinationSubDirectory)' == ''" />
