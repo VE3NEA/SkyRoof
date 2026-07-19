@@ -141,8 +141,11 @@ namespace SkyRoof
         var data = item.Tag as ItemData;
         if (data.Pass == null || data.Pass.EndTime < now)
         {
+          // re-sort only when the next-pass orbit number actually changes,
+          // so satellites with no upcoming pass (Pass stays null) don't force a sort every second
+          int? oldOrbit = data.Pass?.OrbitNumber;
           data.Pass = ctx.HamPasses.GetNextPass(data.Sat);
-          changed = true;
+          if (data.Pass?.OrbitNumber != oldOrbit) changed = true;
         }
 
         if (data.Pass == null)
@@ -164,7 +167,8 @@ namespace SkyRoof
         item.ToolTipText = $"{data.Sat.GetTooltipText()}\n\n{string.Join("\n", data.Pass?.GetTooltipText(false) ?? [])}";
       }
 
-      if (changed) SortItems();
+      // only auto-sort while the list is ordered by the Next Pass column
+      if (changed && SortColumn == 2) SortItems();
       listView1.Invalidate();
     }
 
