@@ -57,10 +57,6 @@ namespace SkyRoof
     // one-shot player for the click-to-play audio fragment (§10.4), replaced on each click
     private NAudio.Wave.WaveOutEvent? FmClipPlayer;
     private NAudio.Wave.RawSourceWaveStream? FmClipStream;
-    // true once the panel has been shown, so the model-download prompt is never raised during construction
-    private bool PanelReady;
-    // the FM model-download prompt is offered at most once per transmitter selection
-    private bool FmModelPromptShown;
 
     // Identity of the transmitter a decoder was built for, captured when the pipeline is created and bound to
     // that pipeline's event handlers. Frames surface on the decode worker thread, possibly after the user has
@@ -227,10 +223,6 @@ namespace SkyRoof
     {
       splitContainer1.SplitterDistance = ctx.Settings.Telemetry.SplitterDistance;
       ImageSplitContainer.SplitterDistance = ctx.Settings.Telemetry.ImageSplitterDistance;
-
-      // the panel is now open: if an FM transmitter is already selected without the model, offer the download
-      PanelReady = true;
-      MaybePromptFmModelDownload();
     }
 
     private void TelemetryPanel_FormClosing(object sender, FormClosingEventArgs e)
@@ -294,7 +286,6 @@ namespace SkyRoof
       FormatOverride = null;
       FormatOverrideId = null;
       FormatValidated = false;
-      FmModelPromptShown = false;
       SettingsButton.ForeColor = Color.Gray;
 
       if (Terrestrial) SatNameLabel.Text = "Terrestrial";
@@ -303,9 +294,6 @@ namespace SkyRoof
       ResolveSignalParams();
       UpdateTxStatus();
       CreatDestroyPipeline();
-
-      // a newly selected FM transmitter with no model offers the download (once, unless suppressed)
-      MaybePromptFmModelDownload();
     }
 
     private void ResolveSignalParams()
@@ -998,21 +986,30 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     //                                      fm speech
     //----------------------------------------------------------------------------------------------
-    // the downloaded sherpa model-pack folder (populated by the Download FM Speech Model menu command)
-    internal static string FmModelDir => Path.Combine(Utils.GetUserDataFolder(), "ASR_models");
+    // the SkyFM DLLs and sherpa model-pack files, manually unzipped by the user into the installation folder
+    // (they are no longer part of the SkyRoof installer - see install\SkyRoof.iss)
+    internal static string FmModelDir => Path.Combine(Application.StartupPath, "ASR_models");
 
-    // whether the FM speech model has been downloaded (all pack files present)
-    private static bool FmModelPresent => SherpaModelPack.IsPresent(FmModelDir);
+    // whether the FM speech model has been unzipped into place (all pack files present). Also false, rather
+    // than throwing, when VE3NEA.SkyFM.dll itself is missing (the whole FM artefact was never installed).
+    private static bool FmModelPresent
+    {
+      get
+      {
+        try { return SherpaModelPack.IsPresent(FmModelDir); }
+        catch { return false; }
+      }
+    }
 
     // lazily load the single shared FM speech engine (~71 MB model, ~1.5 s the first time). Null when the
-    // model is not downloaded or fails to load. Shared across transmitter changes so it loads at most once
-    // per session; disposed on panel close.
+    // FM artefact (SkyFM DLLs and/or model files) was not unzipped into the installation folder, or fails to
+    // load. Shared across transmitter changes so it loads at most once per session; disposed on panel close.
     private SherpaOnnxEngine? EnsureFmEngine()
     {
       if (FmSpeechEngine != null) return FmSpeechEngine;
-      if (!FmModelPresent) return null;
       try
       {
+        if (!FmModelPresent) return null;
         SherpaOnnxEngine.ModelDirectory = FmModelDir;
         FmSpeechEngine = SherpaOnnxEngine.Hotwords(int8: true, modelDir: FmModelDir);
         Log.Information("Loaded FM speech model from {Dir}", FmModelDir);
@@ -1023,52 +1020,6 @@ namespace SkyRoof
         FmSpeechEngine = null;
       }
       return FmSpeechEngine;
-    }
-
-    // once the panel is open and an FM transmitter with no downloaded model is selected, offer the download
-    // (once per selection, unless the user ticked "do not show again")
-    private void MaybePromptFmModelDownload()
-    {
-      if (!PanelReady || FmModelPromptShown) return;
-      if (!IsFmDecodable() || FmModelPresent) return;
-      if (ctx.Settings.Telemetry.SuppressFmModelPrompt) return;
-      FmModelPromptShown = true;
-
-      var verification = new TaskDialogVerificationCheckBox("Do not show this message again");
-      var page = new TaskDialogPage
-      {
-        Caption = "FM Speech Recognition",
-        Heading = $"FM speech recognition requires a {FmModelDownloader.ApproxMb} Mb download.",
-        Text = "Download now?",
-        Icon = TaskDialogIcon.Information,
-        Buttons = { TaskDialogButton.Yes, TaskDialogButton.No },
-        Verification = verification
-      };
-      var result = TaskDialog.ShowDialog(this, page);
-      if (verification.Checked) ctx.Settings.Telemetry.SuppressFmModelPrompt = true;
-      if (result == TaskDialogButton.Yes) DownloadFmModel();
-    }
-
-    // run the modal download; on success, pick up the newly available model
-    internal void DownloadFmModel()
-    {
-      if (DownloadProgressForm.Install(this)) OnFmModelInstalled();
-    }
-
-    // the model just became available: rebuild the decoder so the FM engine is picked up now (the
-    // matching-transmitter fast path in CreatDestroyPipeline would otherwise keep the FM-less decoder until
-    // the next transmitter change), and refresh the status
-    private void OnFmModelInstalled()
-    {
-      if (Decoder != null)
-      {
-        Decoder.Purge();
-        var old = Decoder;
-        Decoder = null;
-        CurrentDecode = null;
-        old.Dispose();
-      }
-      UpdateTxStatus();
     }
 
     // a transcript line closed (decode worker thread): capture its 16 kHz audio now, while the decoder still
@@ -1243,8 +1194,8 @@ namespace SkyRoof
 
       if (Terrestrial) UpdateStatusLabel("terrestrial, not decoded", Color.Red);
       else if (!IsDecodable()) UpdateStatusLabel("format not supported", Color.Red);
-      // an FM-only transmitter with no downloaded speech model reads as unsupported (the download prompt,
-      // shown separately on transmitter change, is how the user gets the model)
+      // an FM-only transmitter with no FM artefact unzipped into the installation folder reads as
+      // unsupported, silently - the user installs it manually, there is no in-app prompt or download
       else if (IsFmDecodable() && !IsTelemetryDecodable() && !IsSstvDecodable() && !FmModelPresent)
         UpdateStatusLabel("format not supported", Color.Red);
       else if (!SatAboveHorizon) UpdateStatusLabel("satellite below horizon", SystemColors.ControlText);

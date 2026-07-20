@@ -25,11 +25,6 @@ namespace SkyRoof
     [DefaultValue(416)]
     public int ImageSplitterDistance { get; set; } = 416;
 
-    // set by the "do not show this message again" checkbox on the FM speech model-download prompt
-    [Browsable(false)]
-    [DefaultValue(false)]
-    public bool SuppressFmModelPrompt { get; set; }
-
 
     public override string ToString() { return string.Empty; }
   }
