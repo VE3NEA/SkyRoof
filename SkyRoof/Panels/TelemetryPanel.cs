@@ -1,5 +1,7 @@
 using FontAwesome;
 using MathNet.Numerics;
+using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using Newtonsoft.Json;
 using Serilog;
 using SkyRoof.Satellites;
@@ -54,9 +56,10 @@ namespace SkyRoof
     // the FM transcript currently shown in richTextBox1 (null while showing telemetry/SSTV) — routes the
     // click-to-play mouse handling to the right content
     private FmTranscriptInfo? CurrentFmTranscript;
-    // one-shot player for the click-to-play audio fragment (§10.4), replaced on each click
-    private NAudio.Wave.WaveOutEvent? FmClipPlayer;
-    private NAudio.Wave.RawSourceWaveStream? FmClipStream;
+    // true when PlayFmClip found the shared speaker soundcard disabled and temporarily enabled it for the
+    // clip, mirroring RecordingManager.StartPlayback/StopPlayback; fires FmClipEndTimer to disable it again
+    private bool SpeakerEnabledForFmClip;
+    private System.Windows.Forms.Timer? FmClipEndTimer;
 
     // Identity of the transmitter a decoder was built for, captured when the pipeline is created and bound to
     // that pipeline's event handlers. Frames surface on the decode worker thread, possibly after the user has
@@ -1124,23 +1127,32 @@ namespace SkyRoof
       if (line != null && line.Audio.Length > 0) PlayFmClip(line.Audio, CurrentFmTranscript!.SampleRate);
     }
 
-    // play one transcript line's 16 kHz audio fragment through the default output device, replacing any clip
-    // already playing
+    // play one transcript line's audio fragment through the same soundcard (device and gain) used for slicer
+    // output playback, replacing any clip already playing
     private void PlayFmClip(float[] audio, int sampleRate)
     {
       try
       {
+        var resampled = sampleRate == SdrConst.AUDIO_SAMPLING_RATE ? audio : ResampleFmClip(audio, sampleRate);
         StopFmClip();
-        var bytes = new byte[audio.Length * sizeof(float)];
-        Buffer.BlockCopy(audio, 0, bytes, 0, bytes.Length);
-        var wf = NAudio.Wave.WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 1);
-        var stream = new NAudio.Wave.RawSourceWaveStream(new MemoryStream(bytes), wf);
-        var player = new NAudio.Wave.WaveOutEvent();
-        player.Init(stream);
-        player.PlaybackStopped += (s, ev) => BeginInvoke(() => { if (ReferenceEquals(FmClipPlayer, player)) StopFmClip(); });
-        player.Play();
-        FmClipPlayer = player;
-        FmClipStream = stream;
+
+        // mirror RecordingManager.StartPlayback: temporarily enable the shared speaker soundcard for the
+        // duration of the clip if the user has speaker output turned off
+        if (!ctx.SpeakerSoundcard.Enabled)
+        {
+          ctx.SpeakerSoundcard.Enabled = true;
+          SpeakerEnabledForFmClip = true;
+        }
+
+        ctx.SpeakerSoundcard.AddSamples(resampled);
+
+        if (SpeakerEnabledForFmClip)
+        {
+          int clipMs = (int)(1000.0 * resampled.Length / SdrConst.AUDIO_SAMPLING_RATE) + 300;
+          FmClipEndTimer = new System.Windows.Forms.Timer { Interval = Math.Max(clipMs, 1) };
+          FmClipEndTimer.Tick += FmClipEndTimer_Tick;
+          FmClipEndTimer.Start();
+        }
       }
       catch (Exception ex)
       {
@@ -1148,12 +1160,44 @@ namespace SkyRoof
       }
     }
 
+    private static float[] ResampleFmClip(float[] audio, int sampleRate)
+    {
+      var bytes = new byte[audio.Length * sizeof(float)];
+      Buffer.BlockCopy(audio, 0, bytes, 0, bytes.Length);
+      var wf = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 1);
+      using var stream = new RawSourceWaveStream(new MemoryStream(bytes), wf);
+      var source = new WdlResamplingSampleProvider(stream.ToSampleProvider(), SdrConst.AUDIO_SAMPLING_RATE);
+
+      var resampled = new List<float>(audio.Length * SdrConst.AUDIO_SAMPLING_RATE / sampleRate);
+      var buf = new float[4096];
+      int count;
+      while ((count = source.Read(buf, 0, buf.Length)) > 0)
+        resampled.AddRange(buf.Take(count));
+      return resampled.ToArray();
+    }
+
+    private void FmClipEndTimer_Tick(object? sender, EventArgs e)
+    {
+      StopFmClip();
+    }
+
     private void StopFmClip()
     {
-      try { FmClipPlayer?.Dispose(); } catch { }
-      try { FmClipStream?.Dispose(); } catch { }
-      FmClipPlayer = null;
-      FmClipStream = null;
+      if (FmClipEndTimer != null)
+      {
+        FmClipEndTimer.Stop();
+        FmClipEndTimer.Tick -= FmClipEndTimer_Tick;
+        FmClipEndTimer.Dispose();
+        FmClipEndTimer = null;
+      }
+
+      ctx.SpeakerSoundcard.Buffer.Clear();
+
+      if (SpeakerEnabledForFmClip)
+      {
+        ctx.SpeakerSoundcard.Enabled = false;
+        SpeakerEnabledForFmClip = false;
+      }
     }
 
 

@@ -262,9 +262,9 @@
        two it carries a managed dependency (sherpa-onnx.dll) and two native P/Invoke DLLs (onnxruntime,
        sherpa-onnx-c-api) that a HintPath <Reference> does not flow automatically, so they are refreshed
        alongside the assembly and copied to output (the managed binding as a Private reference so it lands
-       in the deps.json TPA list; the natives next to the exe like the VE3NEA.Dsp libraries). The int8
-       GigaSpeech model itself is NOT bundled — it is downloaded by a menu command (integration plan
-       Phase C). -->
+       in the deps.json TPA list; the natives next to the exe like the VE3NEA.Dsp libraries). Neither these
+       DLLs nor the int8 GigaSpeech model ship in the installer — the user downloads the "skyfm" GitHub
+       release artefact and unzips it into the installation folder to enable FM speech decoding. -->
   <PropertyGroup>
     <SkyFmRepoDir>$(MSBuildThisFileDirectory)..\..\VE3NEA.SkySignals\VE3NEA.SkyFM\bin\x64\$(Configuration)\net10.0\</SkyFmRepoDir>
     <SkyFmVendorDir>$(MSBuildThisFileDirectory)..\Vendor\VE3NEA.SkyFM\</SkyFmVendorDir>
