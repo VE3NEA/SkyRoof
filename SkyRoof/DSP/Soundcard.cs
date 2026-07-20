@@ -322,7 +322,7 @@ namespace VE3NEA
     public event EventHandler<DataEventArgs<float>>? SamplesAvailable;
 
     public InputSoundcard(string? audioDeviceId = null, int? samplingRate = null)
-      : base(audioDeviceId)
+      : base(audioDeviceId, samplingRate)
     {
     }
 

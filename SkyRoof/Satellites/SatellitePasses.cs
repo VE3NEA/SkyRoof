@@ -116,8 +116,7 @@ namespace SkyRoof
       if (StartFrequency == 0 || EndFrequency == 0) return Array.Empty<SatnogsDbSatellite>();
 
       return ctx.SatnogsDb.Satellites.Where(sat =>
-        sat.Transmitters.Any(tx => tx.DownlinkLow >= StartFrequency) &&
-        sat.Transmitters.Any(tx => tx.DownlinkLow <= EndFrequency));
+        sat.Transmitters.Any(tx => tx.DownlinkLow >= StartFrequency && tx.DownlinkLow <= EndFrequency));
     }
 }
 

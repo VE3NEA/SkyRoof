@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using Serilog;
+using VE3NEA;
 using VE3NEA.SkyTlm.Core;
 
 namespace SkyRoof
@@ -37,7 +38,7 @@ namespace SkyRoof
         Listener.Start();
         Active = true;
         Log.Information($"KISS server listening on port {port}");
-        HandleIncomingConnections();
+        HandleIncomingConnections().DoNotAwait();
       }
       catch (Exception e)
       {
@@ -70,7 +71,7 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     //                                      connections
     //----------------------------------------------------------------------------------------------
-    private async void HandleIncomingConnections()
+    private async Task HandleIncomingConnections()
     {
       var listener = Listener;
       try
@@ -79,7 +80,7 @@ namespace SkyRoof
         {
           var client = await listener.AcceptTcpClientAsync();
           lock (ClientsLock) Clients.Add(client);
-          DrainClient(client);
+          DrainClient(client).DoNotAwait();
         }
       }
       catch (Exception)
@@ -90,7 +91,7 @@ namespace SkyRoof
 
     // KISS clients (and apps probing for a TNC) send SetHardware/TXDELAY commands we don't honor; read and
     // discard inbound bytes so the connection stays healthy, and detect disconnects to drop the client.
-    private async void DrainClient(TcpClient client)
+    private async Task DrainClient(TcpClient client)
     {
       try
       {

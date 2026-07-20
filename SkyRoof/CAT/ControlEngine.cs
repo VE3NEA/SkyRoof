@@ -203,9 +203,11 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     protected bool SendWriteCommands(string[]? commands)
     {
+      if (commands == null) return true;
+
       bool ok = true;
 
-      foreach (string cmd in commands!)
+      foreach (string cmd in commands)
         ok = ok && SendWriteCommand(cmd);
 
       return ok;
@@ -264,23 +266,43 @@ namespace SkyRoof
     }
 
     byte[] buffer = new byte[65536];
+    // [bufferedStart, bufferedEnd) holds bytes already received but not yet returned by ReadLine,
+    // e.g. the start of a second reply that arrived in the same Receive() as the first reply's newline
+    int bufferedStart, bufferedEnd;
+
     protected string ReadLine()
     {
-      int totalRead = 0;
-
-      while (totalRead < buffer.Length)
+      while (true)
       {
-        int bytesRead = TcpClient!.Client.Receive(buffer, totalRead, buffer.Length - totalRead, SocketFlags.None);
-        if (bytesRead == 0) break; // connection closed
-        totalRead += bytesRead;
-
-        for (int i = totalRead - 1; i >= totalRead - bytesRead; i--)
+        for (int i = bufferedStart; i < bufferedEnd; i++)
           if (buffer[i] == (byte)'\n')
-            return Encoding.ASCII.GetString(buffer, 0, i + 1);
-      }
+          {
+            string line = Encoding.ASCII.GetString(buffer, bufferedStart, i - bufferedStart + 1);
+            bufferedStart = i + 1;
+            return line;
+          }
 
-      // If no newline found, return all read bytes
-      return Encoding.ASCII.GetString(buffer, 0, totalRead);
+        if (bufferedStart > 0)
+        {
+          Array.Copy(buffer, bufferedStart, buffer, 0, bufferedEnd - bufferedStart);
+          bufferedEnd -= bufferedStart;
+          bufferedStart = 0;
+        }
+
+        if (bufferedEnd == buffer.Length)
+          throw new Exception($"Reply from {GetType().Name} ctld exceeded the buffer size with no newline");
+
+        int bytesRead = TcpClient!.Client.Receive(buffer, bufferedEnd, buffer.Length - bufferedEnd, SocketFlags.None);
+        if (bytesRead == 0)
+        {
+          // connection closed; return whatever was buffered, unterminated
+          string remainder = Encoding.ASCII.GetString(buffer, bufferedStart, bufferedEnd - bufferedStart);
+          bufferedStart = bufferedEnd = 0;
+          return remainder;
+        }
+
+        bufferedEnd += bytesRead;
+      }
     }
 
 

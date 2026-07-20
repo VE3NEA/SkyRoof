@@ -146,21 +146,35 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     internal SpectrumAnalyzer<Complex32>? WidebandSpectrumAnalyzer;
 
+    // guards the handoff between Sdr_DataAvailable (SDR thread) and the UI-thread create/destroy
+    // of WidebandSpectrumAnalyzer and ctx.Slicer, so the SDR thread never starts processing on an
+    // instance whose Dispose has already begun (Dispose kills the wakeup event StartProcessing needs)
+    private readonly object dspChainLock = new();
+
     public void CreateSpectrumAnalyzer()
     {
       Fft<Complex32>.LoadWisdom(Path.Combine(Utils.GetUserDataFolder(), "wsjtx_wisdom.dat"));
 
       // Show a wait box while the analyzer (and its FFTW plan) is built.
+      SpectrumAnalyzer<Complex32> analyzer = null!;
       WaitBox.Run(() =>
-        WidebandSpectrumAnalyzer = new(ctx.WaterfallPanel!.WaterfallControl.SpectraWidth, 6_000_000));
-      WidebandSpectrumAnalyzer!.SpectrumAvailable += Spect_SpectrumAvailable;
+        analyzer = new(ctx.WaterfallPanel!.WaterfallControl.SpectraWidth, 6_000_000));
+      analyzer.SpectrumAvailable += Spect_SpectrumAvailable;
+
+      lock (dspChainLock) WidebandSpectrumAnalyzer = analyzer;
     }
 
     public void DestroySpectrumAnalyzer()
     {
-      WidebandSpectrumAnalyzer!.SpectrumAvailable -= Spect_SpectrumAvailable;
-      WidebandSpectrumAnalyzer.Dispose();
-      WidebandSpectrumAnalyzer = null;
+      SpectrumAnalyzer<Complex32> analyzer;
+      lock (dspChainLock)
+      {
+        analyzer = WidebandSpectrumAnalyzer!;
+        WidebandSpectrumAnalyzer = null;
+      }
+
+      analyzer.SpectrumAvailable -= Spect_SpectrumAvailable;
+      analyzer.Dispose();
     }
 
     private void Spect_SpectrumAvailable(object? sender, DataEventArgs<float> e)
@@ -209,8 +223,11 @@ namespace SkyRoof
 
     private void Sdr_DataAvailable(object? sender, DataEventArgs<Complex32> e)
     {
-      WidebandSpectrumAnalyzer?.StartProcessing(e);
-      ctx.Slicer?.StartProcessing(e);
+      lock (dspChainLock)
+      {
+        WidebandSpectrumAnalyzer?.StartProcessing(e);
+        ctx.Slicer?.StartProcessing(e);
+      }
     }
 
     internal void ConfigureWaterfall()
@@ -224,21 +241,27 @@ namespace SkyRoof
 
     private void ConfigureSlicer()
     {
-      if (ctx.Slicer != null) ctx.Slicer?.Dispose();
-
       var rate = ctx.Sdr.Info.SampleRate;
       var mode = ctx.FrequencyControl.RadioLink.DownlinkMode;
-      ctx.Slicer = new Slicer(rate, 0, mode);
-      ctx.Slicer.AudioDataAvailable += Slicer_AudioDataAvailable;
-      ctx.Slicer.IqDataAvailable += Slicer_IqDataAvailable;
-      ctx.Slicer.Squelch.Enabled = ctx.Settings.Audio.Squelch;
+      var slicer = new Slicer(rate, 0, mode);
+      slicer.AudioDataAvailable += Slicer_AudioDataAvailable;
+      slicer.IqDataAvailable += Slicer_IqDataAvailable;
+      slicer.Squelch.Enabled = ctx.Settings.Audio.Squelch;
+
+      Slicer? oldSlicer;
+      lock (dspChainLock)
+      {
+        oldSlicer = ctx.Slicer;
+        ctx.Slicer = slicer;
+      }
+      oldSlicer?.Dispose();
     }
 
     private void Slicer_IqDataAvailable(object? sender, DataEventArgs<Complex32> e)
     {
       if (ctx.RecorderPanel?.isPlayingBack == true) return;
 
-      ApplyIqOutputStreamGainAndRoute(e.Data, e.Count);
+      ApplyIqOutputStreamGainAndRoute(e.Data, 0, e.Count);
       ctx.RecorderPanel?.AddIqSamples(e);
       ctx.AutoSelector.AddIqSamples(e);
       ctx.TelemetryPanel?.ProcessSamples(e);
@@ -252,31 +275,35 @@ namespace SkyRoof
 
       ctx.SpeakerSoundcard.AddSamples(e.Data, 0, e.Count);
 
-      ApplyAudioOutputStreamGainAndRoute(e.Data, e.Count);
+      ApplyAudioOutputStreamGainAndRoute(e.Data, 0, e.Count);
       ctx.RecorderPanel?.AddAudioSamples(e);
       ctx.AutoSelector.AddAudioSamples(e);
     }
 
-    private void ApplyAudioOutputStreamGainAndRoute(float[] data, int count)
+    // scales into a freshly allocated buffer rather than in place, since e.Data/data is a shared
+    // pooled buffer also consumed (unscaled) by the recorder, auto-selector and telemetry panel
+    private void ApplyAudioOutputStreamGainAndRoute(float[] data, int offset, int count)
     {
       float gain = Dsp.FromDb2(ctx.Settings.OutputStream.Gain);
-      for (int i = 0; i < count; i++) data[i] *= gain;
+      float[] scaled = new float[count];
+      for (int i = 0; i < count; i++) scaled[i] = data[offset + i] * gain;
 
       if (ctx.Settings.OutputStream.Type == DataStreamType.AudioToVac)
-        ctx.AudioVacSoundcard.AddSamples(data, 0, count);
+        ctx.AudioVacSoundcard.AddSamples(scaled, 0, count);
       else if (ctx.Settings.OutputStream.Type == DataStreamType.AudioToUdp)
-        ctx.UdpStreamSender.Send(data, count);
+        ctx.UdpStreamSender.Send(scaled, count);
     }
 
-    private void ApplyIqOutputStreamGainAndRoute(Complex32[] data, int count)
+    private void ApplyIqOutputStreamGainAndRoute(Complex32[] data, int offset, int count)
     {
       float gain = Dsp.FromDb2(ctx.Settings.OutputStream.Gain);
-      for (int i = 0; i < count; i++) data[i] *= gain;
+      Complex32[] scaled = new Complex32[count];
+      for (int i = 0; i < count; i++) scaled[i] = data[offset + i] * gain;
 
       if (ctx.Settings.OutputStream.Type == DataStreamType.IqToVac)
-        ctx.IqVacSoundcard.AddSamples(data, 0, count);
+        ctx.IqVacSoundcard.AddSamples(scaled, 0, count);
       else if (ctx.Settings.OutputStream.Type == DataStreamType.IqToUdp)
-        ctx.UdpStreamSender.Send(data, count);
+        ctx.UdpStreamSender.Send(scaled, count);
     }
 
     internal void RoutePlaybackAudio(float[] data, int offset, int count)
@@ -284,19 +311,14 @@ namespace SkyRoof
       if (count <= 0) return;
 
       ctx.SpeakerSoundcard.AddSamples(data, offset, count);
-
-      float[] streamData = new float[count];
-      Array.Copy(data, offset, streamData, 0, count);
-      ApplyAudioOutputStreamGainAndRoute(streamData, count);
+      ApplyAudioOutputStreamGainAndRoute(data, offset, count);
     }
 
     internal void RoutePlaybackIq(Complex32[] data, int offset, int count)
     {
       if (count <= 0) return;
 
-      Complex32[] streamData = new Complex32[count];
-      Array.Copy(data, offset, streamData, 0, count);
-      ApplyIqOutputStreamGainAndRoute(streamData, count);
+      ApplyIqOutputStreamGainAndRoute(data, offset, count);
     }
 
     private void UpdateSdrLabel()
@@ -343,7 +365,8 @@ namespace SkyRoof
 
     internal void SetWaterfallSpeed()
     {
-      bool change = ctx.Settings.Waterfall.Speed != ctx.WaterfallPanel.WaterfallControl.ScrollSpeed;
+      bool change = ctx.WaterfallPanel?.WaterfallControl != null &&
+        ctx.Settings.Waterfall.Speed != ctx.WaterfallPanel.WaterfallControl.ScrollSpeed;
 
       if (ctx.Sdr != null)
         WidebandSpectrumAnalyzer.Spectrum.Step = ctx.Sdr.Info.SampleRate / ctx.Settings.Waterfall.Speed;
@@ -774,11 +797,11 @@ namespace SkyRoof
     public void ShowSatDataStatus()
     {
       var sett = ctx.Settings.Satellites;
-      bool upToDate =
-        sett.LastDownloadTime < DateTime.UtcNow.AddDays(-LIST_DOWNLOAD_DAYS) &&
+      bool stale =
+        sett.LastDownloadTime < DateTime.UtcNow.AddDays(-LIST_DOWNLOAD_DAYS) ||
         sett.LastTleTime < DateTime.UtcNow.AddDays(-TLE_DOWNLOAD_DAYS);
 
-      if (upToDate) SatDataLedLabel.ForeColor = Color.Red;
+      if (stale) SatDataLedLabel.ForeColor = Color.Red;
       else if (!DownloadOk) SatDataLedLabel.ForeColor = Color.Gold;
       else SatDataLedLabel.ForeColor = Color.Lime;
 
@@ -1057,7 +1080,7 @@ namespace SkyRoof
     {
       CheckDownloadSatelliteList();
       CheckDownloadTle();
-      ctx.AmsatStatusLoader.GetStatusesAsync();
+      ctx.AmsatStatusLoader.GetStatusesAsync().DoNotAwait();
     }
 
 
