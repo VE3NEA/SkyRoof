@@ -115,16 +115,22 @@ namespace SkyRoof
     private sealed class FmTranscriptInfo
     {
       internal readonly DecodeSnapshot Snapshot;
+      // retained even after the decoder that produced it is disposed (its accumulated audio buffer isn't
+      // freed by Dispose), so the still-open line's audio can be fetched on demand at click time
+      internal readonly SkySpeechDecoder Engine;
       internal readonly int SampleRate;
       internal TreeNode? Node;
       internal readonly List<FmLineEntry> Lines = new();
       internal FmTranscriptLine? Pending;
       // char-range → audio map for the rendered richTextBox text, rebuilt on each render (completed lines only)
       internal readonly List<(int Start, int End, FmLineEntry Line)> Spans = new();
+      // char-range of the in-progress line's text, rebuilt on each render; null when no line is open
+      internal (int Start, int End)? PendingSpan;
 
-      internal FmTranscriptInfo(DecodeSnapshot snapshot, int sampleRate)
+      internal FmTranscriptInfo(DecodeSnapshot snapshot, SkySpeechDecoder engine, int sampleRate)
       {
         Snapshot = snapshot;
+        Engine = engine;
         SampleRate = sampleRate;
       }
     }
@@ -453,7 +459,7 @@ namespace SkyRoof
           // the single "FM Speech" leaf's state lives in this closure, so a disposed decoder's flush lines
           // can never land in the next decoder's transcript node
           var fm = Decoder.Fm;
-          var info = new FmTranscriptInfo(snapshot, fm.OutputSampleRate);
+          var info = new FmTranscriptInfo(snapshot, fm, fm.OutputSampleRate);
           fm.LineCompleted += (line, index) => FmLineCompletedHandler(fm, line, info);
           fm.LineUpdated += line => BeginInvoke(() => UpdateFmPending(line, info));
         }
@@ -1064,12 +1070,13 @@ namespace SkyRoof
     }
 
     // render the transcript into richTextBox1: one "MM:SS  text" line per decoded line, plus the in-progress
-    // open line; record each completed line's character range for click-to-play hit-testing
+    // open line; record each line's character range for click-to-play hit-testing, completed and pending alike
     private void RenderFmTranscript(FmTranscriptInfo info)
     {
       ShowTelemetryText();
       CurrentFmTranscript = info;
       info.Spans.Clear();
+      info.PendingSpan = null;
       var sb = new System.Text.StringBuilder();
       foreach (var entry in info.Lines)
       {
@@ -1079,7 +1086,12 @@ namespace SkyRoof
         info.Spans.Add((textStart, textStart + entry.Text.Length, entry));
       }
       if (info.Pending != null)
-        sb.Append($"{FormatMmss(info.Pending.StartSeconds)}  {info.Pending.Text}\n");
+      {
+        string prefix = $"{FormatMmss(info.Pending.StartSeconds)}  ";
+        int textStart = sb.Length + prefix.Length;
+        sb.Append(prefix).Append(info.Pending.Text).Append('\n');
+        info.PendingSpan = (textStart, textStart + info.Pending.Text.Length);
+      }
       richTextBox1.Text = sb.ToString();
     }
 
@@ -1092,39 +1104,52 @@ namespace SkyRoof
 
 
     // ----- click-to-play (§10.4) -----
-    // the completed line whose text spans the mouse position, or null (the timestamp column and gaps are not
-    // clickable, and only completed lines carry audio)
-    private FmLineEntry? FmLineAt(Point location)
+    // the completed line whose text spans the mouse position, or Pending=true when it's over the in-progress
+    // open line instead (both are clickable; the timestamp column and gaps are not)
+    private (FmLineEntry? Completed, bool Pending) FmLineAt(Point location)
     {
-      if (CurrentFmTranscript == null) return null;
+      if (CurrentFmTranscript == null) return (null, false);
       int i = richTextBox1.GetCharIndexFromPosition(location);
 
-      // GetCharIndexFromPosition snaps a click in the empty area below the transcript to the last
-      // character; ignore those so only clicks on an actual line row play
-      int last = richTextBox1.TextLength - 1;
-      if (last >= 0)
-      {
-        Point lastTop = richTextBox1.GetPositionFromCharIndex(last);
-        if (location.Y >= lastTop.Y + richTextBox1.Font.Height) return null;
-      }
+      // GetCharIndexFromPosition clamps a click in the empty area below the transcript to the last
+      // character, so a raw index match alone can't tell a genuine click from that snap. Ask the control for
+      // the resolved index's own row instead of trusting Font.Height to equal the real row pitch (it doesn't
+      // always, e.g. under DPI/font-metric rounding) — if the click isn't actually within that row, it landed
+      // below (or above) all text
+      Point resolvedPos = richTextBox1.GetPositionFromCharIndex(i);
+      if (location.Y < resolvedPos.Y || location.Y >= resolvedPos.Y + richTextBox1.Font.Height) return (null, false);
 
       // end is the index of the line's trailing newline; include it (i <= end) so a click low on or to the
-      // right of a line — which snaps to that newline — still hits the line. this is what made the last
-      // line, with nothing below to catch the snap, read as un-clickable
+      // right of a line — which snaps to that newline — still hits the line
       foreach (var (start, end, line) in CurrentFmTranscript.Spans)
-        if (i >= start && i <= end) return line;
-      return null;
+        if (i >= start && i <= end) return (line, false);
+
+      if (CurrentFmTranscript.PendingSpan is { } pendingSpan && i >= pendingSpan.Start && i <= pendingSpan.End)
+        return (null, true);
+
+      return (null, false);
     }
 
     private void richTextBox1_MouseMove(object sender, MouseEventArgs e)
     {
-      richTextBox1.Cursor = FmLineAt(e.Location) != null ? Cursors.Hand : Cursors.Default;
+      var (completed, pending) = FmLineAt(e.Location);
+      richTextBox1.Cursor = completed != null || pending ? Cursors.Hand : Cursors.Default;
     }
 
     private void richTextBox1_MouseClick(object sender, MouseEventArgs e)
     {
-      var line = FmLineAt(e.Location);
-      if (line != null && line.Audio.Length > 0) PlayFmClip(line.Audio, CurrentFmTranscript!.SampleRate);
+      var (completed, pending) = FmLineAt(e.Location);
+      if (completed != null)
+      {
+        if (completed.Audio.Length > 0) PlayFmClip(completed.Audio, CurrentFmTranscript!.SampleRate);
+      }
+      else if (pending && CurrentFmTranscript!.Pending is { } pendingLine)
+      {
+        // the open line isn't captured into an FmLineEntry until it closes, so fetch its audio-so-far
+        // on demand from the retained decoder rather than pre-capturing it on every LineUpdated tick
+        var audio = CurrentFmTranscript.Engine.GetAudio(pendingLine.StartSeconds, pendingLine.EndSeconds);
+        if (audio.Length > 0) PlayFmClip(audio, CurrentFmTranscript.SampleRate);
+      }
     }
 
     // play one transcript line's audio fragment through the same soundcard (device and gain) used for slicer
