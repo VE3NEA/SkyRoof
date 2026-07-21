@@ -137,12 +137,13 @@ namespace VE3NEA
     {
       Log.Information($"Starting SDR Read thread");
 
-      Stream = new(Device);
+      Stream = new(Device, Info.SampleRate);
 
       while (!Stopping)
         try
         {
           Stream.ReadStream();
+          if (Stream.PadCount > 0) EmitPadding();
           Stream.Args.Utc = DateTime.UtcNow;
           DataAvailable?.Invoke(this, Stream.Args);
         }
@@ -159,6 +160,23 @@ namespace VE3NEA
       Device = IntPtr.Zero;
 
       StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    // send the zeros that replace the samples lost by the driver, so that the recorders and the
+    // decoders downstream see a stream of the correct duration instead of a jump forward in time
+    private void EmitPadding()
+    {
+      var padArgs = Stream!.PadArgs;
+      DateTime gapStartUtc = DateTime.UtcNow.AddSeconds(-Stream.PadCount / Info.SampleRate);
+
+      int sentCount = 0;
+      while (sentCount < Stream.PadCount)
+      {
+        padArgs.Count = Math.Min(padArgs.Data.Length, Stream.PadCount - sentCount);
+        padArgs.Utc = gapStartUtc.AddSeconds(sentCount / Info.SampleRate);
+        DataAvailable?.Invoke(this, padArgs);
+        sentCount += padArgs.Count;
+      }
     }
 
 
