@@ -91,10 +91,6 @@ Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\WsjtxUtils.WsjtxMessages.d
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\VE3NEA.Dsp.dll; DestDir: {app}; Flags: overwritereadonly ignoreversion
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\VE3NEA.SkyTlm.dll; DestDir: {app}; Flags: overwritereadonly ignoreversion
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\VE3NEA.SkySSTV.dll; DestDir: {app}; Flags: overwritereadonly ignoreversion
-; VE3NEA.SkyFM (FM speech-to-text), its sherpa-onnx binding, native runtime and the int8 GigaSpeech model
-; are NOT bundled here. To enable FM speech decoding, download the artefact from the SkyRoof GitHub
-; releases page and unzip it into the installation folder.
-
 
 [Icons]
 Name: {commonprograms}\{#MyAppName}; Filename: {app}\{#MyAppExeName}
