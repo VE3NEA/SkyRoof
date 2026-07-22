@@ -12,6 +12,13 @@ design-docs/
 CLAUDE.md
 .claude/settings.local.json
 
+# SkyFM dependencies (sherpa-onnx), not shipped in the installer - the user downloads the
+# "skyfm" GitHub release artefact and unzips it into the installation folder. Refreshed from
+# the sibling VE3NEA.SkySignals build by RefreshVendoredSkyFm in SkyRoof.csproj.
+Vendor/VE3NEA.SkyFM/sherpa-onnx.dll
+Vendor/VE3NEA.SkyFM/onnxruntime.dll
+Vendor/VE3NEA.SkyFM/sherpa-onnx-c-api.dll
+
 # User-specific files
 *.rsuser
 *.suo

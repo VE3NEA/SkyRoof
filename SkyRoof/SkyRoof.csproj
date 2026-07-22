@@ -258,13 +258,14 @@
 
   <!-- VE3NEA.SkyFM (the FM speech-to-text decoder) is vendored the same way as VE3NEA.SkyTlm/SkySSTV:
        built by the VE3NEA.SkySignals sibling solution (net10.0, no -windows), refreshed date-gated when
-       the sibling build is present, otherwise the committed Vendor copy is used as-is. Unlike the other
-       two it carries a managed dependency (sherpa-onnx.dll) and two native P/Invoke DLLs (onnxruntime,
-       sherpa-onnx-c-api) that a HintPath <Reference> does not flow automatically, so they are refreshed
-       alongside the assembly and copied to output (the managed binding as a Private reference so it lands
-       in the deps.json TPA list; the natives next to the exe like the VE3NEA.Dsp libraries). Neither these
-       DLLs nor the int8 GigaSpeech model ship in the installer — the user downloads the "skyfm" GitHub
-       release artefact and unzips it into the installation folder to enable FM speech decoding. -->
+       the sibling build is present, otherwise the committed Vendor copy is used as-is. Only the assembly
+       itself is refreshed here — SkyRoof code references its types directly, so it must be present to
+       compile. Its managed dependency (sherpa-onnx.dll) and two native P/Invoke DLLs (onnxruntime,
+       sherpa-onnx-c-api) are deliberately NOT auto-copied: FM decoding stays disabled, even in local dev
+       builds, until those are placed by hand (see the Exists()-guarded items below), matching how a real
+       install works. Neither these DLLs nor the int8 GigaSpeech model ship in the installer — the user
+       downloads the "skyfm" GitHub release artefact and unzips it into the installation folder to enable
+       FM speech decoding. -->
   <PropertyGroup>
     <SkyFmRepoDir>$(MSBuildThisFileDirectory)..\..\VE3NEA.SkySignals\VE3NEA.SkyFM\bin\x64\$(Configuration)\net10.0\</SkyFmRepoDir>
     <SkyFmVendorDir>$(MSBuildThisFileDirectory)..\Vendor\VE3NEA.SkyFM\</SkyFmVendorDir>
@@ -274,9 +275,6 @@
           Condition="Exists('$(SkyFmRepoDir)VE3NEA.SkyFM.dll')"
           Inputs="$(SkyFmRepoDir)VE3NEA.SkyFM.dll" Outputs="$(SkyFmVendorDir)VE3NEA.SkyFM.dll">
     <Copy SourceFiles="$(SkyFmRepoDir)VE3NEA.SkyFM.dll" DestinationFolder="$(SkyFmVendorDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(SkyFmRepoDir)sherpa-onnx.dll" DestinationFolder="$(SkyFmVendorDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(SkyFmRepoDir)runtimes\win-x64\native\onnxruntime.dll" DestinationFolder="$(SkyFmVendorDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(SkyFmRepoDir)runtimes\win-x64\native\sherpa-onnx-c-api.dll" DestinationFolder="$(SkyFmVendorDir)" SkipUnchangedFiles="true" />
   </Target>
 
   <ItemGroup>
@@ -285,8 +283,10 @@
       <Private>true</Private>
     </Reference>
     <!-- the sherpa-onnx managed binding: a Private reference so it copies local and enters deps.json,
-         letting the CLR resolve it when VE3NEA.SkyFM uses the engine (SkyRoof code never calls it). -->
-    <Reference Include="sherpa-onnx">
+         letting the CLR resolve it when VE3NEA.SkyFM uses the engine (SkyRoof code never calls it). Not
+         committed to Vendor (see RefreshVendoredSkyFm above), so guarded by Exists() for builds without
+         the sibling VE3NEA.SkySignals repo present. -->
+    <Reference Include="sherpa-onnx" Condition="Exists('$(SkyFmVendorDir)sherpa-onnx.dll')">
       <HintPath>$(SkyFmVendorDir)sherpa-onnx.dll</HintPath>
       <Private>true</Private>
     </Reference>
@@ -294,11 +294,13 @@
 
   <ItemGroup>
     <!-- the sherpa native P/Invoke DLLs next to the exe (the OS loader / .NET native-lib resolver finds
-         them in the app directory), like the VE3NEA.Dsp libfftw/libliquid block above. -->
-    <None Include="..\Vendor\VE3NEA.SkyFM\onnxruntime.dll" Link="onnxruntime.dll">
+         them in the app directory), like the VE3NEA.Dsp libfftw/libliquid block above. Not committed to
+         Vendor (see RefreshVendoredSkyFm above), so guarded by Exists() for builds without the sibling
+         VE3NEA.SkySignals repo present. -->
+    <None Include="..\Vendor\VE3NEA.SkyFM\onnxruntime.dll" Link="onnxruntime.dll" Condition="Exists('..\Vendor\VE3NEA.SkyFM\onnxruntime.dll')">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\Vendor\VE3NEA.SkyFM\sherpa-onnx-c-api.dll" Link="sherpa-onnx-c-api.dll">
+    <None Include="..\Vendor\VE3NEA.SkyFM\sherpa-onnx-c-api.dll" Link="sherpa-onnx-c-api.dll" Condition="Exists('..\Vendor\VE3NEA.SkyFM\sherpa-onnx-c-api.dll')">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
