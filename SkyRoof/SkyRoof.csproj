@@ -214,12 +214,12 @@
   </ItemGroup>
 
   <!-- The VE3NEA.SkySignals solution owns/builds VE3NEA.SkyTlm.dll; SkyRoof never builds it, it only references
-       the vendored copy under Vendor\VE3NEA.SkyTlm. On the maintainer's machine (where the sibling repo is
+       the vendored copy under Vendor\VE3NEA.SkySignals. On the maintainer's machine (where the sibling repo is
        present) the copy is refreshed from that solution's latest build; Inputs/Outputs make it run only when the
        built dll is newer (date-gated). Forks/CI have no sibling build → the committed Vendor copy is used as-is. -->
   <PropertyGroup>
     <TlmRepoDll>$(MSBuildThisFileDirectory)..\..\VE3NEA.SkySignals\VE3NEA.SkyTlm\bin\x64\$(Configuration)\net10.0-windows\VE3NEA.SkyTlm.dll</TlmRepoDll>
-    <TlmVendorDir>$(MSBuildThisFileDirectory)..\Vendor\VE3NEA.SkyTlm\</TlmVendorDir>
+    <TlmVendorDir>$(MSBuildThisFileDirectory)..\Vendor\VE3NEA.SkySignals\</TlmVendorDir>
   </PropertyGroup>
 
   <Target Name="RefreshVendoredTlm" BeforeTargets="ResolveAssemblyReferences"
@@ -240,7 +240,7 @@
        otherwise the committed Vendor copy is used as-is. -->
   <PropertyGroup>
     <SstvRepoDll>$(MSBuildThisFileDirectory)..\..\VE3NEA.SkySignals\VE3NEA.SkySSTV\bin\x64\$(Configuration)\net10.0-windows\VE3NEA.SkySSTV.dll</SstvRepoDll>
-    <SstvVendorDir>$(MSBuildThisFileDirectory)..\Vendor\VE3NEA.SkySSTV\</SstvVendorDir>
+    <SstvVendorDir>$(MSBuildThisFileDirectory)..\Vendor\VE3NEA.SkySignals\</SstvVendorDir>
   </PropertyGroup>
 
   <Target Name="RefreshVendoredSstv" BeforeTargets="ResolveAssemblyReferences"
@@ -256,18 +256,17 @@
     </Reference>
   </ItemGroup>
 
-  <!-- VE3NEA.SkyFM (the FM speech-to-text decoder) is vendored the same way as VE3NEA.SkyTlm/SkySSTV:
-       built by the VE3NEA.SkySignals sibling solution (net10.0, no -windows), refreshed date-gated when
-       the sibling build is present, otherwise the committed Vendor copy is used as-is. Only the assembly
-       itself is referenced — SkyRoof code references its types directly, so it must be present to compile.
-       Its managed dependency (sherpa-onnx.dll) and two native P/Invoke DLLs (onnxruntime, sherpa-onnx-c-api)
-       are NOT part of the build at all: FM decoding stays disabled, including in local dev builds, unless
-       all four files are copied by hand into the build output folder, exactly as an end user would unzip
-       the "skyfm" GitHub release artefact into the installation folder. Neither these DLLs nor the int8
-       GigaSpeech model ship in the installer. -->
+  <!-- VE3NEA.SkyFM (the FM speech-to-text decoder): SkyRoof code references its types directly, so the
+       assembly must be present to compile, refreshed date-gated from the VE3NEA.SkySignals sibling build
+       when present, otherwise the committed Vendor copy is used as-is (same pattern as VE3NEA.SkyTlm/
+       SkySSTV). Private=false, so it is NOT copied to the build output — FM decoding stays disabled,
+       including in local dev builds, unless VE3NEA.SkyFM.dll and its dependencies (sherpa-onnx.dll,
+       onnxruntime.dll, sherpa-onnx-c-api.dll) are all copied by hand into the build output folder, exactly
+       as an end user would unzip the "skyfm" GitHub release artefact into the installation folder. None of
+       these DLLs nor the int8 GigaSpeech model ship in the installer. -->
   <PropertyGroup>
     <SkyFmRepoDir>$(MSBuildThisFileDirectory)..\..\VE3NEA.SkySignals\VE3NEA.SkyFM\bin\x64\$(Configuration)\net10.0\</SkyFmRepoDir>
-    <SkyFmVendorDir>$(MSBuildThisFileDirectory)..\Vendor\VE3NEA.SkyFM\</SkyFmVendorDir>
+    <SkyFmVendorDir>$(MSBuildThisFileDirectory)..\Vendor\VE3NEA.SkySignals\</SkyFmVendorDir>
   </PropertyGroup>
 
   <Target Name="RefreshVendoredSkyFm" BeforeTargets="ResolveAssemblyReferences"
@@ -279,7 +278,7 @@
   <ItemGroup>
     <Reference Include="VE3NEA.SkyFM">
       <HintPath>$(SkyFmVendorDir)VE3NEA.SkyFM.dll</HintPath>
-      <Private>true</Private>
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
 
