@@ -96,7 +96,7 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     public void AbortDownload()
     {
-      cts?.Cancel();
+      cts.Cancel();
     }
 
     public async Task DownloadAll()

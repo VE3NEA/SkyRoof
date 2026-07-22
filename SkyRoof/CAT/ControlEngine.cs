@@ -203,11 +203,9 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     protected bool SendWriteCommands(string[]? commands)
     {
-      if (commands == null) return true;
-
       bool ok = true;
 
-      foreach (string cmd in commands)
+      foreach (string cmd in commands!)
         ok = ok && SendWriteCommand(cmd);
 
       return ok;

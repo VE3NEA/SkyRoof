@@ -72,8 +72,8 @@ namespace SkyRoof
     /// </summary>
     public void SetOffset(double offset, double rateHzPerSec = 0)
     {
-      this.offset = offset;
       if (!Enabled) return;
+      this.offset = offset;
 
       double offsetHz = offset;
       if (CurrentMode != Mode.CW) offsetHz += ModeOffsets[(int)CurrentMode];
@@ -106,7 +106,7 @@ namespace SkyRoof
       if (OctaveDecimationFactor > 1)
       {
         double octaveDelaySamples = NativeLiquidDsp.msresamp2_crcf_get_delay(msresamp2);
-        seconds += octaveDelaySamples / RationalResamplerInputRate;
+        seconds = + octaveDelaySamples / RationalResamplerInputRate;
       }
 
       return TimeSpan.FromSeconds(seconds);
