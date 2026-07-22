@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.41](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.41/SkyRoofSetup-v.1.41.zip)
+[SkyRoof v.1.42](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.42/SkyRoofSetup-v.1.42.zip)
 
 <br>
 
@@ -15,6 +15,11 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.42
+
+- fixed antenna direction indicator
+- fixed choppy audio
 
 #### v.1.41
 
