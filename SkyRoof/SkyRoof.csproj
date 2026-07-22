@@ -256,14 +256,17 @@
     </Reference>
   </ItemGroup>
 
-  <!-- VE3NEA.SkyFM (the FM speech-to-text decoder): SkyRoof code references its types directly, so the
-       assembly must be present to compile, refreshed date-gated from the VE3NEA.SkySignals sibling build
-       when present, otherwise the committed Vendor copy is used as-is (same pattern as VE3NEA.SkyTlm/
-       SkySSTV). Private=false, so it is NOT copied to the build output — FM decoding stays disabled,
-       including in local dev builds, unless VE3NEA.SkyFM.dll and its dependencies (sherpa-onnx.dll,
-       onnxruntime.dll, sherpa-onnx-c-api.dll) are all copied by hand into the build output folder, exactly
-       as an end user would unzip the "skyfm" GitHub release artefact into the installation folder. None of
-       these DLLs nor the int8 GigaSpeech model ship in the installer. -->
+  <!-- VE3NEA.SkyFM (the FM speech-to-text decoder) is vendored and shipped the same way as VE3NEA.SkyTlm/
+       SkySSTV: built by the VE3NEA.SkySignals sibling solution, refreshed date-gated when the sibling build
+       is present, otherwise the committed Vendor copy is used as-is, and copied to the installer (see
+       install\SkyRoof.iss). SkyRoof code references its types directly (SkySpeechDecoder, IAsrEngine,
+       SherpaOnnxEngine, ...), and every one of those types is defined in this assembly, so shipping it is
+       enough for the JIT to resolve them — the assembly alone is inert without its dependencies. Its managed
+       binding (sherpa-onnx.dll) and two native P/Invoke DLLs (onnxruntime, sherpa-onnx-c-api) are what
+       actually do the ASR work; those, and the int8 GigaSpeech model, are NOT shipped — FM decoding stays
+       disabled until the user downloads the "skyfm" GitHub release artefact and unzips it into the
+       installation folder. That narrower gap is already handled: EnsureFmEngine() (TelemetryPanel.cs) is
+       the only place that touches those types, and it is wrapped in try/catch. -->
   <PropertyGroup>
     <SkyFmRepoDir>$(MSBuildThisFileDirectory)..\..\VE3NEA.SkySignals\VE3NEA.SkyFM\bin\x64\$(Configuration)\net10.0\</SkyFmRepoDir>
     <SkyFmVendorDir>$(MSBuildThisFileDirectory)..\Vendor\VE3NEA.SkySignals\</SkyFmVendorDir>
@@ -278,7 +281,7 @@
   <ItemGroup>
     <Reference Include="VE3NEA.SkyFM">
       <HintPath>$(SkyFmVendorDir)VE3NEA.SkyFM.dll</HintPath>
-      <Private>false</Private>
+      <Private>true</Private>
     </Reference>
   </ItemGroup>
 
