@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.40](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.40/SkyRoofSetup-v.1.40.zip)
+[SkyRoof v.1.41](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.41/SkyRoofSetup-v.1.41.zip)
 
 <br>
 
@@ -15,6 +15,11 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.41
+
+- Current Group list is no longer re-sorted every second
+- checkbox repaint in Auto Selection Schedule is fixed
 
 #### v.1.40
 
