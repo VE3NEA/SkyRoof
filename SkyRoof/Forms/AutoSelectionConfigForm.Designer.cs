@@ -40,6 +40,7 @@ namespace SkyRoof
       FinishCurrentRadio = new RadioButton();
       HighestElevationRadio = new RadioButton();
       PriorityRadio = new RadioButton();
+      TrackAntennaCheckbox = new CheckBox();
       OkBtn = new Button();
       CancelBtn = new Button();
       ClearBtn = new Button();
@@ -47,9 +48,9 @@ namespace SkyRoof
       SatGroupBox.SuspendLayout();
       ModeGroupBox.SuspendLayout();
       SuspendLayout();
-      //
+      // 
       // RotationTree
-      //
+      // 
       RotationTree.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
       RotationTree.HideSelection = false;
       RotationTree.Location = new Point(12, 12);
@@ -58,9 +59,9 @@ namespace SkyRoof
       RotationTree.TabIndex = 0;
       RotationTree.AfterSelect += RotationTree_AfterSelect;
       RotationTree.NodeMouseClick += RotationTree_NodeMouseClick;
-      //
+      // 
       // MoveUpBtn
-      //
+      // 
       MoveUpBtn.Anchor = AnchorStyles.Top | AnchorStyles.Right;
       MoveUpBtn.Location = new Point(388, 12);
       MoveUpBtn.Name = "MoveUpBtn";
@@ -69,9 +70,9 @@ namespace SkyRoof
       MoveUpBtn.Text = "Move Up";
       MoveUpBtn.UseVisualStyleBackColor = true;
       MoveUpBtn.Click += MoveUpBtn_Click;
-      //
+      // 
       // MoveDownBtn
-      //
+      // 
       MoveDownBtn.Anchor = AnchorStyles.Top | AnchorStyles.Right;
       MoveDownBtn.Location = new Point(388, 44);
       MoveDownBtn.Name = "MoveDownBtn";
@@ -80,9 +81,9 @@ namespace SkyRoof
       MoveDownBtn.Text = "Move Down";
       MoveDownBtn.UseVisualStyleBackColor = true;
       MoveDownBtn.Click += MoveDownBtn_Click;
-      //
+      // 
       // SatGroupBox
-      //
+      // 
       SatGroupBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
       SatGroupBox.Controls.Add(TxLabel);
       SatGroupBox.Controls.Add(TransmitterCombo);
@@ -94,41 +95,45 @@ namespace SkyRoof
       SatGroupBox.TabIndex = 3;
       SatGroupBox.TabStop = false;
       SatGroupBox.Text = "Satellite";
-      //
+      // 
       // TxLabel
-      //
+      // 
       TxLabel.AutoSize = true;
       TxLabel.Location = new Point(10, 24);
       TxLabel.Name = "TxLabel";
+      TxLabel.Size = new Size(70, 15);
+      TxLabel.TabIndex = 0;
       TxLabel.Text = "Transmitter:";
-      //
+      // 
       // TransmitterCombo
-      //
+      // 
       TransmitterCombo.DropDownStyle = ComboBoxStyle.DropDownList;
       TransmitterCombo.Location = new Point(10, 42);
       TransmitterCombo.Name = "TransmitterCombo";
       TransmitterCombo.Size = new Size(180, 23);
       TransmitterCombo.TabIndex = 0;
       TransmitterCombo.SelectedIndexChanged += TransmitterCombo_SelectedIndexChanged;
-      //
+      // 
       // RecLabel
-      //
+      // 
       RecLabel.AutoSize = true;
       RecLabel.Location = new Point(10, 74);
       RecLabel.Name = "RecLabel";
+      RecLabel.Size = new Size(47, 15);
+      RecLabel.TabIndex = 1;
       RecLabel.Text = "Record:";
-      //
+      // 
       // RecordCombo
-      //
+      // 
       RecordCombo.DropDownStyle = ComboBoxStyle.DropDownList;
       RecordCombo.Location = new Point(10, 92);
       RecordCombo.Name = "RecordCombo";
       RecordCombo.Size = new Size(180, 23);
       RecordCombo.TabIndex = 1;
       RecordCombo.SelectedIndexChanged += RecordCombo_SelectedIndexChanged;
-      //
+      // 
       // ModeGroupBox
-      //
+      // 
       ModeGroupBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
       ModeGroupBox.Controls.Add(FinishCurrentRadio);
       ModeGroupBox.Controls.Add(HighestElevationRadio);
@@ -139,93 +144,108 @@ namespace SkyRoof
       ModeGroupBox.TabIndex = 4;
       ModeGroupBox.TabStop = false;
       ModeGroupBox.Text = "Overlapping Passes";
-      //
+      // 
       // FinishCurrentRadio
-      //
+      // 
       FinishCurrentRadio.AutoSize = true;
       FinishCurrentRadio.Location = new Point(10, 24);
       FinishCurrentRadio.Name = "FinishCurrentRadio";
+      FinishCurrentRadio.Size = new Size(97, 19);
       FinishCurrentRadio.TabIndex = 0;
       FinishCurrentRadio.TabStop = true;
       FinishCurrentRadio.Text = "Finish current";
       FinishCurrentRadio.UseVisualStyleBackColor = true;
-      //
+      // 
       // HighestElevationRadio
-      //
+      // 
       HighestElevationRadio.AutoSize = true;
       HighestElevationRadio.Location = new Point(10, 50);
       HighestElevationRadio.Name = "HighestElevationRadio";
+      HighestElevationRadio.Size = new Size(117, 19);
       HighestElevationRadio.TabIndex = 1;
       HighestElevationRadio.TabStop = true;
       HighestElevationRadio.Text = "Highest elevation";
       HighestElevationRadio.UseVisualStyleBackColor = true;
-      //
+      // 
       // PriorityRadio
-      //
+      // 
       PriorityRadio.AutoSize = true;
       PriorityRadio.Location = new Point(10, 76);
       PriorityRadio.Name = "PriorityRadio";
+      PriorityRadio.Size = new Size(63, 19);
       PriorityRadio.TabIndex = 2;
       PriorityRadio.TabStop = true;
       PriorityRadio.Text = "Priority";
       PriorityRadio.UseVisualStyleBackColor = true;
-      //
+      // 
+      // TrackAntennaCheckbox
+      // 
+      TrackAntennaCheckbox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+      TrackAntennaCheckbox.AutoSize = true;
+      TrackAntennaCheckbox.Location = new Point(399, 338);
+      TrackAntennaCheckbox.Name = "TrackAntennaCheckbox";
+      TrackAntennaCheckbox.Size = new Size(175, 19);
+      TrackAntennaCheckbox.TabIndex = 5;
+      TrackAntennaCheckbox.Text = "Track antenna during passes";
+      TrackAntennaCheckbox.UseVisualStyleBackColor = true;
+      // 
       // OkBtn
-      //
+      // 
       OkBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-      OkBtn.Location = new Point(388, 382);
+      OkBtn.Location = new Point(388, 412);
       OkBtn.Name = "OkBtn";
       OkBtn.Size = new Size(90, 26);
-      OkBtn.TabIndex = 5;
+      OkBtn.TabIndex = 6;
       OkBtn.Text = "OK";
       OkBtn.UseVisualStyleBackColor = true;
       OkBtn.Click += OkBtn_Click;
-      //
+      // 
       // CancelBtn
-      //
+      // 
       CancelBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
       CancelBtn.DialogResult = DialogResult.Cancel;
-      CancelBtn.Location = new Point(498, 382);
+      CancelBtn.Location = new Point(498, 412);
       CancelBtn.Name = "CancelBtn";
       CancelBtn.Size = new Size(90, 26);
-      CancelBtn.TabIndex = 6;
+      CancelBtn.TabIndex = 7;
       CancelBtn.Text = "Cancel";
       CancelBtn.UseVisualStyleBackColor = true;
-      //
-      // SelectAllBtn
-      //
-      SelectAllBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-      SelectAllBtn.Location = new Point(388, 344);
-      SelectAllBtn.Name = "SelectAllBtn";
-      SelectAllBtn.Size = new Size(90, 26);
-      SelectAllBtn.TabIndex = 7;
-      SelectAllBtn.Text = "Select All";
-      SelectAllBtn.UseVisualStyleBackColor = true;
-      SelectAllBtn.Click += SelectAllBtn_Click;
-      //
+      // 
       // ClearBtn
-      //
+      // 
       ClearBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-      ClearBtn.Location = new Point(498, 344);
+      ClearBtn.Location = new Point(498, 372);
       ClearBtn.Name = "ClearBtn";
       ClearBtn.Size = new Size(90, 26);
-      ClearBtn.TabIndex = 8;
+      ClearBtn.TabIndex = 9;
       ClearBtn.Text = "Clear";
       ClearBtn.UseVisualStyleBackColor = true;
       ClearBtn.Click += ClearBtn_Click;
-      //
+      // 
+      // SelectAllBtn
+      // 
+      SelectAllBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+      SelectAllBtn.Location = new Point(388, 372);
+      SelectAllBtn.Name = "SelectAllBtn";
+      SelectAllBtn.Size = new Size(90, 26);
+      SelectAllBtn.TabIndex = 8;
+      SelectAllBtn.Text = "Select All";
+      SelectAllBtn.UseVisualStyleBackColor = true;
+      SelectAllBtn.Click += SelectAllBtn_Click;
+      // 
       // AutoSelectionConfigForm
-      //
+      // 
       AcceptButton = OkBtn;
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
       CancelButton = CancelBtn;
-      ClientSize = new Size(600, 420);
+      ClientSize = new Size(600, 450);
       Controls.Add(RotationTree);
       Controls.Add(MoveUpBtn);
       Controls.Add(MoveDownBtn);
       Controls.Add(SatGroupBox);
       Controls.Add(ModeGroupBox);
+      Controls.Add(TrackAntennaCheckbox);
       Controls.Add(OkBtn);
       Controls.Add(CancelBtn);
       Controls.Add(ClearBtn);
@@ -241,6 +261,7 @@ namespace SkyRoof
       ModeGroupBox.ResumeLayout(false);
       ModeGroupBox.PerformLayout();
       ResumeLayout(false);
+      PerformLayout();
     }
 
     #endregion
@@ -257,6 +278,7 @@ namespace SkyRoof
     private RadioButton FinishCurrentRadio;
     private RadioButton HighestElevationRadio;
     private RadioButton PriorityRadio;
+    private CheckBox TrackAntennaCheckbox;
     private Button OkBtn;
     private Button CancelBtn;
     private Button ClearBtn;

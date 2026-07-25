@@ -76,6 +76,7 @@ namespace SkyRoof
       if (form.ShowDialog(this) == DialogResult.OK)
       {
         ctx.AutoSelector.ReapplyActivePass();               // apply a transmitter change to the active sat now
+        ctx.AutoSelector.SetEnabled(true);                  // saving the schedule with OK starts auto-selection
         UpdateStatus();
       }
     }

@@ -54,6 +54,8 @@ namespace SkyRoof
   public class GroupSchedule
   {
     public OverlapMode OverlapMode = OverlapMode.FinishCurrent;
+    // schedule-wide: rotate the antenna to follow each selected pass while auto-selection is running
+    public bool TrackAntenna = false;
     public List<ScheduledSat> Sats = new();     // list order = priority (index 0 = highest)
     public List<ScheduledPass> Passes = new();  // the ticked leaves
   }

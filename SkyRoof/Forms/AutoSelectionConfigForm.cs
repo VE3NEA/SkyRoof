@@ -50,6 +50,16 @@ namespace SkyRoof
       tips.SetToolTip(SelectAllBtn, "Check all passes of the current group");
       tips.SetToolTip(ClearBtn, "Uncheck all passes, clearing the schedule for the current group");
 
+      // the checkbox is always usable, but warns in red that it does nothing until the rotator is enabled
+      if (ctx.Settings.Rotator.Enabled)
+        tips.SetToolTip(TrackAntennaCheckbox, "Rotate the antenna to point at and follow each selected pass");
+      else
+      {
+        TrackAntennaCheckbox.ForeColor = Color.Red;
+        tips.SetToolTip(TrackAntennaCheckbox,
+          "Rotator control is disabled in Settings - antenna tracking will have no effect until you enable it");
+      }
+
       LoadSchedule();
       UpdateDetails();
     }
@@ -67,6 +77,7 @@ namespace SkyRoof
       var schedule = ctx.AutoSelector.CurrentSchedule ?? new GroupSchedule();
 
       SetOverlapMode(schedule.OverlapMode);
+      TrackAntennaCheckbox.Checked = schedule.TrackAntenna;
 
       var now = DateTime.UtcNow;
       var horizon = now.AddHours(48);
@@ -342,7 +353,7 @@ namespace SkyRoof
     // writes the tree and details state back into the current group's schedule
     private void OkBtn_Click(object sender, EventArgs e)
     {
-      var schedule = new GroupSchedule { OverlapMode = GetOverlapMode() };
+      var schedule = new GroupSchedule { OverlapMode = GetOverlapMode(), TrackAntenna = TrackAntennaCheckbox.Checked };
 
       foreach (TreeNode satNode in RotationTree.Nodes)
       {

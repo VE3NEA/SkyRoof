@@ -11,6 +11,10 @@ namespace SkyRoof
     private AzElEntryDialog Dialog = new();
     private OptimizedRotationPath? Path;
     private Bearing? SatBearing;
+
+    // set while auto-selection programmatically engages tracking for a specific pass, so the checkbox
+    // handler keeps that exact pass instead of rebuilding the path from GetNextPass
+    private bool settingTrack;
     public Bearing? AntBearing { get => engine?.LastReadBearing; }
 
     // PathOptimizerForm instance is created once and reused
@@ -66,6 +70,12 @@ namespace SkyRoof
 
     public void SetPass(SatellitePass? pass)
     {
+      // re-selecting the same pass must not disturb tracking (mirrors the SetSatellite guard); passes are
+      // recomputed objects, so compare by identity (sat + orbit), not reference
+      if (pass != null && Path?.Pass != null
+        && pass.Satellite.sat_id == Path.Pass.Satellite.sat_id
+        && pass.OrbitNumber == Path.Pass.OrbitNumber) return;
+
       Path = pass == null ? null : Path = new(pass, ctx.Settings.Rotator, AntBearing);
 
       ResetUi();
@@ -74,6 +84,7 @@ namespace SkyRoof
       ctx.MainForm.ShowRotatorStatus();
 
       UpdatePathOptimizerForm();
+      toolTip1.SetToolTip(TrackCheckbox, $"Track {pass.Satellite.name} orbit {pass.OrbitNumber}");
     }
 
     internal void Advance()
@@ -105,12 +116,38 @@ namespace SkyRoof
       return engine != null && engine.IsRunning;
     }
 
+    // true when the rotator is actively tracking (the track box is on and a rotator is present); the
+    // single source of truth used by auto-selection instead of a shadow flag
+    public bool IsTracking => engine != null && TrackCheckbox.Checked;
+
     public void RotateTo(Bearing? bearing)
     {
       if (engine == null || bearing == null) return;
 
       var sanitizedBearing = Sanitize(bearing);
       engine.RotateTo(sanitizedBearing);
+    }
+
+    // engages tracking of a specific pass on behalf of auto-selection: sets the path to that exact pass
+    // (not GetNextPass) and turns tracking on. a no-op when rotator control is disabled (engine == null),
+    // so the schedule's tracking option is harmless while the rotator is off
+    public void TrackPass(SatellitePass? pass)
+    {
+      if (engine == null || pass == null) return;
+
+      Path = new(pass, ctx.Settings.Rotator, AntBearing);
+      TrackCheckbox.Enabled = true;
+
+      // check the box without letting the handler rebuild the path from GetNextPass; then start moving
+      settingTrack = true;
+      try { TrackCheckbox.Checked = true; }
+      finally { settingTrack = false; }
+
+      RotateTo(Path?.GetNextAntennaBearing());
+      BearingToUi();
+      UpdatePathOptimizerForm();
+      ctx.MainForm.ShowRotatorStatus();
+      toolTip1.SetToolTip(TrackCheckbox, $"Auto track {pass.Satellite.name} orbit {pass.OrbitNumber}");
     }
 
     public void StopRotation()
@@ -148,10 +185,16 @@ namespace SkyRoof
 
       if (TrackCheckbox.Checked)
       {
-        if (Path != null)
+        // auto-selection already set the exact pass in TrackPass; only rebuild for a manual check
+        if (!settingTrack && Path != null)
         {
-          // re-compute path
-          var pass = ctx.HamPasses.GetNextPass(Path!.Satellite);
+          // re-optimize the path from the current antenna position, but keep the pass we already have while
+          // it is still live: mid-pass GetNextPass returns the NEXT pass (its AOS is in the future), which
+          // would point the antenna at the wrong direction. only fall back to GetNextPass when the current
+          // pass is over, so pre-positioning for the next pass between passes still works
+          var pass = Path.Pass != null && DateTime.UtcNow < Path.Pass.EndTime
+            ? Path.Pass
+            : ctx.HamPasses.GetNextPass(Path!.Satellite);
           var sett = ctx.Settings.Rotator;
           Path = new(pass, sett, AntBearing);
           UpdatePathOptimizerForm();
