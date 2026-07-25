@@ -72,11 +72,14 @@ namespace SkyRoof
 
     private void EditBtn_Click(object sender, EventArgs e)
     {
+      bool trackedBefore = ctx.AutoSelector.CurrentSchedule?.TrackAntenna == true;
+
       using var form = new AutoSelectionConfigForm(ctx);
       if (form.ShowDialog(this) == DialogResult.OK)
       {
         ctx.AutoSelector.ReapplyActivePass();               // apply a transmitter change to the active sat now
         ctx.AutoSelector.SetEnabled(true);                  // saving the schedule with OK starts auto-selection
+        ctx.AutoSelector.ApplyTrackAntennaChange(trackedBefore);   // start or stop the antenna if the option changed
         UpdateStatus();
       }
     }

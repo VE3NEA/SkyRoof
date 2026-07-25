@@ -30,6 +30,10 @@ namespace SkyRoof
     // as a manual override (plan §2.4)
     private bool selecting;
 
+    // the upcoming pass the idle-gap pre-roll has already been applied to; keeps UpdateIdleTracking from
+    // running on every idle tick, so the user is free to stop the rotator during the pre-roll window
+    private SatellitePass? idleTrackedPass;
+
     // the engine's own headless recorder, separate from the manual RecorderPanel (plan §2.5); a segment
     // runs from selection to deselection/LOS and is saved as one file per contiguous segment
     private RecordingManager recorder = null!;
@@ -83,6 +87,7 @@ namespace SkyRoof
           ctx.RotatorControl.StopRotation();
         Enabled = false;
         ActivePass = null;
+        idleTrackedPass = null;
         if (wasEnabled) Log.Information("Auto-selection stopped");
       }
     }
@@ -178,8 +183,15 @@ namespace SkyRoof
 
       var target = ChooseTarget(schedule, candidates, now, ActivePass);
 
-      // idle gap - stop any recording (LOS) but stay tuned to the last transmitter
-      if (target == null) { EndSegment(); ActivePass = null; UpdateIdleTracking(); return; }
+      // idle gap - stop any recording (LOS) but stay tuned to the last transmitter. the pre-roll runs at
+      // most once per upcoming pass: once idleTrackedPass is set, this gap's antenna handling is done
+      if (target == null)
+      {
+        EndSegment();
+        ActivePass = null;
+        if (idleTrackedPass == null) UpdateIdleTracking();
+        return;
+      }
 
       if (!IsSamePass(target, ActivePass))
         SelectPass(schedule, target);
@@ -242,6 +254,7 @@ namespace SkyRoof
       }
 
       ActivePass = pass;
+      idleTrackedPass = null;                               // the idle gap is over, arm the next pre-roll
       BeginSegment(schedule, pass);                         // start recording per the sat's RecordMode
       // re-assert tracking after the selection cascade above (SelectedPassChanged -> RotatorWidget.SetPass
       // -> ResetUi) unchecked the track box; also handles the no-advance repoint at a sat-to-sat switch
@@ -413,10 +426,31 @@ namespace SkyRoof
       var next = GetNextSelection();
       bool inPreRoll = next != null
         && next.Value.When - DateTime.UtcNow <= TimeSpan.FromSeconds(PreRollLeadSeconds);
+      if (!inPreRoll) return;
 
-      // engage once - if already tracking, do not rebuild the path every tick
-      if (inPreRoll && !ctx.RotatorControl.IsTracking)
-        ctx.RotatorControl.TrackPass(next!.Value.Pass);
+      // the pre-roll is now done for this pass, whether or not we engaged the rotator below
+      idleTrackedPass = next!.Value.Pass;
+
+      // if the antenna is already tracking, do not rebuild the path
+      if (!ctx.RotatorControl.IsTracking) ctx.RotatorControl.TrackPass(idleTrackedPass);
+    }
+
+    // applies a change of the schedule's Track Antenna option made in the config dialog: switching it on
+    // starts tracking the active pass right away, switching it off stops the rotator. a no-op when the
+    // option did not change or when auto-selection is not running
+    public void ApplyTrackAntennaChange(bool trackedBefore)
+    {
+      bool tracksNow = CurrentSchedule?.TrackAntenna == true;
+      if (tracksNow == trackedBefore || !Enabled) return;
+
+      idleTrackedPass = null;                               // let the idle pre-roll re-evaluate
+
+      if (!tracksNow)
+      {
+        if (ctx.RotatorControl.IsTracking) ctx.RotatorControl.StopRotation();
+      }
+      else if (ActivePass != null)
+        ctx.RotatorControl.TrackPass(ActivePass);           // in an idle gap the pre-roll takes over
     }
 
 
