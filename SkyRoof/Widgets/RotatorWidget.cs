@@ -84,7 +84,7 @@ namespace SkyRoof
       ctx.MainForm.ShowRotatorStatus();
 
       UpdatePathOptimizerForm();
-      toolTip1.SetToolTip(TrackCheckbox, $"Track {pass.Satellite.name} orbit {pass.OrbitNumber}");
+      toolTip1.SetToolTip(TrackCheckbox, $"Track {pass?.Satellite?.name} orbit {pass?.OrbitNumber}");
     }
 
     internal void Advance()
