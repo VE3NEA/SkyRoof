@@ -186,6 +186,9 @@ namespace VE3NEA
     public static extern IntPtr SoapySDRDevice_setupStream(IntPtr device, Direction direction, string format, IntPtr channels, nint numChans, IntPtr args);
 
     [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+    public static extern IntPtr SoapySDRDevice_getStreamArgsInfo(IntPtr device, Direction direction, nint channel, out nint length);
+
+    [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
     public static extern nint SoapySDRDevice_getStreamMTU(IntPtr device, IntPtr stream);
 
     [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
