@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.42](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.42/SkyRoofSetup-v.1.42.zip)
+[SkyRoof v.1.43](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.43/SkyRoofSetup-v.1.43.zip)
 
 <br>
 
@@ -15,6 +15,12 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.43
+
+- added antenna tracking option in satellite auto selection
+- SSTV decoding improved
+- reduced overflows in SDR streaming
 
 #### v.1.42
 
