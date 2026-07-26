@@ -108,7 +108,9 @@ namespace VE3NEA
         index++;
       }
 
-      IntPtr result = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(SoapySDRKwargs)));
+      // the three fields are written by hand below, so the size is computed from the native layout
+      // (size_t, char**, char**) rather than from the managed struct
+      IntPtr result = Marshal.AllocHGlobal(3 * IntPtr.Size);
       Marshal.WriteIntPtr(result, 0, args.Count);
       Marshal.WriteIntPtr(result, IntPtr.Size, keys);
       Marshal.WriteIntPtr(result, 2 * IntPtr.Size, vals);

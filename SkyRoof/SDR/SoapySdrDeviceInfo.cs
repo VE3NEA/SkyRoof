@@ -14,7 +14,7 @@ namespace VE3NEA
 
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public string Name { get => KwArgs.GetValueOrDefault("label") ?? "<no label>"; }
-    public SoapySDRKwargs KwArgs;
+    public SoapySdrArgs KwArgs;
     public SdrProperties Properties = new();
 
     public SoapySDRRange[] FrequencyRange, SampleRateRange, BandwidthRange;
@@ -29,7 +29,7 @@ namespace VE3NEA
 
     public SoapySdrDeviceInfo() { }
 
-    public SoapySdrDeviceInfo(SoapySDRKwargs kwArgs)
+    public SoapySdrDeviceInfo(SoapySdrArgs kwArgs)
     {
       KwArgs = kwArgs;
 

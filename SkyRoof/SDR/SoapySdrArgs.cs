@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 
 namespace VE3NEA
 {
-  public class SoapySDRKwargs : Dictionary<string, string>
+  public class SoapySdrArgs : Dictionary<string, string>
   {
-    public static SoapySDRKwargs FromNative(NativeSoapySdr.SoapySDRKwargs native)
+    public static SoapySdrArgs FromNative(NativeSoapySdr.SoapySDRKwargs native)
     {
-      var kwargs = new SoapySDRKwargs();
+      var kwargs = new SoapySdrArgs();
       string[] keys = SoapySdrHelper.MarshalStringArray(native.keys, native.size);
       string[] values = SoapySdrHelper.MarshalStringArray(native.vals, native.size);
 

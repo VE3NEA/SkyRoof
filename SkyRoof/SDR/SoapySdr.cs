@@ -50,7 +50,7 @@ namespace VE3NEA
       return result;
     }
 
-    public static IntPtr CreateDevice(SoapySDRKwargs kwArgs)
+    public static IntPtr CreateDevice(SoapySdrArgs kwArgs)
     {
       IntPtr nativeKwargs = kwArgs.ToNative();
       var device = NativeSoapySdr.SoapySDRDevice_make(nativeKwargs);
@@ -75,7 +75,7 @@ namespace VE3NEA
       }
     }
 
-    internal static bool DeviceExists(SoapySDRKwargs kwArgs)
+    internal static bool DeviceExists(SoapySdrArgs kwArgs)
     {
       IntPtr nativeKwargs = kwArgs.ToNative();
       try

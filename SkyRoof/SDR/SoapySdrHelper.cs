@@ -36,16 +36,16 @@ namespace VE3NEA
       return result;
     }
 
-    internal static SoapySDRKwargs[] MarshalKwArgsArray(nint resultPtr, nint length)
+    internal static SoapySdrArgs[] MarshalKwArgsArray(nint resultPtr, nint length)
     {
-      var result = new SoapySDRKwargs[length];
+      var result = new SoapySdrArgs[length];
 
       int structSize = Marshal.SizeOf(typeof(NativeSoapySdr.SoapySDRKwargs));
       for (int i = 0; i < length; i++)
       {
         IntPtr ptr = IntPtr.Add(resultPtr, i * structSize);
         NativeSoapySdr.SoapySDRKwargs nativeKwargs = Marshal.PtrToStructure<NativeSoapySdr.SoapySDRKwargs>(ptr);
-        result[i] = SoapySDRKwargs.FromNative(nativeKwargs);
+        result[i] = SoapySdrArgs.FromNative(nativeKwargs);
       }
 
       NativeSoapySdr.SoapySDRKwargsList_clear(resultPtr, length);
