@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.43](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.43/SkyRoofSetup-v.1.43.zip)
+[SkyRoof v.1.44](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.44/SkyRoofSetup-v.1.44.zip)
 
 <br>
 
@@ -15,6 +15,10 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.44
+
+- a bug fixed in the SDR interface that was crashing the app
 
 #### v.1.43
 
