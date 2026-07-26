@@ -158,8 +158,29 @@ only when another pass is clearly higher (to avoid rapid switching back and fort
 higher-priority pass rising over the horizon takes over, and when it sets the next-highest still-up pass
 is entered.</li>
 </ul>
+<h3 id="track-antenna-during-passes">Track Antenna During Passes</h3>
+<p>Tick <strong>Track antenna during passes</strong> to let auto selection also point your antenna at each pass. Like the
+overlap mode, this option belongs to the schedule, so each satellite group has its own setting.</p>
+<ul>
+<li>When a pass is entered, the antenna starts tracking it and follows it until LOS.</li>
+<li>One minute before the AOS of the next selected pass, the antenna is sent to the pass's rise point ahead
+of time, so it is already in position when the pass starts. Only the antenna moves at this point; the
+satellite is not selected or tuned until AOS.</li>
+<li>Outside that one-minute window, auto selection does not touch the rotator between passes, so you are
+free to move or track the antenna by hand in the gaps. If you click <strong>Stop</strong> during the pre-roll, the
+antenna stays where it is until the pass begins.</li>
+<li>Turning <strong>Auto Selection</strong> off stops the antenna if auto selection was tracking it.</li>
+</ul>
+<p>The option takes effect as soon as you click <strong>OK</strong>: ticking it starts tracking the pass that is currently
+active, and clearing it stops the rotator.</p>
+<p>When the box is not ticked, auto selection never moves the antenna, and you can track passes manually with
+the <a href="rotator_control.html">Rotator Control panel</a> as usual.</p>
+<p>The option requires rotator control to be enabled in the <a href="setting_up_rotator_control.html">rotator settings</a>.
+If it is disabled, the checkbox caption is shown in red to warn you that antenna tracking will have no
+effect until you enable it.</p>
 <p>Click <strong>OK</strong> to save the schedule, or <strong>Cancel</strong> to discard your changes. Reopening the dialog extends the
-list to the next 48 hours and keeps your previously selected passes.</p>
+list to the next 48 hours from that moment, keeping your previously selected passes checked. The newly
+added passes are unchecked, so they do not join the rotation until you check them yourself.</p>
 <h2 id="recordings">Recordings</h2>
 <p>Auto-selection recordings are saved into the <strong>Auto</strong> subfolder of the <strong>Recordings</strong> folder inside the
 <a href="data_folder.html">data folder</a>. Each contiguous segment becomes one file, named with its start time and the
