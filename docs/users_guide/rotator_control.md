@@ -44,3 +44,4 @@ To stop antenna rotation, either manual or due to the satellite tracking, click 
 ## See Also
 
 - [Smart Antenna Rotation](smart_antenna_rotation.md)
+- [Auto Selection Panel](auto_selection_panel.md) — tracking the antenna automatically on scheduled passes

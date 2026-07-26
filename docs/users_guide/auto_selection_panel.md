@@ -76,8 +76,33 @@ When two selected passes are up at the same time, the **overlap mode** decides w
   higher-priority pass rising over the horizon takes over, and when it sets the next-highest still-up pass
   is entered.
 
+### Track Antenna During Passes
+
+Tick **Track antenna during passes** to let auto selection also point your antenna at each pass. Like the
+overlap mode, this option belongs to the schedule, so each satellite group has its own setting.
+
+- When a pass is entered, the antenna starts tracking it and follows it until LOS.
+- One minute before the AOS of the next selected pass, the antenna is sent to the pass's rise point ahead
+  of time, so it is already in position when the pass starts. Only the antenna moves at this point; the
+  satellite is not selected or tuned until AOS.
+- Outside that one-minute window, auto selection does not touch the rotator between passes, so you are
+  free to move or track the antenna by hand in the gaps. If you click **Stop** during the pre-roll, the
+  antenna stays where it is until the pass begins.
+- Turning **Auto Selection** off stops the antenna if auto selection was tracking it.
+
+The option takes effect as soon as you click **OK**: ticking it starts tracking the pass that is currently
+active, and clearing it stops the rotator.
+
+When the box is not ticked, auto selection never moves the antenna, and you can track passes manually with
+the [Rotator Control panel](rotator_control.md) as usual.
+
+The option requires rotator control to be enabled in the [rotator settings](setting_up_rotator_control.md).
+If it is disabled, the checkbox caption is shown in red to warn you that antenna tracking will have no
+effect until you enable it.
+
 Click **OK** to save the schedule, or **Cancel** to discard your changes. Reopening the dialog extends the
-list to the next 48 hours and keeps your previously selected passes.
+list to the next 48 hours from that moment, keeping your previously selected passes checked. The newly
+added passes are unchecked, so they do not join the rotation until you check them yourself.
 
 ## Recordings
 
