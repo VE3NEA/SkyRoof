@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using Serilog;
 using SGPdotNET.TLE;
 using VE3NEA;
+using VE3NEA.SkyTlm.Core;   // SignalParams / Framing, for the save-to-overrides writer (§6.1)
 
 namespace SkyRoof
 {
@@ -62,6 +63,12 @@ namespace SkyRoof
         foreach (var sat in satellites)
           foreach (var tx in sat.Transmitters)
             tx.Satellite = sat;
+
+        // the override file is live configuration, not a build-time artifact: apply it on every load so a
+        // record saved from the Signal Params dialog takes effect at the next start without a database
+        // import (discover_params_plan.md §6.2). ApplyTransmitterOverrides is idempotent, so re-applying
+        // over params already carrying a manual layer from Satellites.json changes nothing.
+        ApplyTransmitterOverrides();
 
         loaded = SatelliteList.Count > 0;
       }
@@ -233,8 +240,10 @@ namespace SkyRoof
         try { ImportSatyaml(); }
         catch (Exception ex) { Log.Warning(ex, "satyaml import failed (enrichment skipped)"); }
 
-        // local hand-curated overrides on top of satyaml — enrichment only, never abort the import
-        try { ImportTransmitterOverrides(); }
+        // local hand-curated overrides on top of satyaml — enrichment only, never abort the import.
+        // Kept here as well as at load time: the import writes Satellites.json, and leaving the manual
+        // layer out of it would make an imported database momentarily disagree with a loaded one.
+        try { ApplyTransmitterOverrides(); }
         catch (Exception ex) { Log.Warning(ex, "transmitter overrides import failed (enrichment skipped)"); }
 
         var satNames = new SatelliteNames();
@@ -334,7 +343,9 @@ namespace SkyRoof
     // transmitter uuid to a partial GrSatsInfo object that lists only the fields to override; absent fields
     // are left untouched (PopulateObject merges in place). This is how we supply data the SatNOGS DB lacks
     // and gr-satellites has no satyaml entry for (e.g. FSK deviation), or correct wrong DB values (e.g. baud).
-    private void ImportTransmitterOverrides()
+    // Also called after every LoadFromFile and after the dialog writes a record (§6.2), so the file behaves
+    // as live configuration rather than as an input to the import that produced Satellites.json.
+    internal void ApplyTransmitterOverrides()
     {
       string path = Path.Combine(DataFolder, "transmitters-override.json");
       if (!File.Exists(path)) return;
@@ -351,11 +362,7 @@ namespace SkyRoof
       int applied = 0;
       foreach (var (uuid, fields) in overrides)
       {
-        if (!byUuid.TryGetValue(uuid, out var tx))
-        {
-          Log.Warning($"transmitter override: uuid {uuid} not found in the imported transmitters");
-          continue;
-        }
+        if (!byUuid.TryGetValue(uuid, out var tx)) continue;   // a satellite this database does not carry
 
         tx.manual ??= new GrSatsInfo();
         JsonConvert.PopulateObject(fields.ToString(), tx.manual);
@@ -363,6 +370,65 @@ namespace SkyRoof
       }
       Log.Information($"transmitter overrides: applied {applied} of {overrides.Count}");
     }
+
+    // Write one transmitter's proven parameters into transmitters-override.json and apply them immediately
+    // (discover_params_plan.md §6.1). This is the operator's only click in the discovery flow, and the only
+    // step that persists anything: parameters are applied to the pass automatically on the first CRC-valid
+    // frame, but written here only once the pass has produced FURTHER frames with them.
+    //
+    // The record is a partial GrSatsInfo, matching the file's existing format, and carries "read_only": true
+    // so MergeOverrideFile treats it as user-claimed and does not refresh it from the shipped defaults on
+    // the next start. Only the fields GrSatsInfo can express are written; the rest (AfCarrier, Manchester)
+    // stay dialog-editable by hand (§6.5).
+    internal void SaveTransmitterOverride(SatnogsDbTransmitter tx, SignalParams p)
+    {
+      string path = Path.Combine(DataFolder, "transmitters-override.json");
+
+      Dictionary<string, JObject> records = new();
+      if (File.Exists(path))
+        try { records = JsonConvert.DeserializeObject<Dictionary<string, JObject>>(File.ReadAllText(path)) ?? new(); }
+        catch (Exception ex) { Log.Warning($"transmitters-override.json is unreadable, starting a fresh one: {ex.Message}"); }
+
+      var record = new JObject
+      {
+        ["satellite"] = tx.Satellite?.name,
+        ["norad"] = tx.norad_cat_id,
+        ["read_only"] = true,
+        ["modulation"] = p.Modulation.ToString(),
+        ["baudrate"] = p.Baud,
+        ["framing"] = FramingText(p.Framing)
+      };
+      // GMSK pins h = 1/2, so its deviation is implied rather than curated — writing it would turn a
+      // derived value into an authoritative one.
+      if (p.Modulation != Modulation.GMSK && (p.ResolvedDeviation ?? p.Deviation) is double dev)
+        record["deviation"] = dev;
+      if (p.RsBasis != null) record["rs_basis"] = p.RsBasis;
+      if (p.FrameSize is int fs) record["frame_size"] = fs;
+      if (p.Convolutional != null) record["convolutional"] = p.Convolutional;
+      if (p.RsInterleaving is int ri) record["rs_interleaving"] = ri;
+      if (p.Scrambler is bool sc) record["scrambler"] = sc ? "CCSDS" : "none";
+      if (p.Differential is bool diff) record["precoding"] = diff ? "differential" : "none";
+
+      records[tx.uuid] = record;
+      File.WriteAllText(path, JsonConvert.SerializeObject(records, Formatting.Indented));
+      Log.Information($"transmitter override saved for {tx.Satellite?.name} / {tx.description} ({tx.uuid})");
+
+      // live configuration: the record must take effect now, not at the next database import (§6.2).
+      ApplyTransmitterOverrides();
+    }
+
+    // Enum → the free text ExtractFraming classifies back to the same value. The override file stores DB-style
+    // strings, not enum names, and the round trip has to survive: "AX100RS" would collapse back to AX100ASM.
+    private static string FramingText(Framing framing) => framing switch
+    {
+      Framing.AX25G3RUH => "AX.25 G3RUH",
+      Framing.USP => "USP",
+      Framing.HADES => "Hades",
+      Framing.AX100ASM => "AX100 ASM+Golay",
+      Framing.AX100RS => "AX100 Reed Solomon",
+      Framing.CCSDS => "CCSDS",
+      _ => ""
+    };
 
     // Merge the embedded default transmitters-override.json into the user-editable copy without clobbering
     // user edits. Records are keyed by transmitter uuid: user-only records are kept, new shipped records are

@@ -254,28 +254,139 @@ namespace SkyRoof
       b?.Reset();
     }
 
-    private void OkBtn_Click(object sender, EventArgs e)
-    {
-      var mod = (Modulation)ModulationCombo.SelectedItem;
-      var framing = (Framing)FramingCombo.SelectedItem;
-      double baud = ParseNullable(BaudTextBox.Text) ?? Original.Baud;
-      double? deviation = ParseNullable(DeviationTextBox.Text);
-      double? afCarrier = ParseNullable(AfCarrierTextBox.Text);
 
-      Result = Original with
+    //----------------------------------------------------------------------------------------------
+    //                                    parameter discovery
+    //----------------------------------------------------------------------------------------------
+    // Discover searches for parameters that decode the transmitter, over the bursts arriving from here on
+    // (discover_params_plan.md §4.1). The dialog owns none of that: the caller owns the session, because it
+    // owns the live pipeline the bursts come from and the apply path the answer goes into. The dialog is the
+    // button, the progress line and the save click.
+
+    /// <summary>Raised when the operator presses Discover. The argument is the requested state — the button
+    /// is a toggle, and a second press cancels the session (§4.6a).</summary>
+    public event Action<bool>? DiscoverToggled;
+
+    /// <summary>Raised when the operator presses Save to overrides: write the parameters currently shown
+    /// into <c>transmitters-override.json</c> so the correction survives a restart (§6.1).</summary>
+    public event EventHandler? SaveOverrideRequested;
+
+    /// <summary>True while a discovery session is running, so the caller can end it if the dialog closes.</summary>
+    public bool Discovering { get; private set; }
+
+    // set when the operator stops the search themselves, so the session's Ended notification does not
+    // overwrite that with "no parameters found" — cancelling is not the same as failing (§4.6a).
+    private bool StoppedByOperator;
+
+    private void DiscoverBtn_Click(object sender, EventArgs e)
+    {
+      Discovering = !Discovering;
+      DiscoverBtn.Text = Discovering ? "Stop" : "Discover";
+      StoppedByOperator = !Discovering;
+      SetStatus(Discovering ? "searching..." : "search stopped", SystemColors.ControlText);
+      DiscoverToggled?.Invoke(Discovering);
+    }
+
+    /// <summary>Progress line: hypotheses tried, bursts analyzed, bursts skipped (§7 P2/P3). The skipped
+    /// count is shown because it is the signal that retaining bursts would pay off.</summary>
+    public void ShowDiscoveryProgress(int hypotheses, int analyzed, int skipped)
+    {
+      string skip = skipped > 0 ? $", {skipped} skipped" : "";
+      SetStatus($"searching: {hypotheses} hypotheses, {analyzed} burst(s){skip}", SystemColors.ControlText);
+    }
+
+    /// <summary>
+    /// A hypothesis decoded: show the parameters found and how they differ from the DB, and put them into
+    /// the fields. The caller has already applied them to the live pass — this is the report, not the
+    /// decision (§4.5). The search is over, so the button returns to its idle state.
+    /// </summary>
+    public void ShowDiscovered(SignalParams found, SignalParams db)
+    {
+      if (InvokeRequired) { BeginInvoke(() => ShowDiscovered(found, db)); return; }
+
+      Discovering = false;
+      DiscoverBtn.Text = "Discover";
+      Original = found;
+      ModulationCombo.SelectedItem = found.Modulation;
+      FramingCombo.SelectedItem = found.Framing;
+      BaudTextBox.Text = FormatNumber(found.ResolvedBaud ?? found.Baud);
+      DeviationTextBox.Text = FormatNullable(found.ResolvedDeviation ?? found.Deviation);
+      AfCarrierTextBox.Text = FormatNullable(found.AfCarrier);
+      SetStatus("found: " + DescribeDifference(found, db), ConfirmedColor);
+    }
+
+    /// <summary>The evidence the operator needs for the save decision: frames decoded <b>since</b> the
+    /// parameters were applied (§6.1). No further frames means the answer was probably a coincidence — do
+    /// nothing, and the pass takes it away.</summary>
+    public void ShowFramesSinceApply(int frames)
+      => SetStatus($"{frames} frame(s) decoded with these parameters", frames > 0 ? ConfirmedColor : EditedColor);
+
+    /// <summary>The session ended with no answer. A legitimate outcome: it says the problem is not the
+    /// parameters (§4.5).</summary>
+    public void ShowDiscoveryEnded(bool found)
+    {
+      Discovering = false;
+      DiscoverBtn.Text = "Discover";
+      if (StoppedByOperator) { StoppedByOperator = false; return; }
+      if (!found) SetStatus("no parameters found", EditedColor);
+    }
+
+    // Progress arrives on the discovery worker thread. The session is always stopped before the dialog is
+    // released (TelemetryPanel disposes it in a finally), so this cannot normally race a close — but a
+    // status line is not worth a crash if that ordering is ever changed, so it fails silently instead.
+    private void SetStatus(string text, Color color)
+    {
+      if (IsDisposed || DiscoverStatusLabel.IsDisposed) return;
+      if (DiscoverStatusLabel.IsHandleCreated && DiscoverStatusLabel.InvokeRequired)
       {
-        Baud = baud,
-        Modulation = mod,
-        Framing = framing,
-        Deviation = deviation,
+        try { DiscoverStatusLabel.BeginInvoke(() => SetStatus(text, color)); }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }   // handle destroyed between the check and the call
+        return;
+      }
+      DiscoverStatusLabel.ForeColor = color;
+      DiscoverStatusLabel.Text = text;
+    }
+
+    // the fields that differ from the DB row, as "field db->found" — what the operator has to judge.
+    private static string DescribeDifference(SignalParams found, SignalParams db)
+    {
+      var parts = new List<string>();
+      if (found.Modulation != db.Modulation) parts.Add($"{db.Modulation}->{found.Modulation}");
+      if (Math.Abs(found.Baud - db.Baud) > 0.5) parts.Add($"{db.Baud:0}->{found.Baud:0} Bd");
+      if (!Nullable.Equals(found.Deviation, db.Deviation))
+        parts.Add($"dev {FormatNullable(db.Deviation)}->{FormatNullable(found.Deviation)}");
+      if (found.Framing != db.Framing) parts.Add($"{db.Framing}->{found.Framing}");
+      return parts.Count == 0 ? "the database values were right" : string.Join(", ", parts);
+    }
+
+    private void SaveOverrideBtn_Click(object sender, EventArgs e) => SaveOverrideRequested?.Invoke(this, e);
+
+
+    /// <summary>The parameters the controls currently hold, as an applicable <see cref="SignalParams"/>.
+    /// Public because Save to overrides writes what is on screen without closing the dialog (§6.1).</summary>
+    public SignalParams CurrentParams()
+    {
+      var edited = Original with
+      {
+        Baud = ParseNullable(BaudTextBox.Text) ?? Original.Baud,
+        Modulation = (Modulation)ModulationCombo.SelectedItem,
+        Framing = (Framing)FramingCombo.SelectedItem,
+        Deviation = ParseNullable(DeviationTextBox.Text),
         Manchester = IndexToBool(ManchesterCombo.SelectedIndex),
         Differential = IndexToBool(DifferentialCombo.SelectedIndex),
-        AfCarrier = afCarrier
+        AfCarrier = ParseNullable(AfCarrierTextBox.Text)
       };
       // drop the previous run-time findings so the rebuilt pipeline re-discovers them against the new manual
       // params instead of displaying stale values on the next open.
-      Result.ResolvedDeviation = null;
-      Result.ResolvedBaud = null;
+      edited.ResolvedDeviation = null;
+      edited.ResolvedBaud = null;
+      return edited;
+    }
+
+    private void OkBtn_Click(object sender, EventArgs e)
+    {
+      Result = CurrentParams();
 
       ResultFormatId = TelemetryFormatCombo.SelectedIndex >= 0 ? (string)TelemetryFormatCombo.SelectedItem : null;
 

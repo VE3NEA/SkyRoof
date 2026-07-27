@@ -10,6 +10,7 @@ using VE3NEA.SkyFM;
 using VE3NEA.SkySSTV;
 using VE3NEA.SkyTlm.Core;
 using VE3NEA.SkyTlm.Deframing;
+using VE3NEA.SkyTlm.Discovery;
 using VE3NEA.SkyTlm.Telemetry;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -48,6 +49,16 @@ namespace SkyRoof
     private TelemetryDefinition? FormatOverride;
     private string? FormatOverrideId;
     private bool FormatValidated;
+
+    // parameter discovery (discover_params_plan.md): the running search, the dialog it reports to, and the
+    // count of frames decoded since a discovered set was applied — the evidence the operator saves on (§6.1).
+    // All three are null/zero unless the operator has pressed Discover; discovery costs nothing when idle.
+    private DiscoverySession? Discovery;
+    private SignalParamsDialog? ParamsDialog;
+    private int FramesSinceDiscovery = -1;
+    // bursts a pass may produce without a valid frame before the status label suggests Discover. A few
+    // marginal bursts decoding nothing is ordinary; a run of them is what wrong parameters look like.
+    private const int DiscoverHintBursts = 5;
 
     // the FM speech-to-text engine (integration §10). It loads a large model (~71 MB, ~1.5 s), so a single
     // instance is created lazily on first use and SHARED across transmitter changes rather than rebuilt with
@@ -504,12 +515,20 @@ namespace SkyRoof
 
     private void BurstDecodedHandler(StreamingBurstReport report, DecodeSnapshot snapshot)
     {
+      // hand the burst to a running discovery search (§4.1). Offer returns immediately and drops the burst
+      // if the previous one is still under analysis, so this stays free on the decode thread.
+      Discovery?.Offer(report);
+
       BeginInvoke(() =>
         {
-          UpdateStatusLabel("DECODING...", Color.Green);
           // create the pass entry on the first burst (grayed until a valid frame arrives), not on the first frame
           var txPassInfo = EnsureCurrentPassNode(snapshot);
           txPassInfo.BurstCount++;
+          // a run of bursts with nothing decoded is what wrong parameters look like from the operator's
+          // seat, so say so rather than showing an unqualified "DECODING..." (§7 P3).
+          UpdateStatusLabel(
+            !txPassInfo.HasValidFrame && txPassInfo.BurstCount >= DiscoverHintBursts && Discovery == null
+              ? "bursts but no frames — try Discover" : "DECODING...", Color.Green);
           if (double.IsNaN(txPassInfo.MaxSnrDb) || report.Burst.SnrDb > txPassInfo.MaxSnrDb)
             txPassInfo.MaxSnrDb = report.Burst.SnrDb;
           // refresh the right panel if this pass entry is the one currently selected
@@ -522,7 +541,14 @@ namespace SkyRoof
     {
       ctx.KissServer.SendToAll(frame);
       if (snapshot.Satellite?.norad_cat_id is int norad) SatnogsUploader?.Submit(frame, norad);
-      BeginInvoke(() => AddFrame(frame, snapshot));
+      BeginInvoke(() =>
+      {
+        AddFrame(frame, snapshot);
+        // frames decoded SINCE a discovered set was applied are the evidence the save decision rests on
+        // (§6.1) — no further frames means the answer was probably a coincidence.
+        if (FramesSinceDiscovery >= 0 && frame.CrcValid == true)
+          ParamsDialog?.ShowFramesSinceApply(++FramesSinceDiscovery);
+      });
     }
 
 
@@ -542,8 +568,120 @@ namespace SkyRoof
       }
 
       using var dlg = new SignalParamsDialog();
-      if (dlg.Open(BuildDialogView(), this) != DialogResult.OK) return;
-      ApplyDialogResult(dlg);
+      dlg.DiscoverToggled += ToggleDiscovery;
+      dlg.SaveOverrideRequested += SaveOverrideRequested;
+      ParamsDialog = dlg;
+      try
+      {
+        if (dlg.Open(BuildDialogView(), this) != DialogResult.OK) return;
+        ApplyDialogResult(dlg);
+      }
+      finally
+      {
+        // a session must never outlive the dialog it reports to (§7 P2: detach cleanly).
+        StopDiscovery();
+        ParamsDialog = null;
+      }
+    }
+
+
+
+    //----------------------------------------------------------------------------------------------
+    //                                   parameter discovery
+    //----------------------------------------------------------------------------------------------
+    // The Discover button is a toggle. A session searches the bursts that arrive from the press onward, in
+    // the background, concurrently with normal decoding, and ends on the first CRC-valid frame, on the
+    // second press, or when the dialog closes (§4.6a). Nothing it decodes is ever published: the search
+    // runs inside VE3NEA.SkyTlm with no sinks wired to it at all (§4.6).
+
+    private void ToggleDiscovery(bool start)
+    {
+      StopDiscovery();
+      if (!start || SignalParams == null) return;
+
+      // GENESIS/HADES framing enters the sweep only for that family — the same keyword test the resolver
+      // uses, applied to the satellite this transmitter belongs to (§4.3).
+      string satName = $"{Satellite?.name} {Transmitter?.description}";
+      var options = new DiscoveryOptions
+      {
+        GenesisFamily = satName.Contains("HADES", StringComparison.OrdinalIgnoreCase)
+                        || satName.Contains("GENESIS", StringComparison.OrdinalIgnoreCase)
+      };
+
+      var session = new DiscoverySession(SignalParams, CoChannelParams, options);
+      session.Progress += p => ParamsDialog?.ShowDiscoveryProgress(p.HypothesesTried, p.BurstsAnalyzed, p.BurstsSkipped);
+      session.Found += DiscoveryFound;
+      session.Ended += () => BeginInvoke(() => ParamsDialog?.ShowDiscoveryEnded(FramesSinceDiscovery >= 0));
+      Discovery = session;
+    }
+
+    private void StopDiscovery()
+    {
+      var session = Discovery;
+      Discovery = null;
+      session?.Dispose();
+    }
+
+    // tier 1 of the hypothesis set: every co-channel transmitter of this satellite, resolved through the
+    // production resolver and ignoring the DB's alive/status flags — it marks live transmitters inactive
+    // often enough to matter (§4.2). Evaluated per burst, so a transmitter change mid-pass is picked up.
+    private IEnumerable<SignalParams> CoChannelParams()
+    {
+      if (Satellite == null || Transmitter == null) yield break;
+      foreach (var tx in Satellite.Transmitters)
+      {
+        if (ReferenceEquals(tx, Transmitter) || tx.downlink_low != Transmitter.downlink_low) continue;
+        if (SignalParamsResolver.Resolve(tx) is { Baud: > 0 } p) yield return p;
+      }
+    }
+
+    // A hypothesis decoded. Apply it to the current pass immediately and with no confirmation step: the
+    // pass itself is the confirmation and it is free, while a wrong set publishes nothing at all — it
+    // simply decodes nothing further, leaving the operator exactly where they already were (§4.5).
+    private void DiscoveryFound(DiscoveryCandidate found)
+    {
+      BeginInvoke(() =>
+      {
+        StopDiscovery();
+        var db = ResolvedSnapshot ?? SignalParams!;
+        // the discovered set replaces the demod fields only; the telemetry-format override and the
+        // dialog-only fields the search does not touch (AfCarrier, Manchester) are carried through (§6.5).
+        var applied = SignalParams! with
+        {
+          Modulation = found.Params.Modulation,
+          Framing = found.Params.Framing,
+          Baud = found.Params.Baud,
+          Deviation = found.Params.ResolvedDeviation ?? found.Params.Deviation
+        };
+        foreach (var f in new[] { "Modulation", "Framing", "Baud", "Deviation" }) UserChangedFields.Add(f);
+        DemodValidated = false;
+        FramesSinceDiscovery = 0;
+        ApplySignalParamsOverride(applied);
+        UpdateGearButton();
+        UpdateParamsTooltip();
+        ParamsDialog?.ShowDiscovered(applied, db);
+        ParamsDialog?.ShowFramesSinceApply(0);
+      });
+    }
+
+    // Save to overrides: write the parameters on screen into transmitters-override.json, keyed by the
+    // transmitter uuid and marked read_only so the shipped defaults never clobber them. The only operator
+    // action in the flow, and the only step that persists anything beyond the pass (§6.1).
+    private void SaveOverrideRequested(object? sender, EventArgs e)
+    {
+      if (ParamsDialog == null || Transmitter == null) return;
+      try
+      {
+        ctx.SatnogsDb.SaveTransmitterOverride(Transmitter, ParamsDialog.CurrentParams());
+        MessageBox.Show(ParamsDialog, "Saved to transmitters-override.json.", "Signal Details",
+          MessageBoxButtons.OK, MessageBoxIcon.Information);
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, "saving the transmitter override failed");
+        MessageBox.Show(ParamsDialog, "Could not save the override: " + ex.Message, "Signal Details",
+          MessageBoxButtons.OK, MessageBoxIcon.Warning);
+      }
     }
 
     // package the current params, the available telemetry formats, and the per-field dot state for the dialog
