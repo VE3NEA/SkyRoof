@@ -64,6 +64,10 @@ namespace SkyRoof
     // bursts a pass may produce without a valid frame before the status label suggests Discover. A few
     // marginal bursts decoding nothing is ordinary; a run of them is what wrong parameters look like.
     private const int DiscoverHintBursts = 5;
+    // template width, in Bd, for a discovery detector on a transmitter whose DB row carries no rate at all
+    // (CW, SSTV, FM voice). Mid-range on purpose: too wide a template sums noise across bins the signal
+    // never fills, too narrow a one sits inside a fast signal and still detects it.
+    private const double DefaultDetectBaud = 4800;
 
     // the FM speech-to-text engine (integration §10). It loads a large model (~71 MB, ~1.5 s), so a single
     // instance is created lazily on first use and SHARED across transmitter changes rather than rebuilt with
@@ -429,12 +433,18 @@ namespace SkyRoof
       // the FM branch runs only with the model downloaded; the engine loads lazily here (once per session,
       // then shared) so an FM transmitter with no model simply builds no FM branch (status reflects it)
       var fmEngine = aboveAndUp && IsFmDecodable() ? EnsureFmEngine() : null;
-      bool needPipeline = aboveAndUp && (telemetry || sstv || fmEngine != null);
+      // a discovery session needs a burst source. The telemetry pipeline is one, but it does not exist when
+      // the transmitter is CW/SSTV/FM or its format is unsupported — exactly the cases the operator reaches
+      // for Discover in — so the search brings its own detection-only pipeline (§4.1).
+      var detectParams = Discovery != null && !telemetry && SignalParams != null ? DiscoveryDetectorParams() : null;
+      bool needPipeline = aboveAndUp && (telemetry || sstv || fmEngine != null || detectParams != null);
 
       // keep the existing decoder only if it was built for the currently selected transmitter. a transmitter
       // change must rebuild the pipeline: otherwise it keeps decoding with the previous transmitter's params
       // and its frames get attributed to the newly selected transmitter (wrong sat/norad/telemetry parser).
-      bool matches = Decoder != null && CurrentDecode != null && CurrentDecode.Transmitter.uuid == Transmitter.uuid;
+      // starting or ending a search changes which branches the decoder carries, so it rebuilds for that too.
+      bool matches = Decoder != null && CurrentDecode != null && CurrentDecode.Transmitter.uuid == Transmitter.uuid
+        && (Decoder.Detector != null) == (detectParams != null);
 
       if (needPipeline && matches) return;
       if (!needPipeline && Decoder == null) return;
@@ -456,12 +466,15 @@ namespace SkyRoof
       {
         var snapshot = new DecodeSnapshot(Satellite, Transmitter, SignalParams!);
         CurrentDecode = snapshot;
-        Decoder = new(SignalParams!, telemetry, sstv, fmEngine);
+        Decoder = new(SignalParams!, telemetry, sstv, fmEngine, detectParams);
         if (Decoder.Pipeline != null)
         {
           Decoder.Pipeline.FrameDecoded += frame => FrameDecodedHandler(frame, snapshot);
           Decoder.Pipeline.BurstDecoded += report => BurstDecodedHandler(report, snapshot);
         }
+        // the detection-only branch exists for the search alone: its bursts go to the session and nowhere
+        // else — no frames, no tree entry, no status label, because nothing here was decoded.
+        if (Decoder.Detector != null) Decoder.Detector.BurstDecoded += OfferToDiscovery;
         if (Decoder.Sstv != null)
         {
           // the image-id → tree-node map lives in the subscription closure, so images from a disposed
@@ -615,14 +628,40 @@ namespace SkyRoof
       session.Found += DiscoveryFound;
       session.Ended += () => BeginInvoke(() => ParamsDialog?.ShowDiscoveryEnded(FramesSinceDiscovery >= 0));
       Discovery = session;
+      // build the search its own burst source if this transmitter's decode does not provide one
+      CreatDestroyPipeline();
     }
 
     private void StopDiscovery()
     {
       var session = Discovery;
+      if (session == null) return;
       Discovery = null;
-      session?.Dispose();
+      session.Dispose();
+      // drop the detection-only pipeline the session was running on, if it had one
+      CreatDestroyPipeline();
     }
+
+    /// <summary>
+    /// Parameters for the detection-only pipeline a search falls back to. Blind FSK: the deviation is
+    /// unknown, which is what sizes the analysis band for the widest plausible signal, and the search itself
+    /// measures the real geometry from the samples afterwards. Nothing here is demodulated, so the baud only
+    /// sets the width of the detector's matched template — the DB's rate when it has one (the format may be
+    /// unsupported while the rate is perfectly well known), otherwise a mid-range default that keeps the
+    /// template inside the signals the search can reach at all (200 - 20000 Bd).
+    /// </summary>
+    private SignalParams DiscoveryDetectorParams()
+      => SignalParams! with
+      {
+        Modulation = Modulation.FSK,
+        Baud = SignalParams!.Baud > 0 ? SignalParams.Baud : DefaultDetectBaud,
+        Deviation = null,
+        AfCarrier = null,
+        Manchester = null,
+        Framing = Framing.Unknown,
+        ResolvedBaud = null,
+        ResolvedDeviation = null
+      };
 
     // Offer a burst to a running session and report where the search now stands. A burst the session drops
     // because the previous one is still under analysis is not counted as taken: the analysis it would have
