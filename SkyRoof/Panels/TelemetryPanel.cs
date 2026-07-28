@@ -56,6 +56,11 @@ namespace SkyRoof
     private DiscoverySession? Discovery;
     private SignalParamsDialog? ParamsDialog;
     private int FramesSinceDiscovery = -1;
+    // bursts the running session took for analysis, so the status line can tell analyzing (one is under
+    // analysis) from waiting (the search is idle between bursts): the session counts a burst as analyzed
+    // only once it is done with it. A burst dropped because the previous one was still running is not
+    // counted here — the analysis it would have started never began.
+    private int BurstsTaken;
     // bursts a pass may produce without a valid frame before the status label suggests Discover. A few
     // marginal bursts decoding nothing is ordinary; a run of them is what wrong parameters look like.
     private const int DiscoverHintBursts = 5;
@@ -517,18 +522,14 @@ namespace SkyRoof
     {
       // hand the burst to a running discovery search (§4.1). Offer returns immediately and drops the burst
       // if the previous one is still under analysis, so this stays free on the decode thread.
-      Discovery?.Offer(report);
+      OfferToDiscovery(report);
 
       BeginInvoke(() =>
         {
           // create the pass entry on the first burst (grayed until a valid frame arrives), not on the first frame
           var txPassInfo = EnsureCurrentPassNode(snapshot);
           txPassInfo.BurstCount++;
-          // a run of bursts with nothing decoded is what wrong parameters look like from the operator's
-          // seat, so say so rather than showing an unqualified "DECODING..." (§7 P3).
-          UpdateStatusLabel(
-            !txPassInfo.HasValidFrame && txPassInfo.BurstCount >= DiscoverHintBursts && Discovery == null
-              ? "bursts but no frames — try Discover" : "DECODING...", Color.Green);
+          UpdateStatusLabel("DECODING...", Color.Green);
           if (double.IsNaN(txPassInfo.MaxSnrDb) || report.Burst.SnrDb > txPassInfo.MaxSnrDb)
             txPassInfo.MaxSnrDb = report.Burst.SnrDb;
           // refresh the right panel if this pass entry is the one currently selected
@@ -608,8 +609,9 @@ namespace SkyRoof
                         || satName.Contains("GENESIS", StringComparison.OrdinalIgnoreCase)
       };
 
+      BurstsTaken = 0;
       var session = new DiscoverySession(SignalParams, CoChannelParams, options);
-      session.Progress += p => ParamsDialog?.ShowDiscoveryProgress(p.HypothesesTried, p.BurstsAnalyzed, p.BurstsSkipped);
+      session.Progress += ShowDiscoveryProgress;
       session.Found += DiscoveryFound;
       session.Ended += () => BeginInvoke(() => ParamsDialog?.ShowDiscoveryEnded(FramesSinceDiscovery >= 0));
       Discovery = session;
@@ -621,6 +623,30 @@ namespace SkyRoof
       Discovery = null;
       session?.Dispose();
     }
+
+    // Offer a burst to a running session and report where the search now stands. A burst the session drops
+    // because the previous one is still under analysis is not counted as taken: the analysis it would have
+    // started never began, and the skipped count is what tells the operator it happened.
+    private void OfferToDiscovery(StreamingBurstReport report)
+    {
+      // a session that has already found its answer ignores the burst, so counting it as taken would leave
+      // the line saying "analyzing" over a search that is over
+      if (Discovery is not DiscoverySession session || !session.IsRunning) return;
+      if (report.Segment is not { Length: > 0 }) return;   // a detect-only report carries nothing to analyze
+
+      int skipped = session.Snapshot.BurstsSkipped;
+      BurstsTaken++;
+      session.Offer(report);
+
+      var progress = session.Snapshot;
+      if (progress.BurstsSkipped != skipped) BurstsTaken--;
+      ShowDiscoveryProgress(progress);
+    }
+
+    // the search is analyzing while a burst it took is not yet counted as analyzed, and waiting otherwise
+    private void ShowDiscoveryProgress(DiscoveryProgress progress)
+      => ParamsDialog?.ShowDiscoveryProgress(progress.BurstsAnalyzed, progress.BurstsSkipped,
+        BurstsTaken > progress.BurstsAnalyzed);
 
     // tier 1 of the hypothesis set: every co-channel transmitter of this satellite, resolved through the
     // production resolver and ignoring the DB's alive/status flags — it marks live transmitters inactive
@@ -643,7 +669,6 @@ namespace SkyRoof
       BeginInvoke(() =>
       {
         StopDiscovery();
-        var db = ResolvedSnapshot ?? SignalParams!;
         // the discovered set replaces the demod fields only; the telemetry-format override and the
         // dialog-only fields the search does not touch (AfCarrier, Manchester) are carried through (§6.5).
         var applied = SignalParams! with
@@ -654,13 +679,16 @@ namespace SkyRoof
           Deviation = found.Params.ResolvedDeviation ?? found.Params.Deviation
         };
         foreach (var f in new[] { "Modulation", "Framing", "Baud", "Deviation" }) UserChangedFields.Add(f);
-        DemodValidated = false;
+        // a discovered set has already decoded a frame — that is how the search found it — so it is
+        // confirmed on arrival: the gear and the field dots go green, not the yellow of an untested edit.
+        DemodValidated = true;
         FramesSinceDiscovery = 0;
         ApplySignalParamsOverride(applied);
         UpdateGearButton();
         UpdateParamsTooltip();
-        ParamsDialog?.ShowDiscovered(applied, db);
-        ParamsDialog?.ShowFramesSinceApply(0);
+        // the "found" line stays up until a frame decodes with the parameters: reporting zero frames the
+        // instant they are applied would overwrite the answer with an accusation before it was tested.
+        ParamsDialog?.ShowDiscovered(applied);
       });
     }
 
@@ -754,7 +782,9 @@ namespace SkyRoof
       {
         foreach (var f in dlg.ChangedFields) if (f != "TelemetryFormat") UserChangedFields.Add(f);
         foreach (var f in dlg.ResetFields) if (f != "TelemetryFormat") UserChangedFields.Remove(f);
-        DemodValidated = false;
+        // parameters the search found are applied as confirmed; a hand edit is a hypothesis until a frame
+        // decodes with it.
+        DemodValidated = dlg.DiscoveredApplied;
         ApplySignalParamsOverride(dlg.Result);
       }
 

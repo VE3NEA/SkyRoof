@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
 using System.Globalization;
+using SkyRoof.Satellites;
 using VE3NEA.SkyTlm.Core;
 
 namespace SkyRoof
@@ -24,8 +25,14 @@ namespace SkyRoof
     // provenance of a field's current value, mapped to a dot color
     public enum FieldDot { None, Edited, Confirmed }
 
-    // one field's dot: its panel and control, the initial (caller-computed) state, predicates that report whether
-    // the control currently holds the DB-derived value or the value it was populated with, and the reset action
+    // one field's dot: its panel and control, the initial (caller-computed) state, a predicate that reports
+    // whether the control currently holds the DB-derived value, a reader for its current value, the two
+    // baselines that value is compared against, and the reset action.
+    //
+    // The baselines are separate because they answer different questions. Opened is what the field held when
+    // the dialog opened and never moves: it is what OK reports the changes against, so a discovery result
+    // still leaves the dialog with parameters to apply. Populated is what the dot's Initial state describes,
+    // and a discovery result re-baselines it, so its dot reads as the found value rather than as an edit.
     private sealed class DotBinding
     {
       internal string Name = "";
@@ -33,8 +40,13 @@ namespace SkyRoof
       internal Control Control = null!;
       internal FieldDot Initial;
       internal Func<bool> AtDb = () => false;
-      internal Func<bool> AtPopulated = () => true;
+      internal Func<object?> Value = () => null;
+      internal object? Opened;
+      internal object? Populated;
       internal Action Reset = () => { };
+
+      internal bool AtOpened() => Equals(Value(), Opened);
+      internal bool AtPopulated() => Equals(Value(), Populated);
     }
 
     private readonly List<DotBinding> Bindings = new();
@@ -84,6 +96,9 @@ namespace SkyRoof
 
       PopulateControls(view);
       BuildBindings(view);
+      // Save to overrides persists what a search found, so it stays disabled until a search has found
+      // something: with no result there is nothing to write beyond what the database already says (§6.1).
+      SaveOverrideBtn.Enabled = false;
       return ShowDialog();
     }
 
@@ -110,8 +125,8 @@ namespace SkyRoof
       // pipeline resolved one, otherwise the curated value.
       ModulationCombo.SelectedItem = Original.Modulation;
       FramingCombo.SelectedItem = Original.Framing;
-      BaudTextBox.Text = FormatNumber(Original.ResolvedBaud ?? Original.Baud);
-      DeviationTextBox.Text = FormatNullable(Original.ResolvedDeviation ?? Original.Deviation);
+      BaudTextBox.Text = FormatRate(Original.ResolvedBaud ?? Original.Baud);
+      DeviationTextBox.Text = FormatRate(Original.ResolvedDeviation ?? Original.Deviation);
       AfCarrierTextBox.Text = FormatNullable(Original.AfCarrier);
       ManchesterCombo.SelectedIndex = BoolToIndex(Original.Manchester);
       DifferentialCombo.SelectedIndex = BoolToIndex(Original.Differential);
@@ -129,19 +144,10 @@ namespace SkyRoof
     {
       var db = view.DbParams;
 
-      var mod0 = ModulationCombo.SelectedItem;
-      var framing0 = FramingCombo.SelectedItem;
-      var baud0 = BaudTextBox.Text;
-      var dev0 = DeviationTextBox.Text;
-      var af0 = AfCarrierTextBox.Text;
-      var man0 = ManchesterCombo.SelectedIndex;
-      var diff0 = DifferentialCombo.SelectedIndex;
-      var fmt0 = TelemetryFormatCombo.SelectedIndex;
-
       object dbMod = db.Modulation;
       object dbFraming = db.Framing;
-      string dbBaud = FormatNumber(db.ResolvedBaud ?? db.Baud);
-      string dbDev = FormatNullable(db.ResolvedDeviation ?? db.Deviation);
+      string dbBaud = FormatRate(db.ResolvedBaud ?? db.Baud);
+      string dbDev = FormatRate(db.ResolvedDeviation ?? db.Deviation);
       string dbAf = FormatNullable(db.AfCarrier);
       int dbMan = BoolToIndex(db.Manchester);
       int dbDiff = BoolToIndex(db.Differential);
@@ -149,52 +155,52 @@ namespace SkyRoof
 
       Bind("Modulation", ModulationDot, view.ModulationDot, ModulationCombo,
         () => Equals(ModulationCombo.SelectedItem, dbMod),
-        () => Equals(ModulationCombo.SelectedItem, mod0),
+        () => ModulationCombo.SelectedItem,
         () => ModulationCombo.SelectedItem = dbMod);
 
       Bind("Framing", FramingDot, view.FramingDot, FramingCombo,
         () => Equals(FramingCombo.SelectedItem, dbFraming),
-        () => Equals(FramingCombo.SelectedItem, framing0),
+        () => FramingCombo.SelectedItem,
         () => FramingCombo.SelectedItem = dbFraming);
 
       Bind("Baud", BaudDot, view.BaudDot, BaudTextBox,
         () => BaudTextBox.Text == dbBaud,
-        () => BaudTextBox.Text == baud0,
+        () => BaudTextBox.Text,
         () => BaudTextBox.Text = dbBaud);
 
       Bind("Deviation", DeviationDot, view.DeviationDot, DeviationTextBox,
         () => DeviationTextBox.Text == dbDev,
-        () => DeviationTextBox.Text == dev0,
+        () => DeviationTextBox.Text,
         () => DeviationTextBox.Text = dbDev);
 
       Bind("AfCarrier", AfCarrierDot, view.AfCarrierDot, AfCarrierTextBox,
         () => AfCarrierTextBox.Text == dbAf,
-        () => AfCarrierTextBox.Text == af0,
+        () => AfCarrierTextBox.Text,
         () => AfCarrierTextBox.Text = dbAf);
 
       Bind("Manchester", ManchesterDot, view.ManchesterDot, ManchesterCombo,
         () => ManchesterCombo.SelectedIndex == dbMan,
-        () => ManchesterCombo.SelectedIndex == man0,
+        () => ManchesterCombo.SelectedIndex,
         () => ManchesterCombo.SelectedIndex = dbMan);
 
       Bind("Differential", DifferentialDot, view.DifferentialDot, DifferentialCombo,
         () => DifferentialCombo.SelectedIndex == dbDiff,
-        () => DifferentialCombo.SelectedIndex == diff0,
+        () => DifferentialCombo.SelectedIndex,
         () => DifferentialCombo.SelectedIndex = dbDiff);
 
       Bind("TelemetryFormat", TelemetryFormatDot, view.FormatDot, TelemetryFormatCombo,
         () => TelemetryFormatCombo.SelectedIndex == dbFmt,
-        () => TelemetryFormatCombo.SelectedIndex == fmt0,
+        () => TelemetryFormatCombo.SelectedIndex,
         () => TelemetryFormatCombo.SelectedIndex = dbFmt);
     }
 
     private void Bind(string name, Panel dot, FieldDot initial, Control control,
-      Func<bool> atDb, Func<bool> atPopulated, Action reset)
+      Func<bool> atDb, Func<object?> value, Action reset)
     {
       var b = new DotBinding
       {
         Name = name, Dot = dot, Control = control, Initial = initial,
-        AtDb = atDb, AtPopulated = atPopulated, Reset = reset
+        AtDb = atDb, Value = value, Opened = value(), Populated = value(), Reset = reset
       };
       Bindings.Add(b);
       DotColors[dot] = ColorFor(initial);
@@ -274,45 +280,78 @@ namespace SkyRoof
     /// <summary>True while a discovery session is running, so the caller can end it if the dialog closes.</summary>
     public bool Discovering { get; private set; }
 
+    /// <summary>True when a search produced a result and the fields it set still hold what it found. Those
+    /// values decoded a frame — that is how the search found them — so the caller applies them as confirmed
+    /// rather than as an edit waiting for proof (§4.5).</summary>
+    public bool DiscoveredApplied => HasDiscovered
+      && Bindings.Where(b => DiscoveredFields.Contains(b.Name)).All(b => b.AtPopulated());
+
+    // a search has produced a result while this dialog was open
+    private bool HasDiscovered;
+
     // set when the operator stops the search themselves, so the session's Ended notification does not
     // overwrite that with "no parameters found" — cancelling is not the same as failing (§4.6a).
     private bool StoppedByOperator;
+
+    // the fields a discovery result replaces (§6.5): the ones whose dots it re-baselines to green
+    private static readonly string[] DiscoveredFields = { "Modulation", "Framing", "Baud", "Deviation" };
 
     private void DiscoverBtn_Click(object sender, EventArgs e)
     {
       Discovering = !Discovering;
       DiscoverBtn.Text = Discovering ? "Stop" : "Discover";
       StoppedByOperator = !Discovering;
-      SetStatus(Discovering ? "searching..." : "search stopped", SystemColors.ControlText);
+      if (Discovering) ShowDiscoveryProgress(0, 0, false);
+      else SetStatus("search stopped", SystemColors.ControlText);
       DiscoverToggled?.Invoke(Discovering);
     }
 
-    /// <summary>Progress line: hypotheses tried, bursts analyzed, bursts skipped (§7 P2/P3). The skipped
-    /// count is shown because it is the signal that retaining bursts would pay off.</summary>
-    public void ShowDiscoveryProgress(int hypotheses, int analyzed, int skipped)
+    /// <summary>Progress line (§7 P2/P3). The search spends most of a pass waiting for the next burst, so
+    /// the line says which of the two states it is in: waiting, with the bursts analyzed and skipped so
+    /// far, or analyzing the burst that just arrived. The skipped count is shown because it is the signal
+    /// that retaining bursts would pay off.</summary>
+    public void ShowDiscoveryProgress(int analyzed, int skipped, bool analyzing)
     {
-      string skip = skipped > 0 ? $", {skipped} skipped" : "";
-      SetStatus($"searching: {hypotheses} hypotheses, {analyzed} burst(s){skip}", SystemColors.ControlText);
+      SetStatus(analyzing ? "analyzing" : $"waiting: {analyzed} analyzed, {skipped} skipped",
+        SystemColors.ControlText);
     }
 
     /// <summary>
-    /// A hypothesis decoded: show the parameters found and how they differ from the DB, and put them into
-    /// the fields. The caller has already applied them to the live pass — this is the report, not the
-    /// decision (§4.5). The search is over, so the button returns to its idle state.
+    /// A hypothesis decoded: put the parameters found into the fields and say so. The caller has already
+    /// applied them to the live pass — this is the report, not the decision (§4.5). The search is over, so
+    /// the button returns to its idle state. The fields themselves show what was found, so the line says
+    /// only that the search succeeded; the frames that follow are what the save decision rests on.
     /// </summary>
-    public void ShowDiscovered(SignalParams found, SignalParams db)
+    public void ShowDiscovered(SignalParams found)
     {
-      if (InvokeRequired) { BeginInvoke(() => ShowDiscovered(found, db)); return; }
+      if (InvokeRequired) { BeginInvoke(() => ShowDiscovered(found)); return; }
 
       Discovering = false;
       DiscoverBtn.Text = "Discover";
       Original = found;
       ModulationCombo.SelectedItem = found.Modulation;
       FramingCombo.SelectedItem = found.Framing;
-      BaudTextBox.Text = FormatNumber(found.ResolvedBaud ?? found.Baud);
-      DeviationTextBox.Text = FormatNullable(found.ResolvedDeviation ?? found.Deviation);
+      BaudTextBox.Text = FormatRate(found.ResolvedBaud ?? found.Baud);
+      DeviationTextBox.Text = FormatRate(found.ResolvedDeviation ?? found.Deviation);
       AfCarrierTextBox.Text = FormatNullable(found.AfCarrier);
-      SetStatus("found: " + DescribeDifference(found, db), ConfirmedColor);
+      MarkDiscovered();
+      SaveOverrideBtn.Enabled = true;
+      SetStatus("signal parameters found", ConfirmedColor);
+    }
+
+    // The discovered values are the new baseline for the fields the search sets, and they are confirmed
+    // rather than pending: a hypothesis only becomes a result by decoding a frame, so the fields it moved
+    // away from the DB get a green dot, not the yellow one an untested edit gets. Fields the search landed
+    // back on the DB value keep no dot at all — there is nothing there to override.
+    private void MarkDiscovered()
+    {
+      HasDiscovered = true;
+      foreach (var b in Bindings.Where(b => DiscoveredFields.Contains(b.Name)))
+      {
+        b.Populated = b.Value();
+        b.Initial = FieldDot.Confirmed;
+        RefreshDot(b);
+      }
     }
 
     /// <summary>The evidence the operator needs for the save decision: frames decoded <b>since</b> the
@@ -348,18 +387,6 @@ namespace SkyRoof
       DiscoverStatusLabel.Text = text;
     }
 
-    // the fields that differ from the DB row, as "field db->found" — what the operator has to judge.
-    private static string DescribeDifference(SignalParams found, SignalParams db)
-    {
-      var parts = new List<string>();
-      if (found.Modulation != db.Modulation) parts.Add($"{db.Modulation}->{found.Modulation}");
-      if (Math.Abs(found.Baud - db.Baud) > 0.5) parts.Add($"{db.Baud:0}->{found.Baud:0} Bd");
-      if (!Nullable.Equals(found.Deviation, db.Deviation))
-        parts.Add($"dev {FormatNullable(db.Deviation)}->{FormatNullable(found.Deviation)}");
-      if (found.Framing != db.Framing) parts.Add($"{db.Framing}->{found.Framing}");
-      return parts.Count == 0 ? "the database values were right" : string.Join(", ", parts);
-    }
-
     private void SaveOverrideBtn_Click(object sender, EventArgs e) => SaveOverrideRequested?.Invoke(this, e);
 
 
@@ -390,13 +417,14 @@ namespace SkyRoof
 
       ResultFormatId = TelemetryFormatCombo.SelectedIndex >= 0 ? (string)TelemetryFormatCombo.SelectedItem : null;
 
-      // classify every field the user moved relative to the value in use: back to the DB value (reset) or to a
-      // new manual value (changed). Fields left at the populated value are reported as neither.
+      // classify every field that moved since the dialog opened: back to the DB value (reset) or to a new
+      // value (changed), whether the operator typed it or the search found it. Fields left as they opened
+      // are reported as neither.
       ChangedFields.Clear();
       ResetFields.Clear();
       foreach (var b in Bindings)
       {
-        if (b.AtPopulated()) continue;
+        if (b.AtOpened()) continue;
         if (b.AtDb()) ResetFields.Add(b.Name);
         else ChangedFields.Add(b.Name);
       }
@@ -423,6 +451,12 @@ namespace SkyRoof
     private static string FormatNumber(double value) => value.ToString("0.###", CultureInfo.CurrentCulture);
 
     private static string FormatNullable(double? value) => value is double v ? FormatNumber(v) : "";
+
+    // baud and deviation are shown as the round value they approximate: the pipeline measures 9600.832 and
+    // the operator reads 9600, which is also what Save to overrides then writes to the file.
+    private static string FormatRate(double value) => FormatNumber(SignalParamsResolver.RoundToStandard(value));
+
+    private static string FormatRate(double? value) => FormatNullable(SignalParamsResolver.RoundToStandard(value));
 
     private static double? ParseNullable(string text)
     {

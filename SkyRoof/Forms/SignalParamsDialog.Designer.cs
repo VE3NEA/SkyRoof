@@ -250,6 +250,24 @@ namespace SkyRoof
       TelemetryFormatDot.Size = new Size(14, 14);
       TelemetryFormatDot.TabIndex = 27;
       // 
+      // DiscoverBtn
+      // 
+      DiscoverBtn.Location = new Point(12, 277);
+      DiscoverBtn.Name = "DiscoverBtn";
+      DiscoverBtn.Size = new Size(110, 23);
+      DiscoverBtn.TabIndex = 9;
+      DiscoverBtn.Text = "Discover";
+      DiscoverBtn.UseVisualStyleBackColor = true;
+      DiscoverBtn.Click += DiscoverBtn_Click;
+      // 
+      // DiscoverStatusLabel
+      // 
+      DiscoverStatusLabel.AutoEllipsis = true;
+      DiscoverStatusLabel.Location = new Point(128, 276);
+      DiscoverStatusLabel.Name = "DiscoverStatusLabel";
+      DiscoverStatusLabel.Size = new Size(204, 15);
+      DiscoverStatusLabel.TabIndex = 10;
+      // 
       // panel1
       // 
       panel1.Controls.Add(SaveOverrideBtn);
@@ -260,37 +278,19 @@ namespace SkyRoof
       panel1.Name = "panel1";
       panel1.Size = new Size(344, 44);
       panel1.TabIndex = 11;
-      //
-      // DiscoverBtn
-      //
-      DiscoverBtn.Location = new Point(12, 272);
-      DiscoverBtn.Name = "DiscoverBtn";
-      DiscoverBtn.Size = new Size(90, 23);
-      DiscoverBtn.TabIndex = 9;
-      DiscoverBtn.Text = "Discover";
-      DiscoverBtn.UseVisualStyleBackColor = true;
-      DiscoverBtn.Click += DiscoverBtn_Click;
-      //
-      // DiscoverStatusLabel
-      //
-      DiscoverStatusLabel.AutoEllipsis = true;
-      DiscoverStatusLabel.Location = new Point(110, 276);
-      DiscoverStatusLabel.Name = "DiscoverStatusLabel";
-      DiscoverStatusLabel.Size = new Size(222, 15);
-      DiscoverStatusLabel.TabIndex = 10;
-      //
+      // 
       // SaveOverrideBtn
-      //
+      // 
       SaveOverrideBtn.Location = new Point(12, 9);
       SaveOverrideBtn.Name = "SaveOverrideBtn";
       SaveOverrideBtn.Size = new Size(110, 23);
       SaveOverrideBtn.TabIndex = 2;
-      SaveOverrideBtn.Text = "Save to overrides";
+      SaveOverrideBtn.Text = "Save to Overrides";
       SaveOverrideBtn.UseVisualStyleBackColor = true;
       SaveOverrideBtn.Click += SaveOverrideBtn_Click;
-      //
+      // 
       // CancelBtn
-      //
+      // 
       CancelBtn.DialogResult = DialogResult.Cancel;
       CancelBtn.Location = new Point(257, 9);
       CancelBtn.Name = "CancelBtn";

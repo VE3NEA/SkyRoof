@@ -174,6 +174,21 @@ namespace SkyRoof.Satellites
       return null;
     }
 
+    /// <summary>Snap a measured baud rate or deviation to the round value it plainly approximates:
+    /// 9600.832 -> 9600. The pipeline reports what it measured, but what the operator reads - and what the
+    /// override file records - is a rate, so the digits that carry only measurement noise are dropped. The
+    /// step is a tenth of the value's magnitude (100 for a four-digit rate) and the snap is taken only
+    /// within 1% of it, so a genuinely odd rate such as 1250 Bd survives unchanged.</summary>
+    public static double RoundToStandard(double value)
+    {
+      if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0) return value;
+      double step = Math.Pow(10, Math.Floor(Math.Log10(value)) - 1);
+      double rounded = Math.Round(value / step) * step;
+      return Math.Abs(rounded - value) <= 0.01 * value ? rounded : value;
+    }
+
+    public static double? RoundToStandard(double? value) => value is double v ? RoundToStandard(v) : null;
+
     /// <summary>Map one DB <c>mode</c> / <c>description</c> / satyaml string to a deframing flavor.</summary>
     public static Framing ExtractFraming(string? text)
     {

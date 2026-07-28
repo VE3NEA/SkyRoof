@@ -8,6 +8,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Serilog;
 using SGPdotNET.TLE;
+using SkyRoof.Satellites;
 using VE3NEA;
 using VE3NEA.SkyTlm.Core;   // SignalParams / Framing, for the save-to-overrides writer (§6.1)
 
@@ -395,13 +396,15 @@ namespace SkyRoof
         ["norad"] = tx.norad_cat_id,
         ["read_only"] = true,
         ["modulation"] = p.Modulation.ToString(),
-        ["baudrate"] = p.Baud,
+        // a measured rate is written as the round value it approximates (9600.832 -> 9600): the file is a
+        // curated record of what the transmitter uses, not a log of what one pass happened to measure.
+        ["baudrate"] = SignalParamsResolver.RoundToStandard(p.Baud),
         ["framing"] = FramingText(p.Framing)
       };
       // GMSK pins h = 1/2, so its deviation is implied rather than curated — writing it would turn a
       // derived value into an authoritative one.
       if (p.Modulation != Modulation.GMSK && (p.ResolvedDeviation ?? p.Deviation) is double dev)
-        record["deviation"] = dev;
+        record["deviation"] = SignalParamsResolver.RoundToStandard(dev);
       if (p.RsBasis != null) record["rs_basis"] = p.RsBasis;
       if (p.FrameSize is int fs) record["frame_size"] = fs;
       if (p.Convolutional != null) record["convolutional"] = p.Convolutional;
