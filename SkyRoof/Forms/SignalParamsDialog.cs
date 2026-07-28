@@ -289,9 +289,10 @@ namespace SkyRoof
     // a search has produced a result while this dialog was open
     private bool HasDiscovered;
 
-    // set when the operator stops the search themselves, so the session's Ended notification does not
-    // overwrite that with "no parameters found" — cancelling is not the same as failing (§4.6a).
-    private bool StoppedByOperator;
+    // set when the search is stopped from outside with a message of its own — the operator's second press,
+    // or LOS — so the session's Ended notification does not overwrite that with "no parameters found":
+    // cancelling is not the same as failing (§4.6a).
+    private bool StoppedExplicitly;
 
     // the fields a discovery result replaces (§6.5): the ones whose dots it re-baselines to green
     private static readonly string[] DiscoveredFields = { "Modulation", "Framing", "Baud", "Deviation" };
@@ -300,10 +301,22 @@ namespace SkyRoof
     {
       Discovering = !Discovering;
       DiscoverBtn.Text = Discovering ? "Stop" : "Discover";
-      StoppedByOperator = !Discovering;
-      if (Discovering) ShowDiscoveryProgress(0, 0, false);
-      else SetStatus("search stopped", SystemColors.ControlText);
+      if (Discovering) { StoppedExplicitly = false; ShowDiscoveryProgress(0, 0, false); }
+      else ShowDiscoveryStopped("search stopped");
       DiscoverToggled?.Invoke(Discovering);
+    }
+
+    /// <summary>The search was ended from outside rather than by finding an answer — the operator's second
+    /// press, or the end of the pass. The button returns to its idle state and the line says why, instead of
+    /// sitting on "waiting" over a search that is over (§4.6a).</summary>
+    public void ShowDiscoveryStopped(string reason)
+    {
+      if (InvokeRequired) { BeginInvoke(() => ShowDiscoveryStopped(reason)); return; }
+
+      Discovering = false;
+      DiscoverBtn.Text = "Discover";
+      StoppedExplicitly = true;
+      SetStatus(reason, SystemColors.ControlText);
     }
 
     /// <summary>Progress line (§7 P2/P3). The search spends most of a pass waiting for the next burst, so
@@ -366,7 +379,7 @@ namespace SkyRoof
     {
       Discovering = false;
       DiscoverBtn.Text = "Discover";
-      if (StoppedByOperator) { StoppedByOperator = false; return; }
+      if (StoppedExplicitly) { StoppedExplicitly = false; return; }
       if (!found) SetStatus("no parameters found", EditedColor);
     }
 

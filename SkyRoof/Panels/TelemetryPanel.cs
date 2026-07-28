@@ -613,6 +613,15 @@ namespace SkyRoof
       StopDiscovery();
       if (!start || SignalParams == null) return;
 
+      // below the horizon a session can never be offered a burst — the pipeline it would listen to is not
+      // built until AOS. refuse the press and say why, here in the click, so the line never shows the
+      // "waiting" of a search that has not started
+      if (!SatAboveHorizon)
+      {
+        ParamsDialog?.ShowDiscoveryStopped("satellite below horizon");
+        return;
+      }
+
       // GENESIS/HADES framing enters the sweep only for that family — the same keyword test the resolver
       // uses, applied to the satellite this transmitter belongs to (§4.3).
       string satName = $"{Satellite?.name} {Transmitter?.description}";
@@ -640,6 +649,15 @@ namespace SkyRoof
       session.Dispose();
       // drop the detection-only pipeline the session was running on, if it had one
       CreatDestroyPipeline();
+    }
+
+    // the satellite has set: end the search and say so. Not a failure — the pass ran out before an answer
+    // did — so the line reports the reason rather than "no parameters found". Telling the dialog first
+    // makes this message, not the session's Ended notification, the one that stays on screen.
+    private void StopDiscoveryAtLos()
+    {
+      ParamsDialog?.ShowDiscoveryStopped("search stopped: satellite below horizon");
+      StopDiscovery();
     }
 
     /// <summary>
@@ -1466,6 +1484,9 @@ namespace SkyRoof
     internal void UpdateTxStatus()
     {
       SatAboveHorizon = ctx.SdrPasses.GetNextPass(Satellite)?.IsAboveHorizon() ?? false;
+      // LOS ends a running search (§4.6a): no further burst can arrive, so the session must not be left
+      // running with the progress line sitting on "waiting" until the operator closes the dialog
+      if (!SatAboveHorizon && Discovery != null) StopDiscoveryAtLos();
       CreatDestroyPipeline();
 
       if (Terrestrial) UpdateStatusLabel("terrestrial, not decoded", Color.Red);
