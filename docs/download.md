@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.44](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.44/SkyRoofSetup-v.1.44.zip)
+[SkyRoof v.1.45](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.45/SkyRoofSetup-v.1.45.zip)
 
 <br>
 
@@ -15,6 +15,11 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.45
+
+- improved SSTV decoding, eliminated long delay in image processing
+- added pass selection by max. elevation in satellite auto-selection
 
 #### v.1.44
 
