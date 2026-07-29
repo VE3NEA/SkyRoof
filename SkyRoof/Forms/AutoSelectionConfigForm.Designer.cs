@@ -28,6 +28,7 @@ namespace SkyRoof
     /// </summary>
     private void InitializeComponent()
     {
+      components = new System.ComponentModel.Container();
       RotationTree = new TreeView();
       MoveUpBtn = new Button();
       MoveDownBtn = new Button();
@@ -45,8 +46,17 @@ namespace SkyRoof
       CancelBtn = new Button();
       ClearBtn = new Button();
       SelectAllBtn = new Button();
+      DropdownBtn = new Button();
+      SelectAllPopupMenu = new ContextMenuStrip(components);
+      SelectAllMnu = new ToolStripMenuItem();
+      toolStripSeparator1 = new ToolStripSeparator();
+      Select5Mnu = new ToolStripMenuItem();
+      Select10Mnu = new ToolStripMenuItem();
+      Select15Mnu = new ToolStripMenuItem();
+      Select20Mnu = new ToolStripMenuItem();
       SatGroupBox.SuspendLayout();
       ModeGroupBox.SuspendLayout();
+      SelectAllPopupMenu.SuspendLayout();
       SuspendLayout();
       // 
       // RotationTree
@@ -227,11 +237,74 @@ namespace SkyRoof
       SelectAllBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
       SelectAllBtn.Location = new Point(388, 372);
       SelectAllBtn.Name = "SelectAllBtn";
-      SelectAllBtn.Size = new Size(90, 26);
+      SelectAllBtn.Size = new Size(78, 26);
       SelectAllBtn.TabIndex = 8;
       SelectAllBtn.Text = "Select All";
       SelectAllBtn.UseVisualStyleBackColor = true;
       SelectAllBtn.Click += SelectAllBtn_Click;
+      // 
+      // DropdownBtn
+      // 
+      DropdownBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+      DropdownBtn.Font = new Font("Wingdings 3", 8.25F);
+      DropdownBtn.Location = new Point(462, 372);
+      DropdownBtn.Name = "DropdownBtn";
+      DropdownBtn.Size = new Size(16, 26);
+      DropdownBtn.TabIndex = 10;
+      DropdownBtn.Text = "q";
+      DropdownBtn.UseVisualStyleBackColor = true;
+      DropdownBtn.MouseDown += DropdownBtn_MouseDown;
+      // 
+      // SelectAllPopupMenu
+      // 
+      SelectAllPopupMenu.Items.AddRange(new ToolStripItem[] { SelectAllMnu, toolStripSeparator1, Select5Mnu, Select10Mnu, Select15Mnu, Select20Mnu });
+      SelectAllPopupMenu.Name = "ClearAllMNU";
+      SelectAllPopupMenu.Size = new Size(137, 120);
+      // 
+      // SelectAllMnu
+      // 
+      SelectAllMnu.Name = "SelectAllMnu";
+      SelectAllMnu.Size = new Size(136, 22);
+      SelectAllMnu.Tag = "0";
+      SelectAllMnu.Text = "Select All";
+      SelectAllMnu.Click += SelectAllBtn_Click;
+      // 
+      // toolStripSeparator1
+      // 
+      toolStripSeparator1.Name = "toolStripSeparator1";
+      toolStripSeparator1.Size = new Size(133, 6);
+      // 
+      // Select5Mnu
+      // 
+      Select5Mnu.Name = "Select5Mnu";
+      Select5Mnu.Size = new Size(136, 22);
+      Select5Mnu.Tag = "5";
+      Select5Mnu.Text = "Select > 5º";
+      Select5Mnu.Click += SelectAboveMnu_Click;
+      // 
+      // Select10Mnu
+      // 
+      Select10Mnu.Name = "Select10Mnu";
+      Select10Mnu.Size = new Size(136, 22);
+      Select10Mnu.Tag = "10";
+      Select10Mnu.Text = "Select > 10º";
+      Select10Mnu.Click += SelectAboveMnu_Click;
+      // 
+      // Select15Mnu
+      // 
+      Select15Mnu.Name = "Select15Mnu";
+      Select15Mnu.Size = new Size(136, 22);
+      Select15Mnu.Tag = "15";
+      Select15Mnu.Text = "Select > 15º";
+      Select15Mnu.Click += SelectAboveMnu_Click;
+      // 
+      // Select20Mnu
+      // 
+      Select20Mnu.Name = "Select20Mnu";
+      Select20Mnu.Size = new Size(136, 22);
+      Select20Mnu.Tag = "20";
+      Select20Mnu.Text = "Select > 20º";
+      Select20Mnu.Click += SelectAboveMnu_Click;
       // 
       // AutoSelectionConfigForm
       // 
@@ -240,6 +313,7 @@ namespace SkyRoof
       AutoScaleMode = AutoScaleMode.Font;
       CancelButton = CancelBtn;
       ClientSize = new Size(600, 450);
+      Controls.Add(DropdownBtn);
       Controls.Add(RotationTree);
       Controls.Add(MoveUpBtn);
       Controls.Add(MoveDownBtn);
@@ -260,6 +334,7 @@ namespace SkyRoof
       SatGroupBox.PerformLayout();
       ModeGroupBox.ResumeLayout(false);
       ModeGroupBox.PerformLayout();
+      SelectAllPopupMenu.ResumeLayout(false);
       ResumeLayout(false);
       PerformLayout();
     }
@@ -283,5 +358,21 @@ namespace SkyRoof
     private Button CancelBtn;
     private Button ClearBtn;
     private Button SelectAllBtn;
+    private Button button1;
+    private Button DropdownBtn;
+    private ContextMenuStrip MenuStrip;
+    private ToolStripMenuItem ClearAllMNU;
+    private ContextMenuStrip SelectAllPopupMenu;
+    private ToolStripMenuItem SelectAllMnu;
+    private ToolStripMenuItem SelectAllMNU;
+    private ToolStripSeparator toolStripSeparator1;
+    private ToolStripMenuItem Select5MNU;
+    private ToolStripMenuItem Select10MNU;
+    private ToolStripMenuItem Select15MNU;
+    private ToolStripMenuItem Select20MNU;
+    private ToolStripMenuItem Select5Mnu;
+    private ToolStripMenuItem Select10Mnu;
+    private ToolStripMenuItem Select15Mnu;
+    private ToolStripMenuItem Select20Mnu;
   }
 }

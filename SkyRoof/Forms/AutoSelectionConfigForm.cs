@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using CSCore.XAudio2;
 using VE3NEA;
 
 namespace SkyRoof
@@ -319,12 +320,21 @@ namespace SkyRoof
     // checks every pass in the tree, so all of the current group's passes join the rotation
     private void SelectAllBtn_Click(object sender, EventArgs e)
     {
+      SelectAbove(0);
+    }
+
+    private void SelectAbove(int minDegrees)
+    {
       RotationTree.BeginUpdate();
       foreach (TreeNode satNode in RotationTree.Nodes)
       {
-        foreach (TreeNode leaf in satNode.Nodes) leaf.StateImageIndex = Checked;
-        satNode.StateImageIndex = satNode.Nodes.Count == 0 ? Unchecked : Checked;
+        foreach (TreeNode leaf in satNode.Nodes)
+          if ((leaf.Tag as SatellitePass)!.MaxElevation >= minDegrees)
+            leaf.StateImageIndex = Checked;
+
+        UpdateParentState(satNode);
       }
+
       RotationTree.EndUpdate();
     }
 
@@ -383,6 +393,23 @@ namespace SkyRoof
         ctx.Settings.Satellites.AutoSelection.Schedules.Remove(groupId);
 
       DialogResult = DialogResult.OK;
+    }
+
+
+
+
+    //----------------------------------------------------------------------------------------------
+    //                                  select above menu
+    //----------------------------------------------------------------------------------------------
+    private void DropdownBtn_MouseDown(object sender, MouseEventArgs e)
+    {
+      SelectAllPopupMenu.Show(DropdownBtn, new Point(DropdownBtn.Width, DropdownBtn.Height), ToolStripDropDownDirection.BelowLeft);
+    }
+
+    private void SelectAboveMnu_Click(object sender, EventArgs e)
+    {
+      int minDegrees = int.TryParse((sender as ToolStripMenuItem)?.Tag as string, out int result) ? result : 0;
+      SelectAbove(minDegrees);
     }
   }
 }

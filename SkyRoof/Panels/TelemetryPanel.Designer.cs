@@ -35,7 +35,6 @@ namespace SkyRoof
       StatusLabel = new Label();
       treeView1 = new TreeView();
       MenuStrip = new ContextMenuStrip(components);
-      ClearAllMNU = new ToolStripMenuItem();
       richTextBox1 = new RichTextBox();
       splitContainer1 = new SplitContainer();
       ImageSplitContainer = new SplitContainer();
@@ -44,6 +43,7 @@ namespace SkyRoof
       SaveImageMNU = new ToolStripMenuItem();
       CopyImageMNU = new ToolStripMenuItem();
       OpenImageMNU = new ToolStripMenuItem();
+      ClearAllMNU = new ToolStripMenuItem();
       MenuStrip.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
       splitContainer1.Panel1.SuspendLayout();
@@ -109,14 +109,7 @@ namespace SkyRoof
       // 
       MenuStrip.Items.AddRange(new ToolStripItem[] { ClearAllMNU });
       MenuStrip.Name = "ClearAllMNU";
-      MenuStrip.Size = new Size(119, 26);
-      // 
-      // ClearAllMNU
-      // 
-      ClearAllMNU.Name = "ClearAllMNU";
-      ClearAllMNU.Size = new Size(118, 22);
-      ClearAllMNU.Text = "Clear All";
-      ClearAllMNU.Click += ClearAllMNU_Click;
+      MenuStrip.Size = new Size(181, 48);
       // 
       // richTextBox1
       // 
@@ -181,30 +174,37 @@ namespace SkyRoof
       // 
       ImageMenu.Items.AddRange(new ToolStripItem[] { SaveImageMNU, CopyImageMNU, OpenImageMNU });
       ImageMenu.Name = "ImageMenu";
-      ImageMenu.Size = new Size(124, 70);
+      ImageMenu.Size = new Size(155, 70);
       ImageMenu.Opening += ImageMenu_Opening;
       // 
       // SaveImageMNU
       // 
       SaveImageMNU.Name = "SaveImageMNU";
-      SaveImageMNU.Size = new Size(123, 22);
+      SaveImageMNU.Size = new Size(154, 22);
       SaveImageMNU.Text = "Save As...";
       SaveImageMNU.Click += SaveImageMNU_Click;
       // 
       // CopyImageMNU
       // 
       CopyImageMNU.Name = "CopyImageMNU";
-      CopyImageMNU.Size = new Size(123, 22);
+      CopyImageMNU.Size = new Size(154, 22);
       CopyImageMNU.Text = "Copy";
       CopyImageMNU.Click += CopyImageMNU_Click;
-      //
+      // 
       // OpenImageMNU
-      //
+      // 
       OpenImageMNU.Name = "OpenImageMNU";
-      OpenImageMNU.Size = new Size(123, 22);
+      OpenImageMNU.Size = new Size(154, 22);
       OpenImageMNU.Text = "Open in Viewer";
       OpenImageMNU.Click += OpenImageMNU_Click;
-      //
+      // 
+      // ClearAllMNU
+      // 
+      ClearAllMNU.Name = "ClearAllMNU";
+      ClearAllMNU.Size = new Size(180, 22);
+      ClearAllMNU.Text = "Clear All";
+      ClearAllMNU.Click += ClearAllMNU_Click;
+      // 
       // TelemetryPanel
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
@@ -241,12 +241,12 @@ namespace SkyRoof
     private RichTextBox richTextBox1;
     private SplitContainer splitContainer1;
     private ContextMenuStrip MenuStrip;
-    private ToolStripMenuItem ClearAllMNU;
     private SplitContainer ImageSplitContainer;
     private PictureBox ImageBox;
     private ContextMenuStrip ImageMenu;
     private ToolStripMenuItem SaveImageMNU;
     private ToolStripMenuItem CopyImageMNU;
     private ToolStripMenuItem OpenImageMNU;
+    private ToolStripMenuItem ClearAllMNU;
   }
 }
