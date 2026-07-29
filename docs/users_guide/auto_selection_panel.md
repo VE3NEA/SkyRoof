@@ -54,6 +54,12 @@ The order of the satellite nodes is the **priority** order (top = highest). Sele
 Use **Select All** to check every pass of the group at once, or **Clear** to uncheck them all. Clicking
 **OK** with no passes checked removes the current group's schedule.
 
+To skip the low passes, click the small arrow next to **Select All** and pick a maximum-elevation
+threshold from the drop-down menu: **Select All**, **Select > 5º**, **Select > 10º**, **Select > 15º**, or
+**Select > 20º**. Only the passes that rise at least that high are checked. The menu adds to your current
+selection and never unchecks anything, so click **Clear** first if you want the threshold to be the only
+thing selected.
+
 ### Satellite Settings
 
 Select a satellite node to edit its settings:
