@@ -258,6 +258,7 @@ namespace SkyRoof
       DiscoverBtn.TabIndex = 9;
       DiscoverBtn.Text = "Discover";
       DiscoverBtn.UseVisualStyleBackColor = true;
+      DiscoverBtn.Visible = false;
       DiscoverBtn.Click += DiscoverBtn_Click;
       // 
       // DiscoverStatusLabel
@@ -287,6 +288,7 @@ namespace SkyRoof
       SaveOverrideBtn.TabIndex = 2;
       SaveOverrideBtn.Text = "Save to Overrides";
       SaveOverrideBtn.UseVisualStyleBackColor = true;
+      SaveOverrideBtn.Visible = false;
       SaveOverrideBtn.Click += SaveOverrideBtn_Click;
       // 
       // CancelBtn
@@ -382,10 +384,10 @@ namespace SkyRoof
     private Panel DifferentialDot;
     private Panel TelemetryFormatDot;
     private Panel panel1;
-    private Button DiscoverBtn;
     private Label DiscoverStatusLabel;
-    private Button SaveOverrideBtn;
     private Button CancelBtn;
     private Button OkBtn;
+    internal Button DiscoverBtn;
+    internal Button SaveOverrideBtn;
   }
 }

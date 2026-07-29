@@ -581,9 +581,13 @@ namespace SkyRoof
         return;
       }
 
+      bool discoveryEnabled = ModifierKeys.HasFlag(Keys.Control);
+
       using var dlg = new SignalParamsDialog();
       dlg.DiscoverToggled += ToggleDiscovery;
       dlg.SaveOverrideRequested += SaveOverrideRequested;
+      dlg.DiscoverBtn.Visible = discoveryEnabled;
+      dlg.SaveOverrideBtn.Visible = discoveryEnabled;
       ParamsDialog = dlg;
       try
       {
