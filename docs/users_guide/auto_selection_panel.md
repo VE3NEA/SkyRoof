@@ -81,8 +81,8 @@ When two selected passes are up at the same time, the **overlap mode** decides w
 ### Record Selected Passes
 
 **Record selected passes** sets how the passes in the rotation are recorded. Like the overlap mode, this
-option belongs to the schedule and applies to **every** selected pass, so each satellite group has its own
-setting:
+option belongs to the schedule rather than to a satellite: it applies to **all satellites** in the group,
+and thus to every selected pass. Each satellite group has its own setting:
 
 - **Off** — do not record. The satellites are still tuned, so live telemetry is decoded during each pass.
 - **Audio** — record the demodulated audio as an `.mp3` file.
