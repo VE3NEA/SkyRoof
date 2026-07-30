@@ -982,12 +982,16 @@ namespace SkyRoof
     // the header source/destination address and the byte length of the address field, so the caller can label the
     // frame and drop those bytes from the ASCII/HEX payload views. AX.25 G3RUH frames, and USP frames (which
     // encapsulate an AX.25 UI frame), both begin with an AX.25 callsign address field. ("", 0) when none parses.
+    // GEOSCAN is included because its beacon frames also encapsulate an AX.25 UI frame at offset 0 (e.g.
+    // "RS92S5 -> BEACON"); its other flavor is raw Geoscan telemetry, which Describe rejects on its own since
+    // the first byte does not shift into a plausible callsign character.
     private static (string Addr, int AddrLen) ExtractAddress(Frame frame, DecodeSnapshot snapshot)
     {
       switch (snapshot.SignalParams.Framing)
       {
         case Framing.AX25G3RUH:
         case Framing.USP:
+        case Framing.GEOSCAN:
           string? addr = Ax25Address.Describe(frame.Bytes);
           return string.IsNullOrEmpty(addr) ? ("", 0) : (addr, Ax25Address.AddressFieldLength(frame.Bytes));
 

@@ -430,6 +430,9 @@ namespace SkyRoof
       Framing.AX100ASM => "AX100 ASM+Golay",
       Framing.AX100RS => "AX100 Reed Solomon",
       Framing.CCSDS => "CCSDS",
+      // both spelled exactly as satyaml does, so ExtractFraming round-trips the written override
+      Framing.GEOSCAN => "GEOSCAN",
+      Framing.AO40FEC => "AO-40 FEC",
       _ => ""
     };
 

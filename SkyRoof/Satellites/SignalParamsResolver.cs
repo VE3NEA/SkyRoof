@@ -196,12 +196,15 @@ namespace SkyRoof.Satellites
 
       // GOMspace AX100: satyaml framing strings "AX100 ASM+Golay" / "AX100 Reed Solomon", or DB
       // descriptions like "GMSK 4k8 AX.100 Mode 5". Mode 5 = ASM+Golay, Mode 6 = the RS framing; plain
-      // "AX100" defaults to ASM+Golay (the overwhelmingly common flavor in the wild).
+      // "AX100" defaults to ASM+Golay (the overwhelmingly common flavor in the wild). "AX100RS" is the
+      // enum's own name — accepted so the round-trip is not lossy (Je9pelParser stores Framing.ToString(),
+      // and without this the name collapses to AX100ASM, which is the hazard BuildSatnogsLayer warns about).
       if (s.Contains("AX100", StringComparison.OrdinalIgnoreCase) ||
           s.Contains("AX.100", StringComparison.OrdinalIgnoreCase))
       {
         bool rs = s.Contains("Reed", StringComparison.OrdinalIgnoreCase) ||
-               s.Contains("Mode 6", StringComparison.OrdinalIgnoreCase);
+               s.Contains("Mode 6", StringComparison.OrdinalIgnoreCase) ||
+               s.Contains("AX100RS", StringComparison.OrdinalIgnoreCase);
         return rs ? Framing.AX100RS : Framing.AX100ASM;
       }
 
@@ -211,8 +214,45 @@ namespace SkyRoof.Satellites
       if (s.Contains("USP", StringComparison.OrdinalIgnoreCase))
         return Framing.USP;
 
-      if (s.Contains("AX.25", StringComparison.OrdinalIgnoreCase) ||
-          s.Contains("G3RUH", StringComparison.OrdinalIgnoreCase))
+      // Geoscan/Sputnix CC1125 framing (satyaml "GEOSCAN", and the DB spells it out as "(Geoscan framing)").
+      // MUST precede the AX.25 test: all 14 of these transmitters are described as "AX.25 Beacon and
+      // Telemetry (Geoscan framing)", because an AX.25 UI frame rides *inside* the Geoscan frame — so the
+      // AX.25 label is true but at the wrong layer, and matching it first would deframe the outer link with
+      // the wrong framing and yield nothing.
+      if (s.Contains("GEOSCAN", StringComparison.OrdinalIgnoreCase))
+        return Framing.GEOSCAN;
+
+      // AO-40 FEC (satyaml "AO-40 FEC"; the DB never names it, so this resolves off the satyaml layer).
+      // Only the plain long-frame variant is implemented, so the variants that are NOT are excluded rather
+      // than silently mis-deframed: "AO-40 FEC short" (SMOG-P/ATL-1: 52-bit syncword, 51x52 interleaver,
+      // RS depth 1) and "AO-40 FEC CRC-16-ARC" (SMOG-1: adds an inner CRC that is kept in the frame, so the
+      // frame contents would differ even though the outer chain matches). "AO-40 uncoded" (AO-40, QO-100) is
+      // a different deframer entirely and does not contain "FEC", so it falls through on its own.
+      // "AO40FEC" is the enum's own name, which Je9pelParser stores as its layer's framing string — accept it
+      // so that round-trip is not lossy (compare the BuildSatnogsLayer note about "AX100RS" collapsing).
+      if (s.Contains("AO40FEC", StringComparison.OrdinalIgnoreCase) ||
+          (s.Contains("AO-40 FEC", StringComparison.OrdinalIgnoreCase) &&
+           !s.Contains("AO-40 FEC short", StringComparison.OrdinalIgnoreCase) &&
+           !s.Contains("AO-40 FEC CRC-16-ARC", StringComparison.OrdinalIgnoreCase)))
+        return Framing.AO40FEC;
+
+      // AX.25, plain or G3RUH-scrambled — one enum value because Ax25G3ruhDeframer runs both chains and
+      // FCS-gates them. The dotless "AX25" spelling is accepted too: it is the enum's own name
+      // ("AX25G3RUH", closing the same lossy-round-trip hole as the AX100RS and AO40FEC cases) and 11
+      // transmitters write it that way in the DB free text ("9k6 FSK AX25", "Mode U - AFSK 1k2 AX25").
+      // Safe against the more specific framings that carry AX.25 inside them (GEOSCAN) or name it in their
+      // own labels (AX100, USP) — every one of those is tested above and returns first.
+      // The exception is a framing satyaml names that we do NOT implement: there the DB's looser "AX25"
+      // text must not override it, or an active satellite gets confidently mislabelled and decoded with the
+      // wrong chain. Unknown is the honest answer. Only two such names collide today — verified by sweeping
+      // the cached DB — but the list is the weak spot here: it grows whenever gr-satellites adds a custom
+      // framing whose SatNOGS description also says AX25. The structural fix is layer-aware resolution
+      // (satyaml's framing field outranking the DB free text) rather than one combined string.
+      if (!s.Contains("ESEO", StringComparison.OrdinalIgnoreCase) &&
+          !s.Contains("YUSAT", StringComparison.OrdinalIgnoreCase) &&
+          (s.Contains("AX.25", StringComparison.OrdinalIgnoreCase) ||
+           s.Contains("AX25", StringComparison.OrdinalIgnoreCase) ||
+           s.Contains("G3RUH", StringComparison.OrdinalIgnoreCase)))
         return Framing.AX25G3RUH;
 
       // AMSAT-EA GENESIS family (HADES-SA SpinnyONE et al.): SatNOGS labels these "GENESIS FSK"/HADES.
