@@ -10,8 +10,9 @@ namespace SkyRoof
 {
   // Config modal for the current group's auto-selection schedule (design-docs/auto_selection_plan.md §3.2).
   // A rotation tree (satellites as parents in priority order, their passes as leaves) with 3-state
-  // checkboxes selects the passes to rotate through; per-satellite transmitter and record settings and
-  // the overlap mode complete the schedule. OK writes Schedules[SelectedGroupId] (created on first Edit).
+  // checkboxes selects the passes to rotate through; the per-satellite transmitter, the schedule-wide
+  // record mode and the overlap mode complete the schedule. OK writes Schedules[SelectedGroupId]
+  // (created on first Edit).
   public partial class AutoSelectionConfigForm : Form
   {
     // state-image indices for the 3-state node checkboxes
@@ -21,8 +22,8 @@ namespace SkyRoof
 
     private readonly Context ctx;
 
-    // per-satellite transmitter/record edits, keyed by sat_id, seeded for every non-geostationary group
-    // satellite so the details combos always have a backing store even before a pass is ticked
+    // per-satellite transmitter edits, keyed by sat_id, seeded for every non-geostationary group
+    // satellite so the details combo always has a backing store even before a pass is ticked
     private readonly Dictionary<string, ScheduledSat> satEdits = new();
 
     // set while the form writes control state, so the resulting events are not read as user edits
@@ -47,7 +48,7 @@ namespace SkyRoof
       tips.SetToolTip(MoveUpBtn, "Raise the selected satellite's priority");
       tips.SetToolTip(MoveDownBtn, "Lower the selected satellite's priority");
       tips.SetToolTip(TransmitterCombo, "Transmitter to tune when this satellite's pass is selected");
-      tips.SetToolTip(RecordCombo, "Record each pass of this satellite as Audio, I/Q, or not at all");
+      tips.SetToolTip(RecordCombo, "Record every selected pass as Audio, I/Q, or not at all");
       tips.SetToolTip(SelectAllBtn, "Check all passes of the current group");
       tips.SetToolTip(ClearBtn, "Uncheck all passes, clearing the schedule for the current group");
 
@@ -79,6 +80,7 @@ namespace SkyRoof
 
       SetOverlapMode(schedule.OverlapMode);
       TrackAntennaCheckbox.Checked = schedule.TrackAntenna;
+      RecordCombo.SelectedIndex = (int)schedule.Record;
 
       var now = DateTime.UtcNow;
       var horizon = now.AddHours(48);
@@ -110,8 +112,7 @@ namespace SkyRoof
           SatId = sat.sat_id,
           TransmitterUuid = scheduled?.TransmitterUuid
             ?? cust?.SelectedTransmitterId
-            ?? sat.Transmitters.FirstOrDefault()?.uuid,
-          Record = scheduled?.Record ?? RecordMode.Off
+            ?? sat.Transmitters.FirstOrDefault()?.uuid
         };
 
         var satNode = new TreeNode(sat.name) { Tag = sat };
@@ -169,11 +170,15 @@ namespace SkyRoof
     {
       if (RotationTree.HitTest(e.Location).Location != TreeViewHitTestLocations.StateImage) return;
 
+      // clicking the state-image region does not select the node, so select it here: the details pane
+      // always applies to the satellite whose checkbox was just clicked
+      RotationTree.SelectedNode = e.Node;
+
       if (e.Node.Level == 0) ToggleParent(e.Node);
       else ToggleLeaf(e.Node);
 
-      // clicking the state-image region does not select the node, so the native TreeView never
-      // repaints it after a checkbox toggle; force the change to show (batch buttons redraw via EndUpdate)
+      // the native TreeView does not repaint the node after a checkbox toggle when the click did not
+      // change the selection; force the change to show (batch buttons redraw via EndUpdate)
       RotationTree.Invalidate();
     }
 
@@ -213,7 +218,7 @@ namespace SkyRoof
       UpdateDetails();
     }
 
-    // shows the transmitter/record settings of the selected satellite (a leaf selects its parent sat)
+    // shows the transmitter of the selected satellite (a leaf selects its parent sat)
     private void UpdateDetails()
     {
       var node = RotationTree.SelectedNode;
@@ -235,7 +240,6 @@ namespace SkyRoof
       TransmitterCombo.Items.AddRange(currentSat.Transmitters.ToArray());
       TransmitterCombo.SelectedItem = currentSat.Transmitters.FirstOrDefault(t => t.uuid == edit.TransmitterUuid)
         ?? currentSat.Transmitters.FirstOrDefault();
-      RecordCombo.SelectedIndex = (int)edit.Record;
       updating = false;
 
       // reconcile the stored uuid with the transmitter actually shown, so a stale/unmatched seed does not
@@ -249,12 +253,6 @@ namespace SkyRoof
       if (updating || currentSat == null) return;
       if (TransmitterCombo.SelectedItem is SatnogsDbTransmitter tx)
         satEdits[currentSat.sat_id].TransmitterUuid = tx.uuid;
-    }
-
-    private void RecordCombo_SelectedIndexChanged(object sender, EventArgs e)
-    {
-      if (updating || currentSat == null) return;
-      satEdits[currentSat.sat_id].Record = (RecordMode)RecordCombo.SelectedIndex;
     }
 
 
@@ -295,7 +293,7 @@ namespace SkyRoof
 
 
     //----------------------------------------------------------------------------------------------
-    //                                     overlap mode
+    //                              overlap mode and record mode
     //----------------------------------------------------------------------------------------------
     private void SetOverlapMode(OverlapMode mode)
     {
@@ -309,6 +307,12 @@ namespace SkyRoof
       if (HighestElevationRadio.Checked) return OverlapMode.HighestElevation;
       if (PriorityRadio.Checked) return OverlapMode.Priority;
       return OverlapMode.FinishCurrent;
+    }
+
+    // the record mode applies to the schedule as a whole, i.e. to every selected pass
+    private RecordMode GetRecordMode()
+    {
+      return RecordCombo.SelectedIndex < 0 ? RecordMode.Off : (RecordMode)RecordCombo.SelectedIndex;
     }
 
 
@@ -363,7 +367,12 @@ namespace SkyRoof
     // writes the tree and details state back into the current group's schedule
     private void OkBtn_Click(object sender, EventArgs e)
     {
-      var schedule = new GroupSchedule { OverlapMode = GetOverlapMode(), TrackAntenna = TrackAntennaCheckbox.Checked };
+      var schedule = new GroupSchedule
+      {
+        OverlapMode = GetOverlapMode(),
+        TrackAntenna = TrackAntennaCheckbox.Checked,
+        Record = GetRecordMode()
+      };
 
       foreach (TreeNode satNode in RotationTree.Nodes)
       {

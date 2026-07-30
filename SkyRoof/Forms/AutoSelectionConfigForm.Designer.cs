@@ -97,11 +97,9 @@ namespace SkyRoof
       SatGroupBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
       SatGroupBox.Controls.Add(TxLabel);
       SatGroupBox.Controls.Add(TransmitterCombo);
-      SatGroupBox.Controls.Add(RecLabel);
-      SatGroupBox.Controls.Add(RecordCombo);
       SatGroupBox.Location = new Point(388, 84);
       SatGroupBox.Name = "SatGroupBox";
-      SatGroupBox.Size = new Size(200, 124);
+      SatGroupBox.Size = new Size(200, 76);
       SatGroupBox.TabIndex = 3;
       SatGroupBox.TabStop = false;
       SatGroupBox.Text = "Satellite";
@@ -123,32 +121,14 @@ namespace SkyRoof
       TransmitterCombo.Size = new Size(180, 23);
       TransmitterCombo.TabIndex = 0;
       TransmitterCombo.SelectedIndexChanged += TransmitterCombo_SelectedIndexChanged;
-      // 
-      // RecLabel
-      // 
-      RecLabel.AutoSize = true;
-      RecLabel.Location = new Point(10, 74);
-      RecLabel.Name = "RecLabel";
-      RecLabel.Size = new Size(47, 15);
-      RecLabel.TabIndex = 1;
-      RecLabel.Text = "Record:";
-      // 
-      // RecordCombo
-      // 
-      RecordCombo.DropDownStyle = ComboBoxStyle.DropDownList;
-      RecordCombo.Location = new Point(10, 92);
-      RecordCombo.Name = "RecordCombo";
-      RecordCombo.Size = new Size(180, 23);
-      RecordCombo.TabIndex = 1;
-      RecordCombo.SelectedIndexChanged += RecordCombo_SelectedIndexChanged;
-      // 
+      //
       // ModeGroupBox
-      // 
+      //
       ModeGroupBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
       ModeGroupBox.Controls.Add(FinishCurrentRadio);
       ModeGroupBox.Controls.Add(HighestElevationRadio);
       ModeGroupBox.Controls.Add(PriorityRadio);
-      ModeGroupBox.Location = new Point(388, 220);
+      ModeGroupBox.Location = new Point(388, 172);
       ModeGroupBox.Name = "ModeGroupBox";
       ModeGroupBox.Size = new Size(200, 108);
       ModeGroupBox.TabIndex = 4;
@@ -187,15 +167,34 @@ namespace SkyRoof
       PriorityRadio.TabStop = true;
       PriorityRadio.Text = "Priority";
       PriorityRadio.UseVisualStyleBackColor = true;
-      // 
+      //
+      // RecLabel
+      //
+      RecLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+      RecLabel.AutoSize = true;
+      RecLabel.Location = new Point(399, 292);
+      RecLabel.Name = "RecLabel";
+      RecLabel.Size = new Size(115, 15);
+      RecLabel.TabIndex = 5;
+      RecLabel.Text = "Record selected passes:";
+      //
+      // RecordCombo
+      //
+      RecordCombo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+      RecordCombo.DropDownStyle = ComboBoxStyle.DropDownList;
+      RecordCombo.Location = new Point(398, 310);
+      RecordCombo.Name = "RecordCombo";
+      RecordCombo.Size = new Size(180, 23);
+      RecordCombo.TabIndex = 6;
+      //
       // TrackAntennaCheckbox
-      // 
+      //
       TrackAntennaCheckbox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
       TrackAntennaCheckbox.AutoSize = true;
-      TrackAntennaCheckbox.Location = new Point(399, 338);
+      TrackAntennaCheckbox.Location = new Point(399, 345);
       TrackAntennaCheckbox.Name = "TrackAntennaCheckbox";
       TrackAntennaCheckbox.Size = new Size(175, 19);
-      TrackAntennaCheckbox.TabIndex = 5;
+      TrackAntennaCheckbox.TabIndex = 7;
       TrackAntennaCheckbox.Text = "Track antenna during passes";
       TrackAntennaCheckbox.UseVisualStyleBackColor = true;
       // 
@@ -205,7 +204,7 @@ namespace SkyRoof
       OkBtn.Location = new Point(388, 412);
       OkBtn.Name = "OkBtn";
       OkBtn.Size = new Size(90, 26);
-      OkBtn.TabIndex = 6;
+      OkBtn.TabIndex = 8;
       OkBtn.Text = "OK";
       OkBtn.UseVisualStyleBackColor = true;
       OkBtn.Click += OkBtn_Click;
@@ -217,7 +216,7 @@ namespace SkyRoof
       CancelBtn.Location = new Point(498, 412);
       CancelBtn.Name = "CancelBtn";
       CancelBtn.Size = new Size(90, 26);
-      CancelBtn.TabIndex = 7;
+      CancelBtn.TabIndex = 9;
       CancelBtn.Text = "Cancel";
       CancelBtn.UseVisualStyleBackColor = true;
       // 
@@ -227,7 +226,7 @@ namespace SkyRoof
       ClearBtn.Location = new Point(498, 372);
       ClearBtn.Name = "ClearBtn";
       ClearBtn.Size = new Size(90, 26);
-      ClearBtn.TabIndex = 9;
+      ClearBtn.TabIndex = 11;
       ClearBtn.Text = "Clear";
       ClearBtn.UseVisualStyleBackColor = true;
       ClearBtn.Click += ClearBtn_Click;
@@ -238,7 +237,7 @@ namespace SkyRoof
       SelectAllBtn.Location = new Point(388, 372);
       SelectAllBtn.Name = "SelectAllBtn";
       SelectAllBtn.Size = new Size(78, 26);
-      SelectAllBtn.TabIndex = 8;
+      SelectAllBtn.TabIndex = 10;
       SelectAllBtn.Text = "Select All";
       SelectAllBtn.UseVisualStyleBackColor = true;
       SelectAllBtn.Click += SelectAllBtn_Click;
@@ -250,7 +249,7 @@ namespace SkyRoof
       DropdownBtn.Location = new Point(462, 372);
       DropdownBtn.Name = "DropdownBtn";
       DropdownBtn.Size = new Size(16, 26);
-      DropdownBtn.TabIndex = 10;
+      DropdownBtn.TabIndex = 12;
       DropdownBtn.Text = "q";
       DropdownBtn.UseVisualStyleBackColor = true;
       DropdownBtn.MouseDown += DropdownBtn_MouseDown;
@@ -319,6 +318,8 @@ namespace SkyRoof
       Controls.Add(MoveDownBtn);
       Controls.Add(SatGroupBox);
       Controls.Add(ModeGroupBox);
+      Controls.Add(RecLabel);
+      Controls.Add(RecordCombo);
       Controls.Add(TrackAntennaCheckbox);
       Controls.Add(OkBtn);
       Controls.Add(CancelBtn);

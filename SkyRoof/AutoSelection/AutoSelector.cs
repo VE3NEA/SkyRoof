@@ -255,7 +255,7 @@ namespace SkyRoof
 
       ActivePass = pass;
       idleTrackedPass = null;                               // the idle gap is over, arm the next pre-roll
-      BeginSegment(schedule, pass);                         // start recording per the sat's RecordMode
+      BeginSegment(schedule, pass);                         // start recording per the schedule's RecordMode
       // re-assert tracking after the selection cascade above (SelectedPassChanged -> RotatorWidget.SetPass
       // -> ResetUi) unchecked the track box; also handles the no-advance repoint at a sat-to-sat switch
       if (CurrentSchedule?.TrackAntenna == true) ctx.RotatorControl.TrackPass(pass);
@@ -343,11 +343,10 @@ namespace SkyRoof
       if (recorder.AddAudioSamples(e)) SplitSegment();
     }
 
-    // starts a recording segment for the pass unless the satellite's RecordMode is Off (plan §2.5)
+    // starts a recording segment for the pass unless the schedule's RecordMode is Off (plan §2.5)
     private void BeginSegment(GroupSchedule schedule, SatellitePass pass)
     {
-      var mode = schedule.Sats.FirstOrDefault(s => s.SatId == pass.Satellite.sat_id)?.Record ?? RecordMode.Off;
-      BeginSegmentInternal(mode, pass.Satellite.name);
+      BeginSegmentInternal(schedule.Record, pass.Satellite.name);
     }
 
     private void BeginSegmentInternal(RecordMode mode, string? satName)

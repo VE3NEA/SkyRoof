@@ -1,8 +1,8 @@
 # Auto Selection Panel
 
 The Auto Selection panel lets SkyRoof automatically tune to each satellite in a schedule at the start of
-its pass (AOS) and hold it until the pass ends (LOS), cycling through a set of passes you choose. Each pass
-can optionally be recorded to its own file, and satellites can also take part without recording so their
+its pass (AOS) and hold it until the pass ends (LOS), cycling through a set of passes you choose. The
+selected passes can optionally be recorded, each to its own file, or left unrecorded so that only their
 live telemetry is decoded as they pass over.
 
 Auto selection works on the **current satellite group**. Each group keeps its own schedule, so switching
@@ -65,10 +65,6 @@ thing selected.
 Select a satellite node to edit its settings:
 
 - **Transmitter** — the transmitter to tune when a pass of this satellite is selected.
-- **Record** — how to record each pass of this satellite:
-  - **Off** — do not record. The satellite is still tuned, so live telemetry is decoded during the pass.
-  - **Audio** — record the demodulated audio as an `.mp3` file.
-  - **I/Q** — record the complex baseband signal as an `.iq.wav` file.
 
 ### Overlap Mode
 
@@ -81,6 +77,16 @@ When two selected passes are up at the same time, the **overlap mode** decides w
 - **Priority** — the currently-up selected pass whose satellite has the highest priority is tuned; a
   higher-priority pass rising over the horizon takes over, and when it sets the next-highest still-up pass
   is entered.
+
+### Record Selected Passes
+
+**Record selected passes** sets how the passes in the rotation are recorded. Like the overlap mode, this
+option belongs to the schedule and applies to **every** selected pass, so each satellite group has its own
+setting:
+
+- **Off** — do not record. The satellites are still tuned, so live telemetry is decoded during each pass.
+- **Audio** — record the demodulated audio as an `.mp3` file.
+- **I/Q** — record the complex baseband signal as an `.iq.wav` file.
 
 ### Track Antenna During Passes
 
