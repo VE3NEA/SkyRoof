@@ -24,14 +24,29 @@ namespace SkyRoof
     private bool Terrestrial;
     private bool SatAboveHorizon = false;
     private SignalParams? SignalParams;
+    // The ranked co-channel telemetry sibling (§2.3 of cochannel_sstv_pairing_plan) and its own freshly
+    // resolved params. Non-null only when an SSTV transmitter is selected and its downlink carries a
+    // decodable sibling; null in every other case, which is why nothing changes for an unpaired selection.
+    // The pipeline's run-time findings (ResolvedBaud / ResolvedDeviation) are written back into this params
+    // object, so it must be resolved once per transmitter change and then left alone.
+    private (SatnogsDbTransmitter Transmitter, SignalParams Params)? Sibling;
+    // §3: the (transmitter, params) pair that drives the telemetry pipeline — the selection itself whenever
+    // the selection is telemetry-decodable (identical to today in every unpaired case), the sibling when an
+    // SSTV transmitter is selected, and null for a CW / FM / unsupported selection, which never pulls in a
+    // sibling. Used for two things only: constructing the StreamingPipeline and stamping the frames'
+    // DecodeSnapshot. SignalParams, ResolvedSnapshot, UserChangedFields, the dots and the gear all stay
+    // bound to the selection.
+    private (SatnogsDbTransmitter Transmitter, SignalParams Params)? TelemetrySource =>
+      IsTelemetryDecodable() ? (Transmitter, SignalParams!) : Sibling;
     private TelemetryDecocder? Decoder;
     private SatnogsUploader? SatnogsUploader;
     private TelemetryRegistry? TelemetryRegistry;
     // the most recently added tree node: either the pass node itself (before it has any leaves) or its
-    // last-added leaf. the pass node a frame/image belongs to is always this node's parent, or the node
-    // itself when it has no leaves yet — so a single field tracks both "current pass" and "last leaf"
+    // last-added leaf. Used only to keep the tree selection following new content (see TrackNewNode).
+    // It used to double as "the current pass node" (this node's parent, or itself when it has no leaves),
+    // but a co-channel pair has TWO live pass nodes at once, so the pass a frame or image belongs to is
+    // resolved by identity in EnsureCurrentPassNode instead of by position here.
     private TreeNode? Current;
-    private TreeNode? CurrentPassNode => Current?.Parent ?? Current;
     private ILogger? FrameLogger;
     private DecodeSnapshot? CurrentDecode;
     // the status label's default text color, captured before any status update recolors it
@@ -330,13 +345,28 @@ namespace SkyRoof
       if (Terrestrial)
       {
         SignalParams = null;
+        Sibling = null;
         return;
       }
 
       SignalParams = SignalParamsResolver.Resolve(Transmitter);
       // snapshot the pristine DB-resolved params before the pipeline writes any finding back into SignalParams
       ResolvedSnapshot = SignalParams is null ? null : SignalParams with { };
+      ResolveSibling();
       UpdateParamsTooltip();
+    }
+
+    // Resolve the co-channel transmitter that drives telemetry when the selection cannot (§2.2 row 2): an
+    // SSTV selection borrows the top-ranked decodable transmitter on its own downlink. A selection that is
+    // telemetry-decodable already is its own source and needs no sibling, and a CW / FM / unsupported one
+    // deliberately gets none — SSTV is the only pairing this feature makes.
+    private void ResolveSibling()
+    {
+      Sibling = null;
+      if (IsTelemetryDecodable() || !IsSstvDecodable()) return;
+
+      var tx = CoChannel.RankedTelemetrySibling(Satellite, Transmitter);
+      if (tx != null && SignalParamsResolver.Resolve(tx) is SignalParams p) Sibling = (tx, p);
     }
 
     /// <summary>Refresh the params tooltip on both status labels with the same "name: value" fields the Signal
@@ -348,6 +378,11 @@ namespace SkyRoof
       // pass the pristine DB snapshot so a pipeline-discovered precoding (Differential, overwritten in place with
       // no self-contained flag) is asterisked here too, the same way baud/deviation are
       string tooltip = DescribeSignalParamsOrUnknown(SignalParams, ResolvedSnapshot);
+      // §4: with the gear hidden while a sibling drives telemetry, the tooltip is the only place its
+      // parameters are visible — append its block, under its own transmitter description so the two blocks
+      // cannot be confused, below the selected transmitter's.
+      if (Sibling is { } sibling)
+        tooltip += $"\n\n{sibling.Transmitter.description}\n{DescribeSignalParams(sibling.Params)}";
       toolTip1.SetToolTip(SatNameLabel, tooltip);
       toolTip1.SetToolTip(StatusLabel, tooltip);
     }
@@ -375,8 +410,10 @@ namespace SkyRoof
     private string DescribeSignalParamsMeta(DecodeSnapshot snapshot)
     {
       var p = snapshot.SignalParams;
-      // the pristine DB snapshot is only known for the currently selected transmitter's decoder
-      var db = ReferenceEquals(snapshot, CurrentDecode) ? ResolvedSnapshot : null;
+      // the pristine DB snapshot is only known for the currently selected transmitter's decoder — and it
+      // describes the SELECTION, so it is no baseline for a sibling's frames or a co-channel SSTV image
+      var db = ReferenceEquals(snapshot, CurrentDecode) && ReferenceEquals(snapshot.Transmitter, Transmitter)
+        ? ResolvedSnapshot : null;
 
       var lines = EnumSignalParamFields(p, db)
         .Select(f => $"  {f.Name}: {f.Value}{(f.Changed ? " *" : "")}").ToList();
@@ -428,8 +465,12 @@ namespace SkyRoof
     private void CreatDestroyPipeline()
     {
       bool aboveAndUp = !Terrestrial && SatAboveHorizon;
-      bool telemetry = IsTelemetryDecodable();
-      bool sstv = IsSstvDecodable();
+      // §2.2: the telemetry branch follows the resolved telemetry source, which is the selection itself
+      // unless an SSTV transmitter is selected; the SSTV branch follows the whole downlink, not the
+      // selection. Both may name a transmitter other than the selected one.
+      var telemetrySource = TelemetrySource;
+      bool telemetry = telemetrySource != null;
+      bool sstv = IsSstvBranchWanted();
       // the FM branch runs only with the model downloaded; the engine loads lazily here (once per session,
       // then shared) so an FM transmitter with no model simply builds no FM branch (status reflects it)
       var fmEngine = aboveAndUp && IsFmDecodable() ? EnsureFmEngine() : null;
@@ -443,10 +484,32 @@ namespace SkyRoof
       // change must rebuild the pipeline: otherwise it keeps decoding with the previous transmitter's params
       // and its frames get attributed to the newly selected transmitter (wrong sat/norad/telemetry parser).
       // starting or ending a search changes which branches the decoder carries, so it rebuilds for that too.
-      bool matches = Decoder != null && CurrentDecode != null && CurrentDecode.Transmitter.uuid == Transmitter.uuid
+      // the identity that matters is the TELEMETRY SOURCE's, not the selection's: switching between the two
+      // members of a co-channel pair resolves to the same pair of branches, and tearing the decoder down
+      // would throw away a locked baud and the in-progress SSTV image for no gain.
+      bool matches = Decoder != null && CurrentDecode != null
+        && CurrentDecode.Transmitter.uuid == (telemetrySource?.Transmitter ?? Transmitter).uuid
+        && (Decoder.Sstv != null) == sstv
         && (Decoder.Detector != null) == (detectParams != null);
 
-      if (needPipeline && matches) return;
+      if (needPipeline && matches)
+      {
+        // A kept decoder goes on writing its run-time findings (a locked baud / deviation) into the params
+        // object it was BUILT with. When the selection has just moved onto that decoder's own telemetry
+        // source — the other member of a co-channel pair — ResolveSignalParams has meanwhile replaced
+        // SignalParams with a fresh resolution of the same transmitter, which carries none of those
+        // findings. Adopt the running object so the tooltip, the dots and the gear keep showing the values
+        // the pipeline is actually using (§3). ResolvedSnapshot is left alone: it is the pristine DB
+        // baseline, and that is exactly what the asterisks are measured against.
+        if (CurrentDecode != null && ReferenceEquals(CurrentDecode.Transmitter, Transmitter)
+          && !ReferenceEquals(CurrentDecode.SignalParams, SignalParams))
+        {
+          SignalParams = CurrentDecode.SignalParams;
+          UpdateParamsTooltip();
+          UpdateGearButton();
+        }
+        return;
+      }
       if (!needPipeline && Decoder == null) return;
 
       // destroy the existing decoder: purge its queued IQ (recorded for the old transmitter / tuning) so the
@@ -464,9 +527,14 @@ namespace SkyRoof
       // attributed to this transmitter even if the selection changes while the frame is in flight
       if (needPipeline)
       {
-        var snapshot = new DecodeSnapshot(Satellite, Transmitter, SignalParams!);
+        // one decoder, but up to two identities in it: telemetry events are attributed to the telemetry
+        // source and SSTV events to the transmitter that advertises SSTV. In the unpaired case both are the
+        // selection and this is exactly the single snapshot of before.
+        var snapshot = new DecodeSnapshot(Satellite, telemetrySource?.Transmitter ?? Transmitter,
+          telemetrySource?.Params ?? SignalParams!);
+        var sstvSnapshot = SstvSnapshot(snapshot);
         CurrentDecode = snapshot;
-        Decoder = new(SignalParams!, telemetry, sstv, fmEngine, detectParams);
+        Decoder = new(snapshot.SignalParams, telemetry, sstv, fmEngine, detectParams);
         if (Decoder.Pipeline != null)
         {
           Decoder.Pipeline.FrameDecoded += frame => FrameDecodedHandler(frame, snapshot);
@@ -480,8 +548,8 @@ namespace SkyRoof
           // the image-id → tree-node map lives in the subscription closure, so images from a disposed
           // decoder's flush can never collide with ids of the next decoder's images
           var imageNodes = new Dictionary<int, TreeNode>();
-          Decoder.Sstv.ImageUpdated += evt => SstvImageHandler(evt, snapshot, imageNodes);
-          Decoder.Sstv.ImageCompleted += evt => SstvImageHandler(evt, snapshot, imageNodes);
+          Decoder.Sstv.ImageUpdated += evt => SstvImageHandler(evt, sstvSnapshot, imageNodes);
+          Decoder.Sstv.ImageCompleted += evt => SstvImageHandler(evt, sstvSnapshot, imageNodes);
         }
         if (Decoder.Fm != null)
         {
@@ -521,6 +589,26 @@ namespace SkyRoof
       return SignalParams.Modulation == Modulation.SSTV || SignalParamsResolver.HasSstv(Transmitter);
     }
 
+    // §2.2: the SSTV branch runs whenever ANY transmitter on this downlink advertises SSTV, whatever is
+    // selected and whatever the DB alive flags say — the decoder self-gates on VIS/sync, so an inactive
+    // transmitter costs only filter CPU. IsSstvDecodable stays in the union because it also catches a
+    // selection whose resolved modulation is SSTV through a layer HasSstv does not read.
+    private bool IsSstvBranchWanted()
+    {
+      if (Terrestrial) return false;
+      return IsSstvDecodable() || CoChannel.HasCoChannelSstv(Satellite, Transmitter);
+    }
+
+    // The identity SSTV images are attributed to: the co-channel transmitter that advertises SSTV, which may
+    // be the selection, a sibling, or (when the branch runs only because the selection resolved to
+    // Modulation.SSTV) neither, in which case the telemetry snapshot's identity is reused unchanged.
+    private DecodeSnapshot SstvSnapshot(DecodeSnapshot telemetrySnapshot)
+    {
+      var tx = CoChannel.SstvTransmitter(Satellite, Transmitter);
+      if (tx == null || ReferenceEquals(tx, telemetrySnapshot.Transmitter)) return telemetrySnapshot;
+      return new DecodeSnapshot(Satellite, tx, SignalParamsResolver.Resolve(tx) ?? telemetrySnapshot.SignalParams);
+    }
+
     private void BurstDecodedHandler(StreamingBurstReport report, DecodeSnapshot snapshot)
     {
       // hand the burst to a running discovery search (§4.1). Offer returns immediately and drops the burst
@@ -530,13 +618,13 @@ namespace SkyRoof
       BeginInvoke(() =>
         {
           // create the pass entry on the first burst (grayed until a valid frame arrives), not on the first frame
-          var txPassInfo = EnsureCurrentPassNode(snapshot);
+          var (passNode, txPassInfo) = EnsureCurrentPassNode(snapshot);
           txPassInfo.BurstCount++;
           UpdateStatusLabel("DECODING...", Color.Green);
           if (double.IsNaN(txPassInfo.MaxSnrDb) || report.Burst.SnrDb > txPassInfo.MaxSnrDb)
             txPassInfo.MaxSnrDb = report.Burst.SnrDb;
           // refresh the right panel if this pass entry is the one currently selected
-          if (treeView1.SelectedNode == CurrentPassNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
+          if (treeView1.SelectedNode == passNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
         }
        );
     }
@@ -884,13 +972,13 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     private void AddFrame(Frame frame, DecodeSnapshot snapshot)
     {
-      var txPassInfo = EnsureCurrentPassNode(snapshot);
+      var (passNode, txPassInfo) = EnsureCurrentPassNode(snapshot);
 
       // un-gray the pass entry once the first valid frame of the pass is decoded
       if (!txPassInfo.HasValidFrame)
       {
         txPassInfo.HasValidFrame = true;
-        CurrentPassNode!.ForeColor = Color.Empty;
+        passNode.ForeColor = Color.Empty;
       }
 
       // a frame decoded with the current (overridden) pipeline confirms the demod override worked. Gated on the
@@ -920,32 +1008,40 @@ namespace SkyRoof
         UpdateGearButton();
       }
 
-      AddLeaf(CurrentPassNode!, frameNode);
-      if (treeView1.SelectedNode == CurrentPassNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
+      AddLeaf(passNode, frameNode);
+      if (treeView1.SelectedNode == passNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
     }
 
-    /// <summary>Returns the current pass node's info, creating the pass node when this is the first burst
-    /// or frame of a new transmitter+orbit pass. New telemetry/SSTV pass nodes are grayed until their first
-    /// valid frame/image; the FM speech path passes <paramref name="grayUntilContent"/> false because its
-    /// node is only ever created once there is decoded content (§10.3, operator: never grayed).</summary>
-    private TxPassInfo EnsureCurrentPassNode(DecodeSnapshot snapshot, bool grayUntilContent = true)
+    /// <summary>Returns the pass node this snapshot's content belongs to, and its info, creating the node
+    /// when this is the first burst or frame of a new transmitter+orbit pass. New telemetry/SSTV pass nodes
+    /// are grayed until their first valid frame/image; the FM speech path passes
+    /// <paramref name="grayUntilContent"/> false because its node is only ever created once there is decoded
+    /// content (§10.3, operator: never grayed). Callers must add their leaf under the node returned here
+    /// rather than under the most recently touched one: with a co-channel pair they are not the same.</summary>
+    private (TreeNode Node, TxPassInfo Info) EnsureCurrentPassNode(DecodeSnapshot snapshot, bool grayUntilContent = true)
     {
       int orbit = ctx.SdrPasses.GetNextPass(snapshot.Satellite)?.OrbitNumber ?? -1;
-      var passNode = CurrentPassNode;
-      var txPassInfo = (TxPassInfo?)passNode?.Tag;
 
-      if (passNode == null || !(txPassInfo!.IsSame(snapshot.Transmitter, orbit)))
+      // A co-channel pair interleaves telemetry frames and SSTV images from TWO transmitters, so the match
+      // runs over the last AND second-last top-level nodes instead of the current one alone — otherwise
+      // every alternation between them spawns a node. Two is exactly enough for a pair, and an A -> B -> A
+      // selection change still starts a fresh node the way it does today.
+      int count = treeView1.Nodes.Count;
+      for (int i = count - 1; i >= Math.Max(0, count - 2); i--)
       {
-        passNode = new TreeNode($"{DateTime.Now:yyyy-MM-dd HH:mm} {snapshot.Transmitter.Satellite.name}  {snapshot.Transmitter.description}");
-        if (grayUntilContent) passNode.ForeColor = Color.Gray;
-        txPassInfo = new TxPassInfo(snapshot.Transmitter, orbit);
-        txPassInfo.SignalParams = snapshot.SignalParams;
-        passNode.Tag = txPassInfo;
-        treeView1.Nodes.Add(passNode);
-        TrackNewNode(passNode);
+        var node = treeView1.Nodes[i];
+        if (node.Tag is TxPassInfo info && info.IsSame(snapshot.Transmitter, orbit)) return (node, info);
       }
 
-      return txPassInfo!;
+      var passNode = new TreeNode($"{DateTime.Now:yyyy-MM-dd HH:mm} {snapshot.Transmitter.Satellite.name}  {snapshot.Transmitter.description}");
+      if (grayUntilContent) passNode.ForeColor = Color.Gray;
+      var txPassInfo = new TxPassInfo(snapshot.Transmitter, orbit);
+      txPassInfo.SignalParams = snapshot.SignalParams;
+      passNode.Tag = txPassInfo;
+      treeView1.Nodes.Add(passNode);
+      TrackNewNode(passNode);
+
+      return (passNode, txPassInfo);
     }
 
     /// <summary>Selects the newly added node (pass or leaf) if the tree selection was tracking the previously
@@ -1084,7 +1180,7 @@ namespace SkyRoof
 
     private void ShowImage(SstvImageEvent evt, DecodeSnapshot snapshot, Dictionary<int, TreeNode> imageNodes, string? savedPath)
     {
-      var txPassInfo = EnsureCurrentPassNode(snapshot);
+      var (passNode, txPassInfo) = EnsureCurrentPassNode(snapshot);
 
       bool isNew = !imageNodes.TryGetValue(evt.ImageId, out TreeNode? node);
       if (isNew)
@@ -1093,7 +1189,7 @@ namespace SkyRoof
         node.Tag = new SstvImageInfo(snapshot, evt);
         imageNodes[evt.ImageId] = node;
         txPassInfo.ImageCount++;
-        AddLeaf(CurrentPassNode!, node);
+        AddLeaf(passNode, node);
       }
 
       // swap in the new reconstruction; dispose the previous bitmap only after the PictureBox lets go of it
@@ -1110,13 +1206,13 @@ namespace SkyRoof
       if (!txPassInfo.HasValidFrame)
       {
         txPassInfo.HasValidFrame = true;
-        CurrentPassNode!.ForeColor = Color.Empty;
+        passNode.ForeColor = Color.Empty;
       }
 
       if (!evt.Final) UpdateStatusLabel("DECODING...", Color.Green);
 
       if (treeView1.SelectedNode == node) DisplayImageInfo(info);
-      else if (treeView1.SelectedNode == CurrentPassNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
+      else if (treeView1.SelectedNode == passNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
     }
 
     private void DisplayImageInfo(SstvImageInfo info)
@@ -1282,11 +1378,11 @@ namespace SkyRoof
     // node is never grayed (operator decision) — it exists only once there is content
     private void EnsureFmLeaf(FmTranscriptInfo info)
     {
-      var txPassInfo = EnsureCurrentPassNode(info.Snapshot, grayUntilContent: false);
+      var (passNode, txPassInfo) = EnsureCurrentPassNode(info.Snapshot, grayUntilContent: false);
       if (info.Node == null)
       {
         info.Node = new TreeNode("FM Speech") { Tag = info };
-        AddLeaf(CurrentPassNode!, info.Node);
+        AddLeaf(passNode, info.Node);
       }
       txPassInfo.HasValidFrame = true;
       UpdateStatusLabel("DECODING...", Color.Green);
@@ -1487,6 +1583,11 @@ namespace SkyRoof
       if (!SatAboveHorizon && Discovery != null) StopDiscoveryAtLos();
       CreatDestroyPipeline();
 
+      // §4: no parameter editing, no Discover and no Save-to-override for a transmitter the user did not
+      // select, so the gear disappears while a sibling drives telemetry. To correct a wrong rank pick the
+      // operator selects that telemetry transmitter, which re-adds the SSTV branch anyway (§2.2 row 1).
+      SettingsButton.Visible = Sibling == null;
+
       if (Terrestrial) UpdateStatusLabel("terrestrial, not decoded", Color.Red);
       else if (!IsDecodable()) UpdateStatusLabel("format not supported", Color.Red);
       // an FM-only transmitter with no FM artefact unzipped into the installation folder reads as
@@ -1494,7 +1595,35 @@ namespace SkyRoof
       else if (IsFmDecodable() && !IsTelemetryDecodable() && !IsSstvDecodable() && !FmModelPresent)
         UpdateStatusLabel("format not supported", Color.Red);
       else if (!SatAboveHorizon) UpdateStatusLabel("satellite below horizon", SystemColors.ControlText);
-      else UpdateStatusLabel("ready to decode", SystemColors.ControlText);
+      else UpdateStatusLabel($"ready to decode{DescribeBranches()}", SystemColors.ControlText);
+    }
+
+    // The branches that will run, named after the ladder has decided the selection is decodable at all —
+    // "ready to decode: SSTV + GMSK 9k6 (USP)". Worth naming because with pairing the running branches are
+    // no longer implied by the selected transmitter's own description.
+    private string DescribeBranches()
+    {
+      var names = new List<string>();
+      if (IsSstvBranchWanted()) names.Add("SSTV");
+      if (TelemetrySource is { } source) names.Add(DescribeBranchParams(source.Params));
+      if (IsFmDecodable() && FmModelPresent) names.Add("FM speech");
+      return names.Count == 0 ? "" : ": " + string.Join(" + ", names);
+    }
+
+    // a telemetry branch in the DB's own spelling: "GMSK 9k6 (USP)"
+    private static string DescribeBranchParams(SignalParams p)
+    {
+      double baud = p.ResolvedBaud ?? p.Baud;
+      return $"{p.Modulation} {FormatBaudToken(baud)} ({p.Framing})";
+    }
+
+    // 9600 -> "9k6", 19200 -> "19k2", 1200 -> "1k2", 9600000 -> "9600k", 300 -> "300". Invariant on purpose:
+    // the 'k' replaces the decimal point, so a culture that writes a comma must not leave one behind.
+    private static string FormatBaudToken(double baud)
+    {
+      if (baud < 1000) return FormatTlmNumber(baud);
+      string text = (baud / 1000).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture).Replace(".", "k");
+      return text.Contains('k') ? text : text + "k";
     }
 
     private void UpdateStatusLabel(string text, Color color)

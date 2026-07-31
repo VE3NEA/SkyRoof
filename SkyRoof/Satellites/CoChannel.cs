@@ -18,9 +18,18 @@ namespace SkyRoof.Satellites
     /// are live, and the SSTV decoder self-gates on VIS/sync, so an inactive one costs only filter CPU.</summary>
     public static bool HasCoChannelSstv(SatnogsDbSatellite? satellite, SatnogsDbTransmitter? transmitter)
     {
-      if (transmitter == null) return false;
-      if (SignalParamsResolver.HasSstv(transmitter)) return true;
-      return CoChannelSiblings(satellite, transmitter).Any(SignalParamsResolver.HasSstv);
+      return SstvTransmitter(satellite, transmitter) != null;
+    }
+
+    /// <summary>The transmitter the SSTV images belong to: the argument itself when it advertises SSTV,
+    /// otherwise the first co-channel one that does. Only one <c>SstvDecoder</c> is ever built however many
+    /// SSTV transmitters share the frequency (CAS-11 has two) — it detects the mode from VIS/sync itself —
+    /// so the first match is the one the images are attributed to.</summary>
+    public static SatnogsDbTransmitter? SstvTransmitter(SatnogsDbSatellite? satellite, SatnogsDbTransmitter? transmitter)
+    {
+      if (transmitter == null) return null;
+      if (SignalParamsResolver.HasSstv(transmitter)) return transmitter;
+      return CoChannelSiblings(satellite, transmitter).FirstOrDefault(SignalParamsResolver.HasSstv);
     }
 
     /// <summary>The co-channel transmitter that should drive the telemetry pipeline when the selection
