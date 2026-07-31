@@ -1213,6 +1213,35 @@ namespace SkyRoof
 
       if (treeView1.SelectedNode == node) DisplayImageInfo(info);
       else if (treeView1.SelectedNode == passNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
+
+      // last, so the tree and the picture are fully drawn before the modal report dialog can appear
+      CheckSendAmsatReport(snapshot, evt);
+    }
+
+    // ask once per pass, keyed the way LoggerInterface.CheckSendAmsatStatus keys its own prompt
+    private (string SatName, int Orbit) LastAmsatReport = ("", 0);
+
+    /// <summary>The first SSTV image of a pass is a confirmed reception, so offer the AMSAT status report the
+    /// same way a logged QSO does (<c>LoggerInterface.CheckSendAmsatStatus</c>), with the satellite's SSTV
+    /// entry preselected. Gated on a COMPLETED image carrying rows rather than the first <c>ImageUpdated</c>:
+    /// a modal dialog must not interrupt a picture still being drawn, and a false VIS detection must not
+    /// raise one at all. A partial image still qualifies — the decoder finalizes what it has at LOS.</summary>
+    private void CheckSendAmsatReport(DecodeSnapshot snapshot, SstvImageEvent evt)
+    {
+      if (!evt.Final || evt.ValidRows == 0) return;
+
+      var sat = snapshot.Satellite;
+      if (sat == null || sat.AmsatEntries.Count == 0) return;
+      // an unprompted dialog with no callsign to send the report under would only be a dead end
+      if (string.IsNullOrEmpty(ctx.Settings.User.Call)) return;
+
+      var info = (sat.name, ctx.SdrPasses.GetNextPass(sat)?.OrbitNumber ?? -1);
+      if (info == LastAmsatReport) return;
+      // set the guard BEFORE showing the dialog: its message loop keeps pumping, so the image events that
+      // arrive while it is open re-enter here and would each open another one
+      LastAmsatReport = info;
+
+      AmsatReportDialog.SendReport(ctx, sat, "SSTV");
     }
 
     private void DisplayImageInfo(SstvImageInfo info)
@@ -1589,13 +1618,29 @@ namespace SkyRoof
       SettingsButton.Visible = Sibling == null;
 
       if (Terrestrial) UpdateStatusLabel("terrestrial, not decoded", Color.Red);
-      else if (!IsDecodable()) UpdateStatusLabel("format not supported", Color.Red);
+      else if (!IsDecodable()) UpdateStatusLabel(DescribeUnsupported(), Color.Red);
       // an FM-only transmitter with no FM artefact unzipped into the installation folder reads as
       // unsupported, silently - the user installs it manually, there is no in-app prompt or download
       else if (IsFmDecodable() && !IsTelemetryDecodable() && !IsSstvDecodable() && !FmModelPresent)
-        UpdateStatusLabel("format not supported", Color.Red);
+        UpdateStatusLabel(DescribeUnsupported(), Color.Red);
       else if (!SatAboveHorizon) UpdateStatusLabel("satellite below horizon", SystemColors.ControlText);
       else UpdateStatusLabel($"ready to decode{DescribeBranches()}", SystemColors.ControlText);
+    }
+
+    // Name what is actually unsupported about the SELECTED transmitter instead of blaming the telemetry
+    // format for everything: a CW transmitter has no telemetry format to fail on, and an FM one usually only
+    // lacks its speech model. The verdict covers the selection alone — a co-channel SSTV image, or an FM
+    // transcript, may well be decoding while one of these is on the label.
+    private string DescribeUnsupported()
+    {
+      return SignalParams?.Modulation switch
+      {
+        Modulation.CW => "CW decoding not supported",
+        // reached only via the ladder's FM branch, i.e. the modulation is supported but the model is absent
+        Modulation.FM => "FM decoding not supported",
+        null => "signal parameters unknown",
+        _ => "telemetry format not supported"
+      };
     }
 
     // The branches that will run, named after the ladder has decided the selection is decodable at all —

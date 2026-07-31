@@ -24,8 +24,10 @@ The panel also decodes **SSTV** images from satellites that transmit them over a
 is covered separately in [Receive SSTV Images](recevie_sstv.md); the rest of this page describes
 telemetry frame decoding.
 
-If the selected transmitter uses an unsupported modulation, or its parameters are unknown, the panel
-reports `format not supported`, and no decoding takes place.
+If the selected transmitter uses an unsupported modulation, or its parameters are unknown, the panel names
+what it cannot decode — `telemetry format not supported`, `CW decoding not supported`, or
+`FM decoding not supported` — and no telemetry frames are decoded. Other transmissions on the same
+frequency may still be decoded — an SSTV image, or an FM voice transcript.
 
 ## Decoding a Pass
 
@@ -65,7 +67,12 @@ supported transmitter is selected, frames are decoded automatically and appear i
     decoding starts when the satellite rises above the horizon;
   - **ready to decode** — the satellite is up and the decoder is listening;
   - **DECODING...** in green — a burst is being processed;
-  - **format not supported** in red — the transmitter's modulation or framing is not supported;
+  - **telemetry format not supported** in red — the transmitter's modulation or framing is not supported
+    for telemetry; SSTV or FM voice on the same frequency may still be decoding;
+  - **CW decoding not supported** in red — a CW transmitter is selected; SSTV on the same frequency may
+    still be decoding;
+  - **FM decoding not supported** in red — an FM transmitter is selected but the speech model is not
+    installed;
   - **terrestrial, not decoded** in red — a terrestrial link is selected, which the decoder does not
     handle.
 
