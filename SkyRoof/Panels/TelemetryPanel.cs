@@ -1223,12 +1223,13 @@ namespace SkyRoof
 
     /// <summary>The first SSTV image of a pass is a confirmed reception, so offer the AMSAT status report the
     /// same way a logged QSO does (<c>LoggerInterface.CheckSendAmsatStatus</c>), with the satellite's SSTV
-    /// entry preselected. Gated on a COMPLETED image carrying rows rather than the first <c>ImageUpdated</c>:
-    /// a modal dialog must not interrupt a picture still being drawn, and a false VIS detection must not
-    /// raise one at all. A partial image still qualifies — the decoder finalizes what it has at LOS.</summary>
+    /// entry preselected. Fires on the first decoded rows, NOT on image completion: an image runs the length
+    /// of the transmission (~36 s for Robot 36), and waiting for it put the dialog half a minute behind the
+    /// reception it is reporting. One decoded row is already the app's own test for real content — it is
+    /// what un-grays the pass node — so the picture goes on rendering behind the dialog.</summary>
     private void CheckSendAmsatReport(DecodeSnapshot snapshot, SstvImageEvent evt)
     {
-      if (!evt.Final || evt.ValidRows == 0) return;
+      if (evt.ValidRows == 0) return;
 
       var sat = snapshot.Satellite;
       if (sat == null || sat.AmsatEntries.Count == 0) return;
