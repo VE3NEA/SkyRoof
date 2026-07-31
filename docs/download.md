@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.45](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.45/SkyRoofSetup-v.1.45.zip)
+[SkyRoof v.1.65](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.46/SkyRoofSetup-v.1.46.zip)
 
 <br>
 
@@ -15,6 +15,12 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.46
+
+- telemetry decoding supports new framings, Geoscan and AO-40 FEC
+- SSTV decoding improved
+- alternating telemetry and SSTV transmissions are now decoded
 
 #### v.1.45
 
