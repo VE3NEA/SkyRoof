@@ -105,12 +105,18 @@ namespace SkyRoof
       internal readonly SatnogsDbSatellite? Satellite;
       internal readonly SatnogsDbTransmitter Transmitter;
       internal readonly SignalParams SignalParams;
+      // The orbit the decoder was built in, captured here rather than re-queried when an event arrives.
+      // GetNextPass returns the first pass starting from *now*, so it rolls to the NEXT orbit the instant the
+      // current pass ends — and the events that arrive at exactly that moment are the decoder's own flush.
+      // Re-deriving the orbit there files them under a pass that has not happened yet.
+      internal readonly int Orbit;
 
-      internal DecodeSnapshot(SatnogsDbSatellite? satellite, SatnogsDbTransmitter transmitter, SignalParams signalParams)
+      internal DecodeSnapshot(SatnogsDbSatellite? satellite, SatnogsDbTransmitter transmitter, SignalParams signalParams, int orbit)
       {
         Satellite = satellite;
         Transmitter = transmitter;
         SignalParams = signalParams;
+        Orbit = orbit;
       }
     }
 
@@ -531,7 +537,7 @@ namespace SkyRoof
         // source and SSTV events to the transmitter that advertises SSTV. In the unpaired case both are the
         // selection and this is exactly the single snapshot of before.
         var snapshot = new DecodeSnapshot(Satellite, telemetrySource?.Transmitter ?? Transmitter,
-          telemetrySource?.Params ?? SignalParams!);
+          telemetrySource?.Params ?? SignalParams!, ctx.SdrPasses.GetNextPass(Satellite)?.OrbitNumber ?? -1);
         var sstvSnapshot = SstvSnapshot(snapshot);
         CurrentDecode = snapshot;
         Decoder = new(snapshot.SignalParams, telemetry, sstv, fmEngine, detectParams);
@@ -606,7 +612,9 @@ namespace SkyRoof
     {
       var tx = CoChannel.SstvTransmitter(Satellite, Transmitter);
       if (tx == null || ReferenceEquals(tx, telemetrySnapshot.Transmitter)) return telemetrySnapshot;
-      return new DecodeSnapshot(Satellite, tx, SignalParamsResolver.Resolve(tx) ?? telemetrySnapshot.SignalParams);
+      // the same orbit: both branches belong to the one pass this decoder was built for
+      return new DecodeSnapshot(Satellite, tx, SignalParamsResolver.Resolve(tx) ?? telemetrySnapshot.SignalParams,
+        telemetrySnapshot.Orbit);
     }
 
     private void BurstDecodedHandler(StreamingBurstReport report, DecodeSnapshot snapshot)
@@ -1020,7 +1028,7 @@ namespace SkyRoof
     /// rather than under the most recently touched one: with a co-channel pair they are not the same.</summary>
     private (TreeNode Node, TxPassInfo Info) EnsureCurrentPassNode(DecodeSnapshot snapshot, bool grayUntilContent = true)
     {
-      int orbit = ctx.SdrPasses.GetNextPass(snapshot.Satellite)?.OrbitNumber ?? -1;
+      int orbit = snapshot.Orbit;
 
       // A co-channel pair interleaves telemetry frames and SSTV images from TWO transmitters, so the match
       // runs over the last AND second-last top-level nodes instead of the current one alone — otherwise
@@ -1236,7 +1244,9 @@ namespace SkyRoof
       // an unprompted dialog with no callsign to send the report under would only be a dead end
       if (string.IsNullOrEmpty(ctx.Settings.User.Call)) return;
 
-      var info = (sat.name, ctx.SdrPasses.GetNextPass(sat)?.OrbitNumber ?? -1);
+      // the snapshot's orbit, not a fresh GetNextPass: that rolls to the next pass the moment this one ends,
+      // which would make the decoder's own flush look like a new pass and raise a second dialog at LOS
+      var info = (sat.name, snapshot.Orbit);
       if (info == LastAmsatReport) return;
       // set the guard BEFORE showing the dialog: its message loop keeps pumping, so the image events that
       // arrive while it is open re-enter here and would each open another one
