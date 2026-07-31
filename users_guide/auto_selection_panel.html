@@ -95,8 +95,8 @@
 <h1 id="auto-selection-panel">Auto Selection Panel</h1>
 
 <p>The Auto Selection panel lets SkyRoof automatically tune to each satellite in a schedule at the start of
-its pass (AOS) and hold it until the pass ends (LOS), cycling through a set of passes you choose. Each pass
-can optionally be recorded to its own file, and satellites can also take part without recording so their
+its pass (AOS) and hold it until the pass ends (LOS), cycling through a set of passes you choose. The
+selected passes can optionally be recorded, each to its own file, or left unrecorded so that only their
 live telemetry is decoded as they pass over.</p>
 <p>Auto selection works on the <strong>current satellite group</strong>. Each group keeps its own schedule, so switching
 groups switches schedules.</p>
@@ -144,13 +144,6 @@ thing selected.</p>
 <p>Select a satellite node to edit its settings:</p>
 <ul>
 <li><strong>Transmitter</strong> — the transmitter to tune when a pass of this satellite is selected.</li>
-<li><strong>Record</strong> — how to record each pass of this satellite:
-<ul>
-<li><strong>Off</strong> — do not record. The satellite is still tuned, so live telemetry is decoded during the pass.</li>
-<li><strong>Audio</strong> — record the demodulated audio as an <code>.mp3</code> file.</li>
-<li><strong>I/Q</strong> — record the complex baseband signal as an <code>.iq.wav</code> file.</li>
-</ul>
-</li>
 </ul>
 <h3 id="overlap-mode">Overlap Mode</h3>
 <p>When two selected passes are up at the same time, the <strong>overlap mode</strong> decides which one is tuned:</p>
@@ -162,6 +155,15 @@ only when another pass is clearly higher (to avoid rapid switching back and fort
 <li><strong>Priority</strong> — the currently-up selected pass whose satellite has the highest priority is tuned; a
 higher-priority pass rising over the horizon takes over, and when it sets the next-highest still-up pass
 is entered.</li>
+</ul>
+<h3 id="record-selected-passes">Record Selected Passes</h3>
+<p><strong>Record selected passes</strong> sets how the passes in the rotation are recorded. Like the overlap mode, this
+option belongs to the schedule rather than to a satellite: it applies to <strong>all satellites</strong> in the group,
+and thus to every selected pass. Each satellite group has its own setting:</p>
+<ul>
+<li><strong>Off</strong> — do not record. The satellites are still tuned, so live telemetry is decoded during each pass.</li>
+<li><strong>Audio</strong> — record the demodulated audio as an <code>.mp3</code> file.</li>
+<li><strong>I/Q</strong> — record the complex baseband signal as an <code>.iq.wav</code> file.</li>
 </ul>
 <h3 id="track-antenna-during-passes">Track Antenna During Passes</h3>
 <p>Tick <strong>Track antenna during passes</strong> to let auto selection also point your antenna at each pass. Like the

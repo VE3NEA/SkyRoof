@@ -112,8 +112,10 @@ configure for the signal itself — you only have to select the right transmitte
 <p>The panel also decodes <strong>SSTV</strong> images from satellites that transmit them over an FM downlink. This
 is covered separately in <a href="recevie_sstv.html">Receive SSTV Images</a>; the rest of this page describes
 telemetry frame decoding.</p>
-<p>If the selected transmitter uses an unsupported modulation, or its parameters are unknown, the panel
-reports <code>format not supported</code>, and no decoding takes place.</p>
+<p>If the selected transmitter uses an unsupported modulation, or its parameters are unknown, the panel names
+what it cannot decode — <code>telemetry format not supported</code>, <code>CW decoding not supported</code>, or
+<code>FM decoding not supported</code> — and no telemetry frames are decoded. Other transmissions on the same
+frequency may still be decoded — an SSTV image, or an FM voice transcript.</p>
 <h2 id="decoding-a-pass">Decoding a Pass</h2>
 <ol>
 <li><p>Open the Telemetry panel from the <strong>View / Telemetry</strong> menu.</p>
@@ -150,7 +152,12 @@ the <a href="#signal-details">Signal Details</a> dialog.</p>
 decoding starts when the satellite rises above the horizon;</li>
 <li><strong>ready to decode</strong> — the satellite is up and the decoder is listening;</li>
 <li><strong>DECODING...</strong> in green — a burst is being processed;</li>
-<li><strong>format not supported</strong> in red — the transmitter's modulation or framing is not supported;</li>
+<li><strong>telemetry format not supported</strong> in red — the transmitter's modulation or framing is not supported
+for telemetry; SSTV or FM voice on the same frequency may still be decoding;</li>
+<li><strong>CW decoding not supported</strong> in red — a CW transmitter is selected; SSTV on the same frequency may
+still be decoding;</li>
+<li><strong>FM decoding not supported</strong> in red — an FM transmitter is selected but the speech model is not
+installed;</li>
 <li><strong>terrestrial, not decoded</strong> in red — a terrestrial link is selected, which the decoder does not
 handle.</li>
 </ul>
