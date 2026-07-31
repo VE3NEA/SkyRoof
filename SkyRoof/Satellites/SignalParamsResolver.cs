@@ -119,6 +119,26 @@ namespace SkyRoof.Satellites
       return ExtractFraming(framingString);
     }
 
+    // Modulations the telemetry pipeline can demodulate. Anything else (CW, SSTV, FM, QPSK) resolves to a
+    // valid SignalParams but builds no pipeline.
+    private readonly static Modulation[] SupportedModulations = {
+      Modulation.FSK,
+      Modulation.GFSK,
+      Modulation.GMSK,
+      Modulation.BPSK,
+      Modulation.AFSK
+    };
+
+    /// <summary>True if a resolved parameter set is complete enough, and its modulation supported, to build a
+    /// telemetry pipeline. One predicate shared by the panel's status ladder and the co-channel sibling ranker
+    /// (<see cref="CoChannel.RankedTelemetrySibling"/>), so both agree on what "decodable" means.</summary>
+    public static bool IsTelemetryDecodable(SignalParams? signalParams)
+    {
+      if (signalParams == null) return false;
+      if (signalParams.Framing == Framing.Unknown || signalParams.Modulation == Modulation.Unknown || signalParams.Baud == 0) return false;
+      return SupportedModulations.Contains(signalParams.Modulation);
+    }
+
     /// <summary>True if the transmitter advertises SSTV anywhere in its mode/description strings. A mixed
     /// transmitter (e.g. UmKA-1 alternating FSK telemetry and SSTV in one pass) classifies as
     /// FSK in <see cref="ExtractyModulation"/>, so the SSTV capability is surfaced separately and the

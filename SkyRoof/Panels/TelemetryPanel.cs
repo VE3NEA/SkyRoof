@@ -495,14 +495,6 @@ namespace SkyRoof
       }
     }
 
-    private readonly static Modulation[] SupportedModulations = {
-      Modulation.FSK,
-      Modulation.GFSK,
-      Modulation.GMSK,
-      Modulation.BPSK,
-      Modulation.AFSK
-    };
-
     private bool IsDecodable()
     {
       return IsTelemetryDecodable() || IsSstvDecodable() || IsFmDecodable();
@@ -517,9 +509,7 @@ namespace SkyRoof
 
     private bool IsTelemetryDecodable()
     {
-      if (SignalParams == null) return false;
-      if (SignalParams.Framing == Framing.Unknown || SignalParams.Modulation == Modulation.Unknown || SignalParams.Baud == 0) return false;
-      return SupportedModulations.Contains(SignalParams.Modulation);
+      return SignalParamsResolver.IsTelemetryDecodable(SignalParams);
     }
 
     // SSTV needs no framing or baud: the VIS header / sync cadence in the demod domain carries the mode.
