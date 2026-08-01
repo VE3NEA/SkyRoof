@@ -111,7 +111,7 @@
       FormBorderStyle = FormBorderStyle.FixedToolWindow;
       Name = "AmsatReportDialog";
       ShowInTaskbar = false;
-      StartPosition = FormStartPosition.CenterParent;
+      StartPosition = FormStartPosition.CenterScreen;
       Text = "Report to AMSAT";
       Load += AmsatReportDialog_Load;
       ResumeLayout(false);
