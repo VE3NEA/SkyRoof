@@ -50,5 +50,8 @@ SkyRoof keeps all of its data in the **data folder**.
     [telemetry settings](setting_up_telemetry_decoding.md#decoder-settings). One file is created per day;
 - **SstvImages** - [SSTV images](recevie_sstv.md) decoded by the [Telemetry](telemetry_panel.md)
     panel, saved automatically as PNG files with a JSON metadata sidecar;
+- **SsdvImages** - images received as SSDV packets or as raw JPEG fragments, decoded by the
+    [Telemetry](telemetry_panel.md) panel, saved automatically as JPEG files with a JSON metadata
+    sidecar;
 - **TelemetryRegistry** - the definitions used to decode raw telemetry frames into named values
     in the [Telemetry](telemetry_panel.md) panel.

@@ -11,6 +11,7 @@ using VE3NEA.SkySSTV;
 using VE3NEA.SkyTlm.Core;
 using VE3NEA.SkyTlm.Deframing;
 using VE3NEA.SkyTlm.Discovery;
+using VE3NEA.SkyTlm.Imaging;
 using VE3NEA.SkyTlm.Telemetry;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -120,15 +121,32 @@ namespace SkyRoof
       }
     }
 
+    // The two kinds of image a tree leaf can hold: an SSTV frame-by-frame reconstruction and an SSDV /
+    // raw-JPEG one. They share only the three places that do not care which they are looking at — the
+    // right-hand pane, the image context menu and the tree selection handler — so the interface is what
+    // those need and nothing more. Everything about how the two arrive, and how they are written to disk,
+    // differs.
+    private interface IImageNodeInfo
+    {
+      Bitmap? Bitmap { get; }
+      string? SavedPath { get; }
+      string Describe();
+      // "Save Image As...": the dialog's filter and suggested name, and the write itself. SSTV saves the
+      // rendered pixels as PNG; an SSDV image saves the received JPEG file verbatim.
+      string SaveFilter { get; }
+      string SaveFileName { get; }
+      void SaveAs(string path);
+    }
+
     // one progressively-built SSTV image: the tree node's Tag, updated in place as ImageUpdated events
     // re-render lines, finalized (and auto-saved) on ImageCompleted
-    private sealed class SstvImageInfo
+    private sealed class SstvImageInfo : IImageNodeInfo
     {
       internal readonly DecodeSnapshot Snapshot;
       internal readonly DateTime FirstSeen = DateTime.Now;
       internal SstvImageEvent Event;
-      internal Bitmap? Bitmap;
-      internal string? SavedPath;
+      public Bitmap? Bitmap { get; set; }
+      public string? SavedPath { get; set; }
 
       internal SstvImageInfo(DecodeSnapshot snapshot, SstvImageEvent evt)
       {
@@ -136,7 +154,7 @@ namespace SkyRoof
         Event = evt;
       }
 
-      internal string Describe()
+      public string Describe()
       {
         return
           $"Sat: {Snapshot.Transmitter?.Satellite?.name ?? "Unknown"}\r\n" +
@@ -147,6 +165,54 @@ namespace SkyRoof
           $"Status: {(Event.Final ? "complete" : "receiving...")}\r\n" +
           (SavedPath != null ? $"Saved: {SavedPath}\r\n" : "");
       }
+
+      public string SaveFilter => "PNG Image|*.png";
+      public string SaveFileName => $"{FirstSeen:yyyyMMdd_HHmmss}_{Event.Mode}.png";
+      public void SaveAs(string path) => Event.Image.SavePng(path);
+    }
+
+    // one progressively-built SSDV / raw-JPEG image: the tree node's Tag, updated in place as fragments
+    // arrive, finalized (and auto-saved) when the assembler announces that nothing further is coming.
+    // SkyTlm hands out JPEG bytes rather than pixels — that is what keeps System.Drawing out of the
+    // library — so the decoding to a Bitmap happens here, in the app.
+    private sealed class SsdvImageInfo : IImageNodeInfo
+    {
+      internal readonly DecodeSnapshot Snapshot;
+      internal readonly DateTime FirstSeen = DateTime.Now;
+      internal ImageProduct Product;
+      // the assembler has announced this image as over. Not the same as Product.Complete: a pass that ends
+      // mid-image finalizes what arrived, which off air is the normal case rather than the exception.
+      internal bool Final;
+      public Bitmap? Bitmap { get; set; }
+      public string? SavedPath { get; set; }
+
+      internal SsdvImageInfo(DecodeSnapshot snapshot, ImageProduct product)
+      {
+        Snapshot = snapshot;
+        Product = product;
+      }
+
+      public string Describe()
+      {
+        return
+          $"Sat: {Snapshot.Transmitter?.Satellite?.name ?? "Unknown"}\r\n" +
+          $"Tx: {Snapshot.Transmitter?.description}\r\n" +
+          $"Image: {Product.ImageId}\r\n" +
+          (Product.Source != null ? $"Source: {Product.Source}\r\n" : "") +
+          $"Size: {Product.Width} x {Product.Height}\r\n" +
+          $"Fragments: {Product.FragmentsReceived} of {Product.FragmentsExpected}\r\n" +
+          // only the raw-JPEG family has such a boundary: one lost fragment desynchronizes the entropy
+          // stream and everything past it is noise, so the operator has to be told where truth stops.
+          // -1 means the concept does not apply, which is SSDV, where a lost packet costs its own MCUs
+          // and nothing else.
+          (Product.FirstGapOffset >= 0 ? $"Intact to: {Product.FirstGapOffset} bytes\r\n" : "") +
+          $"Status: {(Product.Complete ? "complete" : Final ? "incomplete" : "receiving...")}\r\n" +
+          (SavedPath != null ? $"Saved: {SavedPath}\r\n" : "");
+      }
+
+      public string SaveFilter => "JPEG Image|*.jpg";
+      public string SaveFileName => $"{FirstSeen:yyyyMMdd_HHmmss}_{Product.ImageId}.jpg";
+      public void SaveAs(string path) => File.WriteAllBytes(path, Product.Jpeg);
     }
 
     // one FM-speech transcript, the Tag of the single "FM Speech" leaf node (§10.3): the pass's decoded
@@ -362,14 +428,15 @@ namespace SkyRoof
       UpdateParamsTooltip();
     }
 
-    // Resolve the co-channel transmitter that drives telemetry when the selection cannot (§2.2 row 2): an
-    // SSTV selection borrows the top-ranked decodable transmitter on its own downlink. A selection that is
-    // telemetry-decodable already is its own source and needs no sibling, and a CW / FM / unsupported one
-    // deliberately gets none — SSTV is the only pairing this feature makes.
+    // Resolve the co-channel transmitter that drives telemetry when the selection cannot (§2.2 rows 2
+    // and 4): an SSTV or SSDV selection borrows the top-ranked decodable transmitter on its own downlink.
+    // A selection that is telemetry-decodable already is its own source and needs no sibling, and a CW /
+    // FM / unsupported one deliberately gets none — those two are the only pairings this feature makes.
     private void ResolveSibling()
     {
       Sibling = null;
-      if (IsTelemetryDecodable() || !IsSstvDecodable()) return;
+      if (IsTelemetryDecodable()) return;
+      if (!IsSstvDecodable() && !SignalParamsResolver.HasSsdv(Transmitter)) return;
 
       var tx = CoChannel.RankedTelemetrySibling(Satellite, Transmitter);
       if (tx != null && SignalParamsResolver.Resolve(tx) is SignalParams p) Sibling = (tx, p);
@@ -540,11 +607,25 @@ namespace SkyRoof
           telemetrySource?.Params ?? SignalParams!, ctx.SdrPasses.GetNextPass(Satellite)?.OrbitNumber ?? -1);
         var sstvSnapshot = SstvSnapshot(snapshot);
         CurrentDecode = snapshot;
-        Decoder = new(snapshot.SignalParams, telemetry, sstv, fmEngine, detectParams);
+        Decoder = new(snapshot.SignalParams, snapshot.Satellite?.norad_cat_id, telemetry, sstv, fmEngine, detectParams);
         if (Decoder.Pipeline != null)
         {
-          Decoder.Pipeline.FrameDecoded += frame => FrameDecodedHandler(frame, snapshot);
+          // the image assembler is fed from the frame handler, and is captured here rather than read off
+          // the Decoder field when a frame surfaces: by then the field may already hold the next
+          // transmitter's decoder, and this decoder's frames must never reach that one's assembler.
+          var images = Decoder.Images;
+          Decoder.Pipeline.FrameDecoded += frame => FrameDecodedHandler(frame, snapshot, images);
           Decoder.Pipeline.BurstDecoded += report => BurstDecodedHandler(report, snapshot);
+        }
+        if (Decoder.Images != null)
+        {
+          // the image-id → tree-node map lives in the subscription closure, the same way the SSTV one
+          // does, so an image finalized by a disposed decoder's flush can never collide with an id of the
+          // next decoder's images. Images ride the telemetry frames, so they carry the TELEMETRY
+          // snapshot's identity — there is no third snapshot here.
+          var imageNodes = new Dictionary<int, TreeNode>();
+          Decoder.Images.ImageUpdated += product => SsdvImageHandler(product, snapshot, imageNodes, false);
+          Decoder.Images.ImageCompleted += product => SsdvImageHandler(product, snapshot, imageNodes, true);
         }
         // the detection-only branch exists for the search alone: its bursts go to the session and nowhere
         // else — no frames, no tree entry, no status label, because nothing here was decoded.
@@ -571,7 +652,7 @@ namespace SkyRoof
 
     private bool IsDecodable()
     {
-      return IsTelemetryDecodable() || IsSstvDecodable() || IsFmDecodable();
+      return IsTelemetryDecodable() || IsSstvDecodable() || IsSsdvDecodable() || IsFmDecodable();
     }
 
     // FM voice is decodable to a speech transcript (§10) when the transmitter's mode is FM. Whether the
@@ -593,6 +674,28 @@ namespace SkyRoof
     {
       if (SignalParams == null) return false;
       return SignalParams.Modulation == Modulation.SSTV || SignalParamsResolver.HasSstv(Transmitter);
+    }
+
+    // §2.2 row 4: an SSDV row is not a transmitter at all but a payload type carried inside a telemetry
+    // stream — HADES-SA's "SSDV" row and its "FSK 800 bps" row are the same 436.875 MHz signal — so it
+    // resolves to Modulation.Unknown and can never build a pipeline of its own. Yet it is the row an
+    // operator naturally picks, and it must not be a dead end: it decodes whenever the co-channel sibling
+    // that actually carries it does, which is exactly what makes the selection worth calling decodable.
+    // Whether that sibling's frames really yield images is the assembler factory's answer, not a mode
+    // string's — see IsImagingWanted.
+    private bool IsSsdvDecodable()
+    {
+      return SignalParamsResolver.HasSsdv(Transmitter) && TelemetrySource != null;
+    }
+
+    // Whether the resolved telemetry source's frames carry images this build can reconstruct. Asked of the
+    // factory, which is the single place that maps a framing to an assembler, so the status line cannot
+    // drift from what the decoder actually builds. It allocates one throwaway assembler per call, which is
+    // a small object and is only asked on a selection or horizon change.
+    private bool IsImagingWanted()
+    {
+      return TelemetrySource is { } source
+        && ImageAssemblerFactory.Create(source.Params, Satellite?.norad_cat_id) != null;
     }
 
     // §2.2: the SSTV branch runs whenever ANY transmitter on this downlink advertises SSTV, whatever is
@@ -637,10 +740,15 @@ namespace SkyRoof
        );
     }
 
-    private void FrameDecodedHandler(Frame frame, DecodeSnapshot snapshot)
+    private void FrameDecodedHandler(Frame frame, DecodeSnapshot snapshot, IImageAssembler? images)
     {
       ctx.KissServer.SendToAll(frame);
       if (snapshot.Satellite?.norad_cat_id is int norad) SatnogsUploader?.Submit(frame, norad);
+      // Images ride the telemetry frames, so every frame is offered unconditionally and the assembler's
+      // own source parser drops the ones that are not image fragments — on HADES-SA, where the SSDV
+      // packets are interleaved with telemetry on one downlink, that is most of them. Re-transcoding the
+      // whole image per accepted fragment costs microseconds, so this stays on the decode thread.
+      images?.Push(frame);
       BeginInvoke(() =>
       {
         AddFrame(frame, snapshot);
@@ -1115,12 +1223,19 @@ namespace SkyRoof
         }
       }
 
+      // a GEOSCAN frame carries a header we can name even when it is not telemetry: the sending satellite,
+      // the message type, and, on an image frame, where its bytes belong in the picture. Empty for the AX.25
+      // beacon flavor of the same downlink, which the address and the telemetry fields already describe.
+      string geo = "";
+      if (snapshot.SignalParams.Framing == Framing.GEOSCAN)
+        geo = string.Join("", GeoscanHeader.Describe(frame.Bytes).Select(f => $"  {f.Name}: {f.Value}\n"));
+
       string tlm = "";
-      if (addr.Length > 0 || fields.Length > 0)
+      if (addr.Length > 0 || geo.Length > 0 || fields.Length > 0)
       {
         tlm = "PAYLOAD:\n";
         if (addr.Length > 0) tlm += $"  Address: {addr}\n";
-        tlm += fields + "\n";
+        tlm += geo + fields + "\n";
       }
 
       // ASCII and HEX are shown over the payload only — any header address bytes are removed and the HEX
@@ -1255,7 +1370,7 @@ namespace SkyRoof
       AmsatReportDialog.SendReport(ctx, sat, "SSTV");
     }
 
-    private void DisplayImageInfo(SstvImageInfo info)
+    private void DisplayImageInfo(IImageNodeInfo info)
     {
       if (richTextBox1.Parent != ImageSplitContainer.Panel2)
       {
@@ -1314,13 +1429,9 @@ namespace SkyRoof
 
     private void SaveImageMNU_Click(object sender, EventArgs e)
     {
-      if (treeView1.SelectedNode?.Tag is not SstvImageInfo info) return;
-      using var dlg = new SaveFileDialog
-      {
-        Filter = "PNG Image|*.png",
-        FileName = $"{info.FirstSeen:yyyyMMdd_HHmmss}_{info.Event.Mode}.png"
-      };
-      if (dlg.ShowDialog() == DialogResult.OK) info.Event.Image.SavePng(dlg.FileName);
+      if (treeView1.SelectedNode?.Tag is not IImageNodeInfo info) return;
+      using var dlg = new SaveFileDialog { Filter = info.SaveFilter, FileName = info.SaveFileName };
+      if (dlg.ShowDialog() == DialogResult.OK) info.SaveAs(dlg.FileName);
     }
 
     private void CopyImageMNU_Click(object sender, EventArgs e)
@@ -1331,20 +1442,167 @@ namespace SkyRoof
     // gray the "Open in Viewer" item until the selected image has been auto-saved to a file on disk
     private void ImageMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
     {
-      var info = treeView1.SelectedNode?.Tag as SstvImageInfo;
+      var info = treeView1.SelectedNode?.Tag as IImageNodeInfo;
       OpenImageMNU.Enabled = info?.SavedPath != null && File.Exists(info.SavedPath);
     }
 
     private void OpenImageMNU_Click(object sender, EventArgs e)
     {
-      if (treeView1.SelectedNode?.Tag is not SstvImageInfo info || info.SavedPath == null) return;
+      if (treeView1.SelectedNode?.Tag is not IImageNodeInfo info || info.SavedPath == null) return;
       try
       {
         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(info.SavedPath) { UseShellExecute = true });
       }
       catch (Exception ex)
       {
-        Log.Error(ex, "Failed to open SSTV image in viewer");
+        Log.Error(ex, "Failed to open the image in viewer");
+      }
+    }
+
+
+
+
+    //----------------------------------------------------------------------------------------------
+    //                                      ssdv images
+    //----------------------------------------------------------------------------------------------
+    // called on the decode worker thread (or on the UI thread when a disposed decoder flushes); the
+    // finalized image is auto-saved here, before marshaling, so a pass ending with the panel closing
+    // cannot lose it. final says the assembler will send nothing further for this image — which is not the
+    // same as the image being whole, and off air it usually is not.
+    private void SsdvImageHandler(ImageProduct product, DecodeSnapshot snapshot, Dictionary<int, TreeNode> imageNodes, bool final)
+    {
+      string? savedPath = final && ShouldSaveImage(product) ? SaveImageToFile(product, snapshot) : null;
+      BeginInvoke(() => ShowSsdvImage(product, snapshot, imageNodes, savedPath, final));
+    }
+
+    // fragments an image must carry before it is written to disk — see ShouldSaveImage for why two is
+    // the right number and why a coverage fraction is deliberately not used
+    private const int MinFragmentsToSave = 2;
+
+    /// <summary>Whether a finalized image is worth writing to disk. Deliberately harder to satisfy than
+    /// showing it is: a stray tree node costs nothing and goes away with the session, but a file in
+    /// <c>SsdvImages\</c> is durable clutter. Two conditions:
+    /// <list type="bullet">
+    /// <item><b>More than one fragment.</b> A false positive is a single misread frame. Two of them
+    /// landing in the same image — each having passed the deframer's CRC/RS, each parsing as an image
+    /// fragment, and both carrying the same image identity — is not a coincidence that happens; if it
+    /// has happened, the image is real. So this is the whole test, and one fragment is the only thing
+    /// it rejects.</item>
+    /// <item>The reconstruction has a <b>geometry</b>. Free on SSDV, which carries width and height in
+    /// every packet header; for the raw-JPEG family it comes from walking the file's own markers, so a
+    /// picture built from a fragment at an arbitrary offset has neither an SOI nor a frame header and
+    /// reports 0 x 0. That is the check that guards the front end with no off-air validation, USP's.</item>
+    /// </list>
+    /// A <b>coverage fraction is deliberately not used.</b> It does not catch the case it looks like it
+    /// should — a lone raw-JPEG fragment reports 1 of 1 expected, i.e. 100%, because the expected count
+    /// is derived from the span actually written — and it withholds real images: the off-air
+    /// <c>hades-sa_img225_tailonly</c>, whose first nine packets were lost, is 6 of 15.
+    /// <para>An image that fails these is still shown and still savable by hand from the image context
+    /// menu. Only the automatic write is withheld.</para></summary>
+    private static bool ShouldSaveImage(ImageProduct product)
+    {
+      return product.FragmentsReceived >= MinFragmentsToSave
+        && product.Width > 0 && product.Height > 0
+        && product.Jpeg.Length > 0;
+    }
+
+    private void ShowSsdvImage(ImageProduct product, DecodeSnapshot snapshot, Dictionary<int, TreeNode> imageNodes,
+      string? savedPath, bool final)
+    {
+      var (passNode, txPassInfo) = EnsureCurrentPassNode(snapshot);
+
+      bool isNew = !imageNodes.TryGetValue(product.ImageId, out TreeNode? node);
+      if (isNew)
+      {
+        node = new TreeNode();
+        node.Tag = new SsdvImageInfo(snapshot, product);
+        imageNodes[product.ImageId] = node;
+        txPassInfo.ImageCount++;
+        AddLeaf(passNode, node);
+      }
+
+      // swap in the new reconstruction; dispose the previous bitmap only after the PictureBox lets go of it
+      var info = (SsdvImageInfo)node!.Tag;
+      var oldBitmap = info.Bitmap;
+      info.Product = product;
+      info.Final |= final;
+      // a JPEG the OS decoder refuses — which the first fragments of an image legitimately can be — leaves
+      // the previous rendering on screen rather than blanking it, and leaves its bitmap undisposed
+      var bitmap = DecodeJpeg(product.Jpeg);
+      if (bitmap != null) info.Bitmap = bitmap;
+      if (savedPath != null) info.SavedPath = savedPath;
+      node.Text = $"{info.FirstSeen:HH:mm:ss}  Image {product.ImageId}  " +
+        $"{product.FragmentsReceived}/{product.FragmentsExpected} fragments";
+      if (ImageBox.Image == oldBitmap) ImageBox.Image = info.Bitmap;
+      if (bitmap != null) oldBitmap?.Dispose();
+
+      // an accepted image fragment is real content: un-gray the pass entry the way a valid frame does
+      if (!txPassInfo.HasValidFrame)
+      {
+        txPassInfo.HasValidFrame = true;
+        passNode.ForeColor = Color.Empty;
+      }
+
+      if (!final) UpdateStatusLabel("DECODING...", Color.Green);
+
+      if (treeView1.SelectedNode == node) DisplayImageInfo(info);
+      else if (treeView1.SelectedNode == passNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
+    }
+
+    // The received JPEG as a Bitmap. Copied out of the stream rather than handed the stream directly: GDI+
+    // keeps a Bitmap's source stream open for the life of the bitmap, and this one is a MemoryStream over
+    // a buffer that is replaced on the next fragment. Null when the file cannot be decoded at all.
+    private static Bitmap? DecodeJpeg(byte[] jpeg)
+    {
+      try
+      {
+        using var stream = new MemoryStream(jpeg);
+        using var decoded = System.Drawing.Image.FromStream(stream);
+        return new Bitmap(decoded);
+      }
+      catch (Exception e)
+      {
+        Log.Debug(e, "Failed to decode a received JPEG image");
+        return null;
+      }
+    }
+
+    /// <summary>Auto-save the finalized image as JPEG + JSON metadata sidecar under the user data folder,
+    /// beside the SSTV images. The bytes are written verbatim — they already are a JPEG file, gaps filled
+    /// and EOI in place, whatever fraction of the image arrived.</summary>
+    private static string? SaveImageToFile(ImageProduct product, DecodeSnapshot snapshot)
+    {
+      try
+      {
+        string folder = Path.Combine(Utils.GetUserDataFolder(), "SsdvImages");
+        Directory.CreateDirectory(folder);
+        string sat = string.Concat((snapshot.Satellite?.name ?? "Unknown").Split(Path.GetInvalidFileNameChars()));
+        string path = Path.Combine(folder, $"{DateTime.Now:yyyyMMdd_HHmmss}_{sat}_{product.ImageId}.jpg");
+        File.WriteAllBytes(path, product.Jpeg);
+
+        var meta = new
+        {
+          Utc = DateTime.UtcNow,
+          Satellite = snapshot.Satellite?.name,
+          Norad = snapshot.Satellite?.norad_cat_id,
+          Transmitter = snapshot.Transmitter.description,
+          TransmitterUuid = snapshot.Transmitter.uuid,
+          product.ImageId,
+          product.Source,
+          product.Width,
+          product.Height,
+          product.FragmentsReceived,
+          product.FragmentsExpected,
+          product.FirstGapOffset,
+          product.Complete
+        };
+        File.WriteAllText(Path.ChangeExtension(path, ".json"), JsonConvert.SerializeObject(meta, Formatting.Indented));
+        return path;
+      }
+      catch (Exception e)
+      {
+        Log.Error(e, "Failed to save the received image");
+        return null;
       }
     }
 
@@ -1662,6 +1920,11 @@ namespace SkyRoof
       var names = new List<string>();
       if (IsSstvBranchWanted()) names.Add("SSTV");
       if (TelemetrySource is { } source) names.Add(DescribeBranchParams(source.Params));
+      // Imaging is a consumer of the telemetry frames, not a decoder of its own, and it is built on every
+      // satellite whose framing has an assembler — 100-odd USP birds that have never sent a picture
+      // included. Naming it there would be noise, so it is named only where the operator asked for it by
+      // selecting the SSDV row and the parameters it resolved to would otherwise not mention it.
+      if (IsSsdvDecodable() && IsImagingWanted()) names.Add("images");
       if (IsFmDecodable() && FmModelPresent) names.Add("FM speech");
       return names.Count == 0 ? "" : ": " + string.Join(" + ", names);
     }
@@ -1701,7 +1964,7 @@ namespace SkyRoof
       // showing non-FM content clears the click-to-play routing; RenderFmTranscript re-arms it for an FM node
       CurrentFmTranscript = null;
 
-      if (node.Tag is SstvImageInfo imageInfo)
+      if (node.Tag is IImageNodeInfo imageInfo)
       {
         DisplayImageInfo(imageInfo);
         return;

@@ -99,7 +99,8 @@ any of them:
 - **Telemetry format** — the definition used to parse the decoded frames into named telemetry values.
   It is normally chosen from the satellite's NORAD number; select a different one here when the
   frames decode but their values do not. The field is empty, as in the picture above, when SkyRoof has
-  no telemetry definition for the satellite — its frames are then shown without a PAYLOAD section.
+  no telemetry definition for the satellite — its frames are then shown without telemetry values in
+  the PAYLOAD section.
 
 To undo a single override, right-click the field and choose **Reset to database value** — the field
 goes back to the value the database gave it, leaving your other overrides in place. **Cancel** discards
@@ -143,8 +144,11 @@ orbit number, the number of bursts, frames, and images decoded, and the signal p
 
 Select a **frame** node to see its full contents:
 
-- **TELEMETRY** — the named telemetry values decoded from the frame (battery voltage, temperatures,
-  and so on), shown only for satellites that SkyRoof has a telemetry definition for;
+- **PAYLOAD** — everything SkyRoof can name in the frame: the AX.25 source and destination addresses
+  where the frame has them, the named telemetry values decoded from it (battery voltage,
+  temperatures, and so on) for satellites that SkyRoof has a telemetry definition for, and, on the
+  Geoscan fleet, the sending satellite and the message type, including where an image frame's bytes
+  belong in the picture. The section is omitted when none of these apply;
 - **ASCII** — the frame bytes rendered as text;
 - **HEX** — a hex dump of the frame bytes;
 - **META** — the carrier frequency offset (CFO), signal-to-noise ratio (SNR), CRC check result, and

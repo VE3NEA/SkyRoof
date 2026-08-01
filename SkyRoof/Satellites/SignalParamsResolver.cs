@@ -150,6 +150,20 @@ namespace SkyRoof.Satellites
       return s.Contains("SSTV", StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>True if the transmitter advertises SSDV. Unlike every other mode string this is not a
+    /// transmitter at all but a payload type carried inside a telemetry stream: HADES-SA's "SSDV" row and
+    /// its "FSK 800 bps 1600 Hz separation" row are the same 436.875 MHz signal, and the image packets
+    /// arrive interleaved with the telemetry frames. So an SSDV row resolves to
+    /// <see cref="Modulation.Unknown"/> and can never build a pipeline on its own — it decodes by pairing
+    /// with the co-channel telemetry sibling that actually carries it
+    /// (<see cref="CoChannel.RankedTelemetrySibling"/>), exactly as an SSTV selection does.</summary>
+    public static bool HasSsdv(SatnogsDbTransmitter? tx)
+    {
+      if (tx == null) return false;
+      string s = $"{tx.gr_sats?.modulation} {tx.description} {tx.mode} {tx.DownlinkMode}";
+      return s.Contains("SSDV", StringComparison.OrdinalIgnoreCase);
+    }
+
 
     /// <summary>Apply CCSDS-specific carry-through facts (block variant + satyaml overrides) to the
     /// already-classified <see cref="SignalParams"/>, resolving each fact first-non-null over the structured
