@@ -65,6 +65,9 @@ namespace SkyRoof
     private TelemetryDefinition? FormatOverride;
     private string? FormatOverrideId;
     private bool FormatValidated;
+    // set while the image/text splitter is being positioned from the saved settings, so that the resulting
+    // SplitterMoved event does not write back what it just read
+    private bool RestoringImageSplitter;
 
     // parameter discovery (discover_params_plan.md): the running search, the dialog it reports to, and the
     // count of frames decoded since a discovered set was applied — the evidence the operator saves on (§6.1).
@@ -338,7 +341,16 @@ namespace SkyRoof
     private void TelemetryPanel_Shown(object? sender, EventArgs e)
     {
       splitContainer1.SplitterDistance = ctx.Settings.Telemetry.SplitterDistance;
-      ImageSplitContainer.SplitterDistance = ctx.Settings.Telemetry.ImageSplitterDistance;
+      // ImageSplitContainer is still hidden here, so it has not been laid out to its real size yet and its
+      // splitter cannot be positioned. It is restored when it first becomes visible, see DisplayImageInfo
+    }
+
+    private void ImageSplitContainer_SplitterMoved(object? sender, SplitterEventArgs e)
+    {
+      // Panel2 is the fixed panel, so its height changes only when the user drags the splitter, not when
+      // the panel is resized. That makes this the right moment, and the right quantity, to remember
+      if (ImageSplitContainer.Visible && !RestoringImageSplitter)
+        ctx.Settings.Telemetry.ImageTextHeight = ImageSplitContainer.Panel2.Height;
     }
 
     private void TelemetryPanel_FormClosing(object sender, FormClosingEventArgs e)
@@ -347,7 +359,6 @@ namespace SkyRoof
       ctx.TelemetryPanel = null;
       ctx.MainForm.TelemetryMNU.Checked = false;
       ctx.Settings.Telemetry.SplitterDistance = splitContainer1.SplitterDistance;
-      ctx.Settings.Telemetry.ImageSplitterDistance = ImageSplitContainer.SplitterDistance;
 
       // stop and free the decode pipeline (joins its worker thread and releases native FFTW memory)
       Decoder?.Dispose();
@@ -1377,7 +1388,11 @@ namespace SkyRoof
         richTextBox1.Parent = ImageSplitContainer.Panel2;
         richTextBox1.Dock = DockStyle.Fill;
       }
+      bool wasHidden = !ImageSplitContainer.Visible;
       ImageSplitContainer.Visible = true;
+      // making it visible is what finally docks it to its real size, so this is the first moment at which
+      // the saved splitter position can be applied
+      if (wasHidden) RestoreImageSplitter();
       ImageBox.Image = info.Bitmap;
       richTextBox1.Text = info.Describe();
     }
@@ -1392,6 +1407,21 @@ namespace SkyRoof
         richTextBox1.Dock = DockStyle.Fill;
       }
       ImageSplitContainer.Visible = false;
+    }
+
+    // positions the image/text splitter so that the text sub-panel gets the height the user left it at
+    private void RestoreImageSplitter()
+    {
+      int available = ImageSplitContainer.Height - ImageSplitContainer.SplitterWidth;
+      int distance = available - ctx.Settings.Telemetry.ImageTextHeight;
+      distance = Math.Clamp(distance, ImageSplitContainer.Panel1MinSize, available - ImageSplitContainer.Panel2MinSize);
+      if (distance <= 0) return;
+
+      // a distance that had to be clamped because the panel is too small must not overwrite the setting,
+      // the user's height is still the one to use once the panel is large enough again
+      RestoringImageSplitter = true;
+      try { ImageSplitContainer.SplitterDistance = distance; }
+      finally { RestoringImageSplitter = false; }
     }
 
     /// <summary>Auto-save the finalized image as PNG + JSON metadata sidecar under the user data folder.</summary>

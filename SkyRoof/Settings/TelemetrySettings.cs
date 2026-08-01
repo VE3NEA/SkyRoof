@@ -21,9 +21,11 @@ namespace SkyRoof
     [DefaultValue(247)]
     public int SplitterDistance { get; set; } = 247;
 
+    // height of the text sub-panel below the image. This is the fixed panel of ImageSplitContainer, so it,
+    // and not the splitter distance, is the quantity that survives a resize of the panel
     [Browsable(false)]
-    [DefaultValue(416)]
-    public int ImageSplitterDistance { get; set; } = 416;
+    [DefaultValue(106)]
+    public int ImageTextHeight { get; set; } = 106;
 
 
     public override string ToString() { return string.Empty; }

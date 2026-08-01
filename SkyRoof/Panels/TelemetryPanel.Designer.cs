@@ -157,6 +157,7 @@ namespace SkyRoof
       ImageSplitContainer.SplitterDistance = 416;
       ImageSplitContainer.TabIndex = 6;
       ImageSplitContainer.Visible = false;
+      ImageSplitContainer.SplitterMoved += ImageSplitContainer_SplitterMoved;
       // 
       // ImageBox
       // 
