@@ -1241,6 +1241,19 @@ namespace SkyRoof
       if (snapshot.SignalParams.Framing == Framing.GEOSCAN)
         geo = string.Join("", GeoscanHeader.Describe(frame.Bytes).Select(f => $"  {f.Name}: {f.Value}\n"));
 
+      // an SSDV packet carries a CRC-32 and RS of its own, and the framings that carry it — HADES, AO-40
+      // FEC — carry no frame CRC at all, so the "CRC:" line below reads "n/a" on precisely the frames whose
+      // payload can be checked. Off air that is the difference between "no image because the satellite sent
+      // none" and "no image because none of the packets survived the pass", which the frame list cannot show.
+      string ssdvMeta = ImageAssemblerFactory.CheckImagePacket(
+        snapshot.SignalParams, snapshot.Satellite?.norad_cat_id, frame) switch
+      {
+        { Ok: true, CorrectedBytes: 0 } => "  SSDV packet: CRC OK\n",
+        { Ok: true } check => $"  SSDV packet: CRC OK, {check.CorrectedBytes} RS corrections\n",
+        { Ok: false } => "  SSDV packet: CRC FAIL\n",
+        null => ""
+      };
+
       string tlm = "";
       if (addr.Length > 0 || geo.Length > 0 || fields.Length > 0)
       {
@@ -1269,6 +1282,7 @@ namespace SkyRoof
         $"  CFO: {frame.CfoHz:F1} Hz\n" +
         $"  SNR: {frame.SnrDb:F1} dB\n" +
         $"  CRC: {frame.CrcValid switch { true => "OK", false => "FAIL", null => "n/a" }}\n" +
+        ssdvMeta +
         $"  Corrections: {frame.CorrectedBits}\n" +
         $"  Erasures: {frame.ErasedBytes}\n\n" +
         DescribeSignalParamsMeta(snapshot);
