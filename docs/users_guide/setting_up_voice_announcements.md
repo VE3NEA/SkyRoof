@@ -7,6 +7,7 @@ Click on **Tools / Settings** in the main menu to open the [Settings window](set
 
 ![Voice Announcement Settings](../images/voice_announcement_settings.png)
 
+- **Audio Device** - select the audio device that will be used to play the voice announcements;
 - **Voice** - select one of the voices available on your system. To install a new voice package in Windows, 
     go to **Settings > Time & language > Speech** and then select **Add voices** to download and install 
     the desired voice package.

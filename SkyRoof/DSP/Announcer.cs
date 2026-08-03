@@ -1,5 +1,10 @@
-﻿using System.Speech.Synthesis;
+﻿using System.Speech.AudioFormat;
+using System.Speech.Synthesis;
 using System.Text.RegularExpressions;
+using CSCore;
+using CSCore.Codecs.RAW;
+using CSCore.CoreAudioAPI;
+using CSCore.SoundOut;
 using Serilog;
 using VE3NEA;
 
@@ -15,6 +20,12 @@ namespace SkyRoof
 
     private const string NameFormat = "<say-as interpret-as=\"characters\">{0}</say-as> {1}";
 
+    private const int SAMPLING_RATE = 48_000;
+    private static readonly SpeechAudioFormatInfo SpeechFormat =
+      new(SAMPLING_RATE, AudioBitsPerSample.Sixteen, AudioChannel.Mono);
+    private static readonly WaveFormat AudioFormat =
+      new(SAMPLING_RATE, 16, 1, AudioEncoding.Pcm);
+
     public Context? ctx;
 
     private readonly SpeechSynthesizer Synth = new();
@@ -22,6 +33,11 @@ namespace SkyRoof
     private List<SatellitePass> Queue1 = new();
     private List<SatellitePass> Queue2 = new();
     private Bearing LastBearing = new(0,0);
+
+    private readonly object PlayerLock = new();
+    private readonly Queue<MemoryStream> PlayQueue = new();
+    private RawDataReader? WaveSource;
+    private WasapiOut? WaveOut;
 
     public Announcer() {
       Synth = new SpeechSynthesizer();
@@ -140,7 +156,7 @@ namespace SkyRoof
       }
 
       Synth.Volume = ctx.Settings.Announcements.Volume;
-      Synth.SpeakSsmlAsync(string.Format(SsmlMessage, culture, message));
+      Speak(string.Format(SsmlMessage, culture, message));
     }
 
     // for the Settings dialog
@@ -153,7 +169,7 @@ namespace SkyRoof
       Synth.SelectVoice(voice.Name);
       Synth.Volume = ctx.Settings.Announcements.Volume;
       string ssml = string.Format(SsmlMessage, voice.Culture.Name, voice.Name);
-      Synth.SpeakSsmlAsync(ssml);
+      Speak(ssml);
     }
 
 
@@ -164,6 +180,110 @@ namespace SkyRoof
       synth.SetOutputToDefaultAudioDevice();
       string ssml = string.Format(SsmlMessage, "en-US", FormatSatName(name));
       synth.SpeakSsmlAsync(ssml);
+    }
+
+
+
+
+    //----------------------------------------------------------------------------------------------
+    //                                      audio output
+    //----------------------------------------------------------------------------------------------
+
+    // synthesize to a memory stream, then play it on the audio device selected in the settings
+    private void Speak(string ssml)
+    {
+      var stream = new MemoryStream();
+
+      try
+      {
+        Synth.SetOutputToAudioStream(stream, SpeechFormat);
+        Synth.SpeakSsml(ssml);
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, "Error synthesizing voice announcement");
+        return;
+      }
+      finally
+      {
+        Synth.SetOutputToNull();
+      }
+
+      stream.Position = 0;
+
+      lock (PlayerLock)
+      {
+        PlayQueue.Enqueue(stream);
+        // if nothing is playing, start now, otherwise the announcement is played from the queue
+        if (WaveOut == null) PlayNext();
+      }
+    }
+
+    // must be called under PlayerLock
+    private void PlayNext()
+    {
+      CleanupPlayer();
+      if (PlayQueue.Count == 0) return;
+
+      var stream = PlayQueue.Dequeue();
+
+      try
+      {
+        var device = GetAudioDevice();
+        WaveSource = new RawDataReader(stream, AudioFormat);
+        WaveOut = new WasapiOut(false, AudioClientShareMode.Shared, 200);
+        if (device != null) WaveOut.Device = device;
+        WaveOut.Initialize(WaveSource);
+        WaveOut.Stopped += WaveOut_Stopped;
+        WaveOut.Play();
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, "Error playing voice announcement");
+        CleanupPlayer();
+      }
+    }
+
+    private void WaveOut_Stopped(object? sender, PlaybackStoppedEventArgs e)
+    {
+      if (e.HasError) Log.Error(e.Exception, "Error playing voice announcement");
+
+      // the player may not be disposed of in its own callback thread
+      ThreadPool.QueueUserWorkItem(_ => { lock (PlayerLock) PlayNext(); });
+    }
+
+    // must be called under PlayerLock
+    private void CleanupPlayer()
+    {
+      if (WaveOut != null)
+      {
+        WaveOut.Stopped -= WaveOut_Stopped;
+        try { WaveOut.Dispose(); } catch { }
+        WaveOut = null;
+      }
+
+      if (WaveSource != null)
+      {
+        WaveSource.Dispose();
+        WaveSource = null;
+      }
+    }
+
+    private MMDevice? GetAudioDevice()
+    {
+      string? deviceId = ctx?.Settings.Announcements.Soundcard;
+      if (deviceId == null) return null;
+
+      using (var deviceEnumerator = new MMDeviceEnumerator())
+        try
+        {
+          return deviceEnumerator.GetDevice(deviceId);
+        }
+        catch (Exception ex)
+        {
+          Log.Error(ex, "Announcement audio device not found");
+          return null;
+        }
     }
 
 

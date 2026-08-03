@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CSCore.CoreAudioAPI;
 using VE3NEA;
 using static SkyRoof.AosAnnouncement;
 
@@ -11,6 +12,11 @@ namespace SkyRoof
 {
   public class AnnouncerSettings
   {
+    [DisplayName("Audio Device")]
+    [Description("Soundcard for voice announcements")]
+    [TypeConverter(typeof(OutputSoundcardNameConverter))]
+    public string? Soundcard { get; set; } = VE3NEA.Soundcard.GetDefaultSoundcardId(DataFlow.Render);
+
     [DisplayName("Voice")]
     [Description("The voice to use for announcments")]
     [TypeConverter(typeof(VoiceNameConverter))]
