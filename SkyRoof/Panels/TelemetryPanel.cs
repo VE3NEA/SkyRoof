@@ -3,8 +3,10 @@ using MathNet.Numerics;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Serilog;
 using SkyRoof.Satellites;
+using System.Globalization;
 using VE3NEA;
 using VE3NEA.SkyFM;
 using VE3NEA.SkySSTV;
@@ -12,6 +14,7 @@ using VE3NEA.SkyTlm.Core;
 using VE3NEA.SkyTlm.Deframing;
 using VE3NEA.SkyTlm.Discovery;
 using VE3NEA.SkyTlm.Imaging;
+using VE3NEA.SkyTlm.Imaging.Ssdv;
 using VE3NEA.SkyTlm.Telemetry;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -182,7 +185,18 @@ namespace SkyRoof
     {
       internal readonly DecodeSnapshot Snapshot;
       internal readonly DateTime FirstSeen = DateTime.Now;
-      internal ImageProduct Product;
+      // what this pass heard, and nothing else. It is what the tree label counts and what is written to
+      // disk, so the sidecar stays a record of one reception rather than a record of a merge.
+      internal ImageProduct PassProduct;
+      // the same picture rebuilt from this pass plus the archived receptions in Archived, or null when
+      // the operator has not asked for that. Recomputed as fragments arrive, so it keeps filling in live.
+      internal ImageProduct? MergedProduct;
+      // earlier receptions of this picture, read out of their sidecars and cached on the first combine so
+      // that re-merging on every arriving fragment costs no disk
+      internal List<ArchivedPass>? Archived;
+      // whether the merged reconstruction is the one on display. Everything that shows or saves the image
+      // reads Product, so this one flag is the whole toggle.
+      internal bool Combined;
       // the assembler has announced this image as over. Not the same as Product.Complete: a pass that ends
       // mid-image finalizes what arrived, which off air is the normal case rather than the exception.
       internal bool Final;
@@ -192,8 +206,12 @@ namespace SkyRoof
       internal SsdvImageInfo(DecodeSnapshot snapshot, ImageProduct product)
       {
         Snapshot = snapshot;
-        Product = product;
+        PassProduct = product;
       }
+
+      /// <summary>The reconstruction currently on display: the merge when combining is on, this pass's
+      /// otherwise. Toggling off is exact rather than approximate — the pass product was never altered.</summary>
+      internal ImageProduct Product => Combined && MergedProduct != null ? MergedProduct : PassProduct;
 
       public string Describe()
       {
@@ -203,7 +221,14 @@ namespace SkyRoof
           $"Image: {Product.ImageId}\r\n" +
           (Product.Source != null ? $"Source: {Product.Source}\r\n" : "") +
           $"Size: {Product.Width} x {Product.Height}\r\n" +
-          $"Fragments: {Product.FragmentsReceived} of {Product.FragmentsExpected}\r\n" +
+          // the fragment counts are shown as two lines rather than one merged number: what this pass
+          // heard is a fact about the reception, and what the combination adds is a fact about the
+          // archive, and an operator judging the pass needs to see them apart.
+          $"Fragments: {PassProduct.FragmentsReceived} of {PassProduct.FragmentsExpected}\r\n" +
+          (Combined && MergedProduct != null
+            ? $"Combined: {MergedProduct.FragmentsReceived} of {MergedProduct.FragmentsExpected}" +
+              $" (with {Archived!.Count} earlier {(Archived.Count == 1 ? "pass" : "passes")})\r\n"
+            : "") +
           // only the raw-JPEG family has such a boundary: one lost fragment desynchronizes the entropy
           // stream and everything past it is noise, so the operator has to be told where truth stops.
           // -1 means the concept does not apply, which is SSDV, where a lost packet costs its own MCUs
@@ -1483,11 +1508,21 @@ namespace SkyRoof
       if (ImageBox.Image != null) Clipboard.SetImage(ImageBox.Image);
     }
 
-    // gray the "Open in Viewer" item until the selected image has been auto-saved to a file on disk
+    // gray the "Open in Viewer" item until the selected image has been auto-saved to a file on disk, and
+    // the "Combine with Previous Passes" item until this picture has actually been heard before — the
+    // archive is searched here, on demand, rather than kept indexed
     private void ImageMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
     {
       var info = treeView1.SelectedNode?.Tag as IImageNodeInfo;
       OpenImageMNU.Enabled = info?.SavedPath != null && File.Exists(info.SavedPath);
+
+      var ssdv = info as SsdvImageInfo;
+      bool canCombine = ssdv != null && CanCombine(ssdv);
+      CombineImageMNU.Enabled = canCombine;
+      CombineImageMNU.Checked = ssdv?.Combined == true;
+      CombineImageMNU.Text = canCombine
+        ? $"Combine with Previous Passes ({ssdv!.Archived!.Count})"
+        : "Combine with Previous Passes";
     }
 
     private void OpenImageMNU_Click(object sender, EventArgs e)
@@ -1542,10 +1577,18 @@ namespace SkyRoof
     /// is derived from the span actually written — and it withholds real images: the off-air
     /// <c>hades-sa_img225_tailonly</c>, whose first nine packets were lost, is 6 of 15.
     /// <para>An image that fails these is still shown and still savable by hand from the image context
-    /// menu. Only the automatic write is withheld.</para></summary>
+    /// menu. Only the automatic write is withheld.</para>
+    /// <para>The fragment count drops to <b>one</b> where the fragments carry their own CRC, which is
+    /// what <see cref="ImageProduct.FragmentFormat"/> reports. The two-fragment rule exists to reject a
+    /// single misread frame, and a CRC-32 already does that far better than a coincidence argument can —
+    /// a false accept is a 1-in-4-billion event. Such a fragment is also worth keeping for its own sake:
+    /// it is archived in the sidecar and can complete this picture on a later pass, which a fragment
+    /// thrown away cannot.</para></summary>
     private static bool ShouldSaveImage(ImageProduct product)
     {
-      return product.FragmentsReceived >= MinFragmentsToSave
+      int floor = product.FragmentFormat != null ? 1 : MinFragmentsToSave;
+
+      return product.FragmentsReceived >= floor
         && product.Width > 0 && product.Height > 0
         && product.Jpeg.Length > 0;
     }
@@ -1565,20 +1608,19 @@ namespace SkyRoof
         AddLeaf(passNode, node);
       }
 
-      // swap in the new reconstruction; dispose the previous bitmap only after the PictureBox lets go of it
+      // take in the new reconstruction of this pass; RenderImage below swaps the picture on screen for it
       var info = (SsdvImageInfo)node!.Tag;
-      var oldBitmap = info.Bitmap;
-      info.Product = product;
+      info.PassProduct = product;
       info.Final |= final;
-      // a JPEG the OS decoder refuses — which the first fragments of an image legitimately can be — leaves
-      // the previous rendering on screen rather than blanking it, and leaves its bitmap undisposed
-      var bitmap = DecodeJpeg(product.Jpeg);
-      if (bitmap != null) info.Bitmap = bitmap;
+      // combining stays live: the archived fragments are already cached, so the merge is redone with the
+      // fragment that just arrived and the combined picture fills in during the pass like any other
+      if (info.Combined) Recombine(info);
       if (savedPath != null) info.SavedPath = savedPath;
+      // the tree label always counts what THIS pass heard, combined or not — it is the pass that the node
+      // is a record of, and a label that changed under a toggle would make two nodes incomparable
       node.Text = $"{info.FirstSeen:HH:mm:ss}  Image {product.ImageId}  " +
         $"{product.FragmentsReceived}/{product.FragmentsExpected} fragments";
-      if (ImageBox.Image == oldBitmap) ImageBox.Image = info.Bitmap;
-      if (bitmap != null) oldBitmap?.Dispose();
+      RenderImage(info);
 
       // an accepted image fragment is real content: un-gray the pass entry the way a valid frame does
       if (!txPassInfo.HasValidFrame)
@@ -1591,6 +1633,19 @@ namespace SkyRoof
 
       if (treeView1.SelectedNode == node) DisplayImageInfo(info);
       else if (treeView1.SelectedNode == passNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
+    }
+
+    // Re-render the node's currently displayed reconstruction — this pass's, or the combined one — and
+    // dispose the bitmap it replaces, but only after the PictureBox has let go of it. A JPEG the OS decoder
+    // refuses, which the first fragments of an image legitimately can be, leaves the previous rendering on
+    // screen rather than blanking it, and leaves its bitmap undisposed.
+    private void RenderImage(SsdvImageInfo info)
+    {
+      var oldBitmap = info.Bitmap;
+      var bitmap = DecodeJpeg(info.Product.Jpeg);
+      if (bitmap != null) info.Bitmap = bitmap;
+      if (ImageBox.Image == oldBitmap) ImageBox.Image = info.Bitmap;
+      if (bitmap != null) oldBitmap?.Dispose();
     }
 
     // The received JPEG as a Bitmap. Copied out of the stream rather than handed the stream directly: GDI+
@@ -1613,7 +1668,11 @@ namespace SkyRoof
 
     /// <summary>Auto-save the finalized image as JPEG + JSON metadata sidecar under the user data folder,
     /// beside the SSTV images. The bytes are written verbatim — they already are a JPEG file, gaps filled
-    /// and EOI in place, whatever fraction of the image arrived.</summary>
+    /// and EOI in place, whatever fraction of the image arrived.
+    /// <para>Where the fragments carry their own CRC the sidecar also holds them, base64'd, which is what
+    /// lets a later pass of the same picture be combined with this one. They are the fragments of
+    /// <b>this</b> reception only, never of a combination — a sidecar that recorded a merge would be
+    /// re-merged next time, and the archive would slowly stop meaning anything.</para></summary>
     private static string? SaveImageToFile(ImageProduct product, DecodeSnapshot snapshot)
     {
       try
@@ -1640,7 +1699,9 @@ namespace SkyRoof
           product.FirstGapOffset,
           product.Complete
         };
-        File.WriteAllText(Path.ChangeExtension(path, ".json"), JsonConvert.SerializeObject(meta, Formatting.Indented));
+        var json = JObject.FromObject(meta);
+        if (product.FragmentFormat != null) WriteFragments(json, product);
+        File.WriteAllText(Path.ChangeExtension(path, ".json"), json.ToString(Formatting.Indented));
         return path;
       }
       catch (Exception e)
@@ -1648,6 +1709,160 @@ namespace SkyRoof
         Log.Error(e, "Failed to save the received image");
         return null;
       }
+    }
+
+
+
+
+    //----------------------------------------------------------------------------------------------
+    //                              combine with previous passes
+    //----------------------------------------------------------------------------------------------
+    // Layout version of the archived fragments in a sidecar. A reader checks it and skips a file it does
+    // not recognize, so a future change of format leaves old pictures readable by old builds and new ones
+    // ignored by them, rather than misread by either.
+    private const int SidecarFormat = 1;
+
+    // How far back the archive is searched for earlier receptions of the picture on screen. The limit is
+    // not a performance measure — it is the only defence there is against an SSDV image ID being reused.
+    // The ID is 8 bits and satellites cycle it freely (HADES-SA sent 237, 238 and 239 twice within 92
+    // minutes on 2026-08-03), so this bounds how far a wrong match can reach back, and no further.
+    private static readonly TimeSpan CombineWindow = TimeSpan.FromDays(30);
+
+    // one earlier reception of the same picture, read back from the sidecar that recorded it
+    private sealed record ArchivedPass(string Path, DateTime Utc, IReadOnlyList<ImageFragment> Fragments);
+
+    // Append this reception's fragments to its sidecar, base64'd, one object each so that a file can be
+    // read by eye and a truncated one is visibly truncated. The correction count travels with the bytes
+    // because it cannot be recovered from them: they are already repaired, and re-parsing reports them
+    // clean. It is what ranks two copies of one fragment when the picture is rebuilt.
+    private static void WriteFragments(JObject json, ImageProduct product)
+    {
+      json["Format"] = SidecarFormat;
+      json["Variant"] = product.FragmentFormat;
+      json["Packets"] = new JArray(product.Fragments.Select(f => new JObject
+      {
+        ["Id"] = f.Id,
+        ["Corrected"] = f.CorrectedBytes,
+        ["Data"] = Convert.ToBase64String(f.Bytes)
+      }));
+    }
+
+    // Whether this image can be combined with anything, and the cue to have the candidates ready if it
+    // can. An empty result is deliberately not cached: two passes of the same satellite in one session is
+    // the case this feature exists for, so a sidecar written half an hour from now must be able to enable
+    // an item that was grayed when the menu was last opened.
+    private static bool CanCombine(SsdvImageInfo info)
+    {
+      if (info.PassProduct.FragmentFormat == null) return false;
+      if (info.Archived == null || info.Archived.Count == 0) info.Archived = FindArchivedPasses(info);
+      return info.Archived.Count > 0;
+    }
+
+    /// <summary>Earlier receptions of the picture on screen, newest first. The auto-saved file names carry
+    /// everything the search needs to reject a file — <c>20260803_034123_HADES-SA_238.json</c> is a date,
+    /// a satellite and an image ID — so the folder is filtered by name and only the few survivors are
+    /// opened, which keeps the cost of a menu opening a directory listing however long the archive
+    /// grows.</summary>
+    private static List<ArchivedPass> FindArchivedPasses(SsdvImageInfo info)
+    {
+      var found = new List<ArchivedPass>();
+      string folder = Path.Combine(Utils.GetUserDataFolder(), "SsdvImages");
+      if (!Directory.Exists(folder)) return found;
+
+      // this node's own sidecar is not an earlier pass; it is this one, written at finalization
+      string ownSidecar = info.SavedPath != null ? Path.ChangeExtension(info.SavedPath, ".json")! : "";
+      DateTime oldest = DateTime.Now - CombineWindow;
+
+      try
+      {
+        foreach (string file in Directory.EnumerateFiles(folder, "*.json"))
+        {
+          if (string.Equals(file, ownSidecar, StringComparison.OrdinalIgnoreCase)) continue;
+          if (!NameMatches(Path.GetFileNameWithoutExtension(file), info.PassProduct.ImageId, oldest)) continue;
+
+          var pass = ReadArchivedPass(file, info);
+          if (pass != null) found.Add(pass);
+        }
+      }
+      catch (Exception e)
+      {
+        Log.Error(e, "Failed to search for earlier receptions of an image");
+      }
+
+      // newest first, which is the order the merge resolves ties in: of two equally clean copies of one
+      // fragment the more recent reception is the likelier to be the same picture
+      found.Sort((a, b) => b.Utc.CompareTo(a.Utc));
+      return found;
+    }
+
+    // The date and image ID a saved file name carries, tested without opening it. The stamp is local time,
+    // as DateTime.Now wrote it.
+    private static bool NameMatches(string name, int imageId, DateTime oldest)
+    {
+      const string StampFormat = "yyyyMMdd_HHmmss";
+      if (name.Length < StampFormat.Length) return false;
+
+      int at = name.LastIndexOf('_');
+      if (at < 0 || !int.TryParse(name.AsSpan(at + 1), out int id) || id != imageId) return false;
+
+      return DateTime.TryParseExact(name.AsSpan(0, StampFormat.Length), StampFormat,
+        CultureInfo.InvariantCulture, DateTimeStyles.None, out var stamp) && stamp >= oldest;
+    }
+
+    // One sidecar read back, or null when it is not an earlier reception of this picture after all: a
+    // layout this build does not know, a different satellite, a different packet format, or no fragments
+    // recorded at all (every sidecar written before this feature, and every one for a family whose
+    // fragments cannot be verified on their own). A malformed file is skipped rather than fatal — the
+    // archive is a folder the operator can edit, and one bad file must not cost the others.
+    private static ArchivedPass? ReadArchivedPass(string file, SsdvImageInfo info)
+    {
+      try
+      {
+        var json = JObject.Parse(File.ReadAllText(file));
+        if ((int?)json["Format"] != SidecarFormat) return null;
+        if ((string?)json["Variant"] != info.PassProduct.FragmentFormat) return null;
+        if ((int?)json["Norad"] != info.Snapshot.Satellite?.norad_cat_id) return null;
+        if (json["Packets"] is not JArray packets || packets.Count == 0) return null;
+
+        var fragments = new List<ImageFragment>(packets.Count);
+        foreach (var p in packets)
+          fragments.Add(new ImageFragment(
+            (int)p["Id"]!, Convert.FromBase64String((string)p["Data"]!), (int)p["Corrected"]!));
+
+        return new ArchivedPass(file, (DateTime?)json["Utc"] ?? DateTime.MinValue, fragments);
+      }
+      catch (Exception e)
+      {
+        Log.Debug(e, "Skipped an unreadable image sidecar: {File}", file);
+        return null;
+      }
+    }
+
+    // Rebuild the combined reconstruction from this pass and the cached archived ones. The pass goes first
+    // so that of two equally clean copies of a fragment the one just received is kept. A merge that yields
+    // nothing leaves MergedProduct null, which shows this pass's picture rather than an empty one.
+    private static void Recombine(SsdvImageInfo info)
+    {
+      var receptions = new List<IReadOnlyList<ImageFragment>> { info.PassProduct.Fragments };
+      foreach (var pass in info.Archived!) receptions.Add(pass.Fragments);
+
+      info.MergedProduct = SsdvMerge.Build(receptions, info.PassProduct.FragmentFormat, info.PassProduct.Source);
+    }
+
+    private void CombineImageMNU_Click(object sender, EventArgs e)
+    {
+      if (treeView1.SelectedNode?.Tag is not SsdvImageInfo info) return;
+
+      if (info.Combined) info.Combined = false;
+      else
+      {
+        if (!CanCombine(info)) return;
+        info.Combined = true;
+        Recombine(info);
+      }
+
+      RenderImage(info);
+      DisplayImageInfo(info);
     }
 
 

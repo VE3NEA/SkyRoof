@@ -43,6 +43,8 @@ namespace SkyRoof
       SaveImageMNU = new ToolStripMenuItem();
       CopyImageMNU = new ToolStripMenuItem();
       OpenImageMNU = new ToolStripMenuItem();
+      ImageMenuSeparator = new ToolStripSeparator();
+      CombineImageMNU = new ToolStripMenuItem();
       ClearAllMNU = new ToolStripMenuItem();
       MenuStrip.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -173,7 +175,7 @@ namespace SkyRoof
       // 
       // ImageMenu
       // 
-      ImageMenu.Items.AddRange(new ToolStripItem[] { SaveImageMNU, CopyImageMNU, OpenImageMNU });
+      ImageMenu.Items.AddRange(new ToolStripItem[] { SaveImageMNU, CopyImageMNU, OpenImageMNU, ImageMenuSeparator, CombineImageMNU });
       ImageMenu.Name = "ImageMenu";
       ImageMenu.Size = new Size(155, 70);
       ImageMenu.Opening += ImageMenu_Opening;
@@ -198,7 +200,20 @@ namespace SkyRoof
       OpenImageMNU.Size = new Size(154, 22);
       OpenImageMNU.Text = "Open in Viewer";
       OpenImageMNU.Click += OpenImageMNU_Click;
-      // 
+      //
+      // ImageMenuSeparator
+      //
+      ImageMenuSeparator.Name = "ImageMenuSeparator";
+      ImageMenuSeparator.Size = new Size(151, 6);
+      //
+      // CombineImageMNU
+      //
+      CombineImageMNU.CheckOnClick = false;
+      CombineImageMNU.Name = "CombineImageMNU";
+      CombineImageMNU.Size = new Size(154, 22);
+      CombineImageMNU.Text = "Combine with Previous Passes";
+      CombineImageMNU.Click += CombineImageMNU_Click;
+      //
       // ClearAllMNU
       // 
       ClearAllMNU.Name = "ClearAllMNU";
@@ -248,6 +263,8 @@ namespace SkyRoof
     private ToolStripMenuItem SaveImageMNU;
     private ToolStripMenuItem CopyImageMNU;
     private ToolStripMenuItem OpenImageMNU;
+    private ToolStripSeparator ImageMenuSeparator;
+    private ToolStripMenuItem CombineImageMNU;
     private ToolStripMenuItem ClearAllMNU;
   }
 }
