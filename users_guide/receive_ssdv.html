@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Receive SSDV Images | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Receive SSDV Images | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/receive_ssdv.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MMW827H44"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-1MMW827H44');
+      </script>
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="receive-ssdv-images">Receive SSDV Images</h1>
+
+<p>Some satellites send still pictures down as data, packed into the same telemetry stream that carries
+their housekeeping frames. SkyRoof reconstructs these pictures with its built-in decoder, right
+inside the program — there is no need for an external decoder, a Virtual Audio Cable, or an output
+stream. The picture is built up fragment by fragment in the <a href="telemetry_panel.html">Telemetry</a> panel as
+the satellite passes overhead.</p>
+<p>This is a different thing from <a href="recevie_sstv.html">SSTV</a>, which sends an analog picture over an FM
+downlink, line by line. Here the picture is a JPEG file, cut into numbered packets that ride the
+telemetry downlink interleaved with ordinary telemetry frames. Nothing extra has to be turned on: if
+you are decoding telemetry from a satellite that sends images, the images are decoded too.</p>
+<h2 id="supported-satellites">Supported Satellites</h2>
+<p>Two families of image transport are supported:</p>
+<ul>
+<li><p><strong>SSDV packets</strong> — the amateur-satellite digital SSTV format, where each packet carries the image
+ID, its own position in the picture, and a checksum. Sent by <strong>HADES-SA</strong> and by
+<strong>JY1SAT (JO-97)</strong>.</p>
+</li>
+<li><p><strong>Raw JPEG fragments</strong> — the picture is sent as byte ranges of the JPEG file itself. Sent by the
+<strong>Geoscan</strong> fleet and <strong>Lobachevsky</strong>, and by the <strong>Sputnix</strong> satellites — <strong>Luca</strong>, <strong>239Alferov</strong>
+and <strong>HyperView-1G</strong> — as file transfers over their USP telemetry protocol.</p>
+</li>
+</ul>
+<p>The difference matters when the reception is imperfect. An SSDV packet that is lost costs only its
+own block of the picture, and the rest of the image is unharmed. In a raw JPEG a lost fragment
+desynchronizes everything after it, so the picture is good down to the first gap and noise below it —
+which is why the detail pane reports <strong>Intact to</strong> for these satellites and not for SSDV.</p>
+<h2 id="receiving-an-image">Receiving an Image</h2>
+<p>The steps are the same as for <a href="telemetry_panel.html#decoding-a-pass">decoding telemetry</a>:</p>
+<ol>
+<li><p>Open the <a href="telemetry_panel.html">Telemetry</a> panel from the <strong>View / Telemetry</strong> menu.</p>
+</li>
+<li><p>Select the satellite in the <a href="satellite_selector.html">Satellite Selector</a> on the toolbar. If it is
+not in the current group, add it using the <a href="satellites_and_groups_window.html">Satellites and Groups</a>
+dialog.</p>
+</li>
+<li><p>Select the satellite's <strong>telemetry transmitter</strong> — the one whose frames carry the pictures. Some
+satellites also have a separate <strong>SSDV</strong> row in the database. That row is not a transmitter of its
+own: it is the same signal on the same frequency, so selecting it works as well, and SkyRoof
+quietly pairs it with the co-channel telemetry transmitter that actually carries the packets.</p>
+</li>
+<li><p>Make sure the SDR is running and tuned to the satellite. The decoder uses the same
+Doppler-corrected passband as the receiver, so the satellite's signal must be visible on the
+<a href="waterfall_display.html">waterfall</a> at the tuned frequency.</p>
+</li>
+</ol>
+<p>Each picture appears as a node in the tree, under the pass node, labeled with the time it was first
+seen, the image number, and how many fragments have arrived:</p>
+<pre><code class="lang-text">04:12:37  Image 238  9/15 fragments
+</code></pre>
+<p>Select the node to watch the picture fill in as the pass goes on. The detail pane below the picture
+shows:</p>
+<ul>
+<li><strong>Sat</strong> and <strong>Tx</strong> — the satellite and the transmitter the picture came from;</li>
+<li><strong>Image</strong> — the image number the satellite gave it;</li>
+<li><strong>Source</strong> — the sender, where the protocol names one: the Geoscan satellite that took the picture,
+or the file name for a USP file transfer;</li>
+<li><strong>Size</strong> — the picture's dimensions in pixels;</li>
+<li><strong>Fragments</strong> — how many fragments were received, of how many the picture spans;</li>
+<li><strong>Intact to</strong> — for raw-JPEG satellites, how many bytes of the file are good before the first gap;</li>
+<li><strong>Status</strong> — <code>receiving...</code>, <code>complete</code>, or <code>incomplete</code> for a picture the pass ended in the
+middle of;</li>
+<li><strong>Saved</strong> — the file it was written to, once it has been saved.</li>
+</ul>
+<p>An incomplete picture is normal rather than exceptional: a pass ends when the satellite sets,
+whatever the satellite was in the middle of sending. Missing parts are left gray.</p>
+<h2 id="saved-images">Saved Images</h2>
+<p>Each finalized image is saved automatically as a JPEG file, with a JSON sidecar holding its metadata,
+in the <strong>SsdvImages</strong> subfolder of the <a href="data_folder.html">data folder</a>. The bytes are written exactly
+as received — gaps filled in and the file properly terminated — so whatever fraction of the picture
+arrived is a valid JPEG that any program can open.</p>
+<p>A picture built from a single fragment is not saved automatically, because one misread frame can look
+like one image fragment; neither is one with no recognizable geometry. Such an image is still shown
+in the tree and can still be saved by hand.</p>
+<p>Right-click a picture in the detail pane to:</p>
+<ul>
+<li><strong>Save As...</strong> — save the picture to a location of your choice;</li>
+<li><strong>Copy</strong> — copy the picture to the clipboard;</li>
+<li><strong>Open in Viewer</strong> — open the automatically saved JPEG in the program that Windows associates with
+JPEG files, where you can see it at full size. This command is available only after the image has
+been finalized and saved, so it stays grayed out while an image is still being received;</li>
+<li><strong>Combine with Previous Passes</strong> — see below.</li>
+</ul>
+<h2 id="combining-passes">Combining Passes</h2>
+<p>Satellites usually send the same picture several times, over consecutive passes, so that stations
+that missed a piece of it can pick that piece up later. SkyRoof can put those receptions together.</p>
+<p>Right-click a picture and choose <strong>Combine with Previous Passes</strong>. SkyRoof searches the
+<strong>SsdvImages</strong> folder for earlier receptions of the same picture by the same satellite, merges their
+fragments with the ones just received, and shows the result. The menu item is grayed out when there
+is nothing to combine with, and shows the number of earlier receptions found when there is:
+<strong>Combine with Previous Passes (3)</strong>.</p>
+<p>The item is a toggle — choose it again to go back to what this pass alone heard. The detail pane
+reports both, on separate lines, so you can tell what the current pass contributed:</p>
+<pre><code class="lang-text">Fragments: 9 of 15
+Combined: 14 of 15 (with 3 earlier passes)
+</code></pre>
+<p>Combining stays live while the pass runs: each new fragment is merged in as it arrives, and the
+combined picture keeps filling in on screen.</p>
+<p>A few limits are worth knowing:</p>
+<ul>
+<li><p>It works only where each fragment carries its own checksum, so that two copies of one fragment can
+be judged against each other. That is SSDV as <strong>HADES-SA</strong> sends it. The raw-JPEG satellites and
+JY1SAT have no per-fragment check, and the menu item stays grayed out for their pictures.</p>
+</li>
+<li><p>Only the last <strong>30 days</strong> of the archive are searched. Image numbers are 8-bit and satellites reuse
+them freely — HADES-SA sent images 237, 238 and 239 twice within 92 minutes — so the window is what
+keeps a merge from reaching back to a different picture that happens to share a number. If two
+unrelated pictures do get merged, the result looks obviously wrong: toggle the combination off to
+get the pass's own reception back, exactly as it was.</p>
+</li>
+<li><p>The sidecar of each reception records the fragments of <strong>that reception only</strong>, never of a
+combination, so the archive stays a record of what was actually heard.</p>
+</li>
+</ul>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="telemetry_panel.html">Telemetry Panel</a></li>
+<li><a href="recevie_sstv.html">Receive SSTV Images</a></li>
+<li><a href="receive_voice.html">Receive CODEC2 Voice Messages</a></li>
+</ul>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

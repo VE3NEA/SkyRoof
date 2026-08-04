@@ -110,8 +110,17 @@ formats used by the supported satellites. The modulation, baud rate, and framing
 automatically from the transmitter description in the satellite database, so there is nothing to
 configure for the signal itself — you only have to select the right transmitter.</p>
 <p>The panel also decodes <strong>SSTV</strong> images from satellites that transmit them over an FM downlink. This
-is covered separately in <a href="recevie_sstv.html">Receive SSTV Images</a>; the rest of this page describes
-telemetry frame decoding.</p>
+is covered separately in <a href="recevie_sstv.html">Receive SSTV Images</a>.</p>
+<p>Some satellites send more than telemetry in their frames, and the panel reconstructs that too, with
+nothing extra to turn on:</p>
+<ul>
+<li><strong>SSDV images</strong> — still pictures sent as data, either as SSDV packets (HADES-SA, JY1SAT) or as raw
+JPEG fragments (the Geoscan fleet, Lobachevsky, and the Sputnix satellites). See
+<a href="receive_ssdv.html">Receive SSDV Images</a>;</li>
+<li><strong>Codec2 voice messages</strong> — short recorded speech compressed to a few hundred bits per second and
+carried in the telemetry frames of HADES-SA. See <a href="receive_voice.html">Receive CODEC2 Voice Messages</a>.</li>
+</ul>
+<p>The rest of this page describes telemetry frame decoding.</p>
 <p>If the selected transmitter uses an unsupported modulation, or its parameters are unknown, the panel names
 what it cannot decode — <code>telemetry format not supported</code>, <code>CW decoding not supported</code>, or
 <code>FM decoding not supported</code> — and no telemetry frames are decoded. Other transmissions on the same
@@ -184,7 +193,8 @@ tri-state: <strong>Auto</strong> leaves the decision to the decoder, <strong>On<
 <li><strong>Telemetry format</strong> — the definition used to parse the decoded frames into named telemetry values.
 It is normally chosen from the satellite's NORAD number; select a different one here when the
 frames decode but their values do not. The field is empty, as in the picture above, when SkyRoof has
-no telemetry definition for the satellite — its frames are then shown without a PAYLOAD section.</li>
+no telemetry definition for the satellite — its frames are then shown without telemetry values in
+the PAYLOAD section.</li>
 </ul>
 <p>To undo a single override, right-click the field and choose <strong>Reset to database value</strong> — the field
 goes back to the value the database gave it, leaving your other overrides in place. <strong>Cancel</strong> discards
@@ -214,12 +224,19 @@ soon as the first burst is detected and stays grayed out until the first valid f
 <p>Each child node is a single decoded frame, labeled with the time of arrival, the frame length in
 bytes, and, for AX.25 frames, the source and destination addresses. The newest pass is expanded
 automatically, and the view scrolls to follow new frames as long as the latest frame is selected.</p>
+<p>Frames are not the only children a pass can have. An <a href="recevie_sstv.html">SSTV</a> or
+<a href="receive_ssdv.html">SSDV</a> image and a <a href="receive_voice.html">voice message</a> each get a node of their own,
+which is updated in place as the picture or the recording is built up, and which shows the picture or
+plays the audio when it is selected.</p>
 <p>Select a <strong>pass</strong> node to see a summary in the detail pane: the start time, satellite, transmitter,
 orbit number, the number of bursts, frames, and images decoded, and the signal parameters.</p>
 <p>Select a <strong>frame</strong> node to see its full contents:</p>
 <ul>
-<li><strong>TELEMETRY</strong> — the named telemetry values decoded from the frame (battery voltage, temperatures,
-and so on), shown only for satellites that SkyRoof has a telemetry definition for;</li>
+<li><strong>PAYLOAD</strong> — everything SkyRoof can name in the frame: the AX.25 source and destination addresses
+where the frame has them, the named telemetry values decoded from it (battery voltage,
+temperatures, and so on) for satellites that SkyRoof has a telemetry definition for, and, on the
+Geoscan fleet, the sending satellite and the message type, including where an image frame's bytes
+belong in the picture. The section is omitted when none of these apply;</li>
 <li><strong>ASCII</strong> — the frame bytes rendered as text;</li>
 <li><strong>HEX</strong> — a hex dump of the frame bytes;</li>
 <li><strong>META</strong> — the carrier frequency offset (CFO), signal-to-noise ratio (SNR), CRC check result, and

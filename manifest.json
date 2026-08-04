@@ -1465,6 +1465,26 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "users_guide/receive_ssdv.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/receive_ssdv.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/receive_voice.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/receive_voice.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "users_guide/recevie_sstv.md",
       "output": {
         ".html": {

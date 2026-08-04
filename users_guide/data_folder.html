@@ -145,6 +145,13 @@ panel, when the <strong>Save to File</strong> option is enabled in the
 <a href="setting_up_telemetry_decoding.html#decoder-settings">telemetry settings</a>. One file is created per day;</li>
 <li><strong>SstvImages</strong> - <a href="recevie_sstv.html">SSTV images</a> decoded by the <a href="telemetry_panel.html">Telemetry</a>
 panel, saved automatically as PNG files with a JSON metadata sidecar;</li>
+<li><strong>SsdvImages</strong> - <a href="receive_ssdv.html">images received as SSDV packets or as raw JPEG fragments</a>,
+decoded by the <a href="telemetry_panel.html">Telemetry</a> panel, saved automatically as JPEG files with a
+JSON metadata sidecar. The sidecar also holds the received packets, which is what lets a picture
+be <a href="receive_ssdv.html#combining-passes">combined with its earlier receptions</a>;</li>
+<li><strong>Codec2Voice</strong> - <a href="receive_voice.html">Codec2 voice messages</a> decoded by the
+<a href="telemetry_panel.html">Telemetry</a> panel, saved automatically as WAV files with a JSON metadata
+sidecar;</li>
 <li><strong>TelemetryRegistry</strong> - the definitions used to decode raw telemetry frames into named values
 in the <a href="telemetry_panel.html">Telemetry</a> panel.</li>
 </ul>
