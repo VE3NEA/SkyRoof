@@ -45,6 +45,10 @@ namespace SkyRoof
       OpenImageMNU = new ToolStripMenuItem();
       ImageMenuSeparator = new ToolStripSeparator();
       CombineImageMNU = new ToolStripMenuItem();
+      VoiceMenu = new ContextMenuStrip(components);
+      PlayVoiceMNU = new ToolStripMenuItem();
+      SaveVoiceMNU = new ToolStripMenuItem();
+      OpenVoiceMNU = new ToolStripMenuItem();
       ClearAllMNU = new ToolStripMenuItem();
       MenuStrip.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
@@ -56,6 +60,7 @@ namespace SkyRoof
       ImageSplitContainer.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)ImageBox).BeginInit();
       ImageMenu.SuspendLayout();
+      VoiceMenu.SuspendLayout();
       SuspendLayout();
       // 
       // SatNameLabel
@@ -106,6 +111,7 @@ namespace SkyRoof
       treeView1.Size = new Size(247, 526);
       treeView1.TabIndex = 3;
       treeView1.AfterSelect += treeView1_AfterSelect;
+      treeView1.MouseDown += treeView1_MouseDown;
       // 
       // MenuStrip
       // 
@@ -214,6 +220,34 @@ namespace SkyRoof
       CombineImageMNU.Text = "Combine with Previous Passes";
       CombineImageMNU.Click += CombineImageMNU_Click;
       //
+      // VoiceMenu
+      //
+      VoiceMenu.Items.AddRange(new ToolStripItem[] { PlayVoiceMNU, SaveVoiceMNU, OpenVoiceMNU });
+      VoiceMenu.Name = "VoiceMenu";
+      VoiceMenu.Size = new Size(155, 70);
+      VoiceMenu.Opening += VoiceMenu_Opening;
+      //
+      // PlayVoiceMNU
+      //
+      PlayVoiceMNU.Name = "PlayVoiceMNU";
+      PlayVoiceMNU.Size = new Size(154, 22);
+      PlayVoiceMNU.Text = "Play";
+      PlayVoiceMNU.Click += PlayVoiceMNU_Click;
+      //
+      // SaveVoiceMNU
+      //
+      SaveVoiceMNU.Name = "SaveVoiceMNU";
+      SaveVoiceMNU.Size = new Size(154, 22);
+      SaveVoiceMNU.Text = "Save As...";
+      SaveVoiceMNU.Click += SaveVoiceMNU_Click;
+      //
+      // OpenVoiceMNU
+      //
+      OpenVoiceMNU.Name = "OpenVoiceMNU";
+      OpenVoiceMNU.Size = new Size(154, 22);
+      OpenVoiceMNU.Text = "Open in Player";
+      OpenVoiceMNU.Click += OpenVoiceMNU_Click;
+      //
       // ClearAllMNU
       // 
       ClearAllMNU.Name = "ClearAllMNU";
@@ -245,6 +279,7 @@ namespace SkyRoof
       ImageSplitContainer.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)ImageBox).EndInit();
       ImageMenu.ResumeLayout(false);
+      VoiceMenu.ResumeLayout(false);
       ResumeLayout(false);
     }
 
@@ -265,6 +300,12 @@ namespace SkyRoof
     private ToolStripMenuItem OpenImageMNU;
     private ToolStripSeparator ImageMenuSeparator;
     private ToolStripMenuItem CombineImageMNU;
+    // the voice node's own menu, attached per-node in ShowVoiceMessage rather than to the whole tree —
+    // the tree's MenuStrip belongs to the pass and frame nodes
+    private ContextMenuStrip VoiceMenu;
+    private ToolStripMenuItem PlayVoiceMNU;
+    private ToolStripMenuItem SaveVoiceMNU;
+    private ToolStripMenuItem OpenVoiceMNU;
     private ToolStripMenuItem ClearAllMNU;
   }
 }

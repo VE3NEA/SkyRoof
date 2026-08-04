@@ -10,6 +10,7 @@ using System.Globalization;
 using VE3NEA;
 using VE3NEA.SkyFM;
 using VE3NEA.SkySSTV;
+using VE3NEA.SkyTlm.Audio;
 using VE3NEA.SkyTlm.Core;
 using VE3NEA.SkyTlm.Deframing;
 using VE3NEA.SkyTlm.Discovery;
@@ -98,10 +99,14 @@ namespace SkyRoof
     // the FM transcript currently shown in richTextBox1 (null while showing telemetry/SSTV) — routes the
     // click-to-play mouse handling to the right content
     private FmTranscriptInfo? CurrentFmTranscript;
-    // true when PlayFmClip found the shared speaker soundcard disabled and temporarily enabled it for the
-    // clip, mirroring RecordingManager.StartPlayback/StopPlayback; fires FmClipEndTimer to disable it again
-    private bool SpeakerEnabledForFmClip;
-    private System.Windows.Forms.Timer? FmClipEndTimer;
+    // the voice message currently shown in richTextBox1, routing the same click-to-play handling. A message
+    // is one clip rather than a list of lines, so there is no per-span routing to do — the pane either is a
+    // voice message or is not.
+    private VoiceMessageInfo? CurrentVoice;
+    // true when PlayAudioClip found the shared speaker soundcard disabled and temporarily enabled it for the
+    // clip, mirroring RecordingManager.StartPlayback/StopPlayback; fires ClipEndTimer to disable it again
+    private bool SpeakerEnabledForClip;
+    private System.Windows.Forms.Timer? ClipEndTimer;
 
     // Identity of the transmitter a decoder was built for, captured when the pipeline is created and bound to
     // that pipeline's event handlers. Frames surface on the decode worker thread, possibly after the user has
@@ -241,6 +246,48 @@ namespace SkyRoof
       public string SaveFilter => "JPEG Image|*.jpg";
       public string SaveFileName => $"{FirstSeen:yyyyMMdd_HHmmss}_{Product.ImageId}.jpg";
       public void SaveAs(string path) => File.WriteAllBytes(path, Product.Jpeg);
+    }
+
+    // One received codec2 voice message: the tree node's Tag, updated in place as sub-frames arrive and
+    // finalized (and auto-saved) when the assembler announces the message is over. Deliberately NOT an
+    // IImageNodeInfo: that interface is built around a Bitmap and a picture pane, and a voice node has
+    // neither — what it shares with the images is the shape of the lifecycle, not the presentation.
+    private sealed class VoiceMessageInfo
+    {
+      internal readonly DecodeSnapshot Snapshot;
+      internal readonly DateTime FirstSeen = DateTime.Now;
+      internal VoiceProduct Product;
+      // the assembler will send nothing further for this message. Off air the normal case is a message the
+      // pass ended in the middle of, so this is not the same as having heard the whole thing — and unlike
+      // an image there is no way to know how much was missed, because nothing on air says how long a
+      // message is.
+      internal bool Final;
+      internal string? SavedPath;
+
+      internal VoiceMessageInfo(DecodeSnapshot snapshot, VoiceProduct product)
+      {
+        Snapshot = snapshot;
+        Product = product;
+      }
+
+      internal string Describe()
+      {
+        return
+          $"Sat: {Snapshot.Transmitter?.Satellite?.name ?? "Unknown"}\r\n" +
+          $"Tx: {Snapshot.Transmitter?.description}\r\n" +
+          $"Duration: {Product.DurationSeconds:0.0} s\r\n" +
+          // "of N" is deliberately absent: N is the span of what arrived, not the length of what was sent,
+          // and presenting it as a denominator would claim knowledge the downlink does not carry.
+          $"Sub-frames: {Product.SubFramesReceived} received, {Product.SubFramesExpected} spanned\r\n" +
+          $"Numbered: {Product.FirstNumber}..{Product.LastNumber}\r\n" +
+          $"Gaps: {(Product.Complete ? "none" : $"{Product.SubFramesExpected - Product.SubFramesReceived} sub-frames, played as silence")}\r\n" +
+          $"Status: {(Final ? "complete" : "receiving...")}\r\n" +
+          (SavedPath != null ? $"Saved: {SavedPath}\r\n" : "") +
+          "\r\nClick here to play.";
+      }
+
+      internal string SaveFileName =>
+        $"{FirstSeen:yyyyMMdd_HHmmss}_{Snapshot.Satellite?.name ?? "Unknown"}_voice.wav";
     }
 
     // one FM-speech transcript, the Tag of the single "FM Speech" leaf node (§10.3): the pass's decoded
@@ -391,7 +438,7 @@ namespace SkyRoof
       CurrentDecode = null;
 
       // stop any click-to-play clip, then free the shared FM speech engine (the decoder above no longer uses it)
-      StopFmClip();
+      StopAudioClip();
       FmSpeechEngine?.Dispose();
       FmSpeechEngine = null;
 
@@ -650,7 +697,8 @@ namespace SkyRoof
           // the Decoder field when a frame surfaces: by then the field may already hold the next
           // transmitter's decoder, and this decoder's frames must never reach that one's assembler.
           var images = Decoder.Images;
-          Decoder.Pipeline.FrameDecoded += frame => FrameDecodedHandler(frame, snapshot, images);
+          var voice = Decoder.Voice;
+          Decoder.Pipeline.FrameDecoded += frame => FrameDecodedHandler(frame, snapshot, images, voice);
           Decoder.Pipeline.BurstDecoded += report => BurstDecodedHandler(report, snapshot);
         }
         if (Decoder.Images != null)
@@ -662,6 +710,16 @@ namespace SkyRoof
           var imageNodes = new Dictionary<int, TreeNode>();
           Decoder.Images.ImageUpdated += product => SsdvImageHandler(product, snapshot, imageNodes, false);
           Decoder.Images.ImageCompleted += product => SsdvImageHandler(product, snapshot, imageNodes, true);
+        }
+        if (Decoder.Voice != null)
+        {
+          // one node per message, keyed the way the images are — but a voice message has no id of its own,
+          // so the key is the message's first sub-frame number, which is what the assembler segments on and
+          // is stable for the life of a message. The closure keeps a disposed decoder's flush out of the
+          // next decoder's nodes, exactly as above.
+          var voiceNodes = new Dictionary<int, TreeNode>();
+          Decoder.Voice.VoiceUpdated += product => VoiceMessageHandler(product, snapshot, voiceNodes, false);
+          Decoder.Voice.VoiceCompleted += product => VoiceMessageHandler(product, snapshot, voiceNodes, true);
         }
         // the detection-only branch exists for the search alone: its bursts go to the session and nowhere
         // else — no frames, no tree entry, no status label, because nothing here was decoded.
@@ -776,7 +834,8 @@ namespace SkyRoof
        );
     }
 
-    private void FrameDecodedHandler(Frame frame, DecodeSnapshot snapshot, IImageAssembler? images)
+    private void FrameDecodedHandler(Frame frame, DecodeSnapshot snapshot, IImageAssembler? images,
+      IAudioAssembler? voice)
     {
       ctx.KissServer.SendToAll(frame);
       if (snapshot.Satellite?.norad_cat_id is int norad) SatnogsUploader?.Submit(frame, norad);
@@ -785,6 +844,10 @@ namespace SkyRoof
       // packets are interleaved with telemetry on one downlink, that is most of them. Re-transcoding the
       // whole image per accepted fragment costs microseconds, so this stays on the decode thread.
       images?.Push(frame);
+      // voice rides the same frames as images, and is offered on the same terms — the assembler's own gate
+      // drops everything that is not a codec2 sub-frame, which on this downlink is most frames. Re-decoding
+      // the whole message per sub-frame is under a millisecond, so it too stays on the decode thread.
+      voice?.Push(frame);
       BeginInvoke(() =>
       {
         AddFrame(frame, snapshot);
@@ -1358,7 +1421,7 @@ namespace SkyRoof
       bool isNew = !imageNodes.TryGetValue(evt.ImageId, out TreeNode? node);
       if (isNew)
       {
-        node = new TreeNode();
+        node = new TreeNode { ContextMenuStrip = ImageMenu };
         node.Tag = new SstvImageInfo(snapshot, evt);
         imageNodes[evt.ImageId] = node;
         txPassInfo.ImageCount++;
@@ -1601,7 +1664,7 @@ namespace SkyRoof
       bool isNew = !imageNodes.TryGetValue(product.ImageId, out TreeNode? node);
       if (isNew)
       {
-        node = new TreeNode();
+        node = new TreeNode { ContextMenuStrip = ImageMenu };
         node.Tag = new SsdvImageInfo(snapshot, product);
         imageNodes[product.ImageId] = node;
         txPassInfo.ImageCount++;
@@ -1708,6 +1771,172 @@ namespace SkyRoof
       {
         Log.Error(e, "Failed to save the received image");
         return null;
+      }
+    }
+
+
+
+
+    //----------------------------------------------------------------------------------------------
+    //                                      codec2 voice
+    //----------------------------------------------------------------------------------------------
+    // called on the decode worker thread (or on the UI thread when a disposed decoder flushes); the
+    // finalized message is auto-saved here, before marshaling, so a pass ending with the panel closing
+    // cannot lose it. final says the assembler will send nothing further for this message.
+    private void VoiceMessageHandler(VoiceProduct product, DecodeSnapshot snapshot,
+      Dictionary<int, TreeNode> voiceNodes, bool final)
+    {
+      string? savedPath = final && ShouldSaveVoice(product) ? SaveVoiceToFile(product, snapshot) : null;
+      BeginInvoke(() => ShowVoiceMessage(product, snapshot, voiceNodes, savedPath, final));
+    }
+
+    /// <summary>Whether a finalized message is worth writing to disk. The SSDV rule cannot be reused: there
+    /// its two-fragment floor rests on each fragment having passed a CRC-32, so two of them agreeing on an
+    /// image identity is not a coincidence that happens. <b>Voice frames carry no checksum at all</b> — no
+    /// CRC, no FEC — so the only evidence a message is real is that several frames of exactly the right
+    /// shape turned up close together, each numbered where the previous left off. Three is where that stops
+    /// being explicable by chance, and it costs nothing real: a message the satellite actually sent runs 20
+    /// to 37 sub-frames.
+    /// <para>A rejected message is still shown in the tree and still playable. Only the automatic write is
+    /// withheld, on the same principle as images: a stray node goes away with the session, a file in
+    /// <c>Codec2Voice\</c> does not.</para></summary>
+    private static bool ShouldSaveVoice(VoiceProduct product)
+    {
+      return product.SubFramesReceived >= MinSubFramesToSave && product.Wav.Length > 0;
+    }
+
+    private const int MinSubFramesToSave = 3;
+
+    /// <summary>Auto-save the finalized message as WAV + JSON metadata sidecar under the user data folder,
+    /// beside the SSTV and SSDV images. The bytes are written verbatim — they already are a playable file,
+    /// gaps filled with silence, whatever fraction of the message arrived.</summary>
+    private static string? SaveVoiceToFile(VoiceProduct product, DecodeSnapshot snapshot)
+    {
+      try
+      {
+        string folder = Path.Combine(Utils.GetUserDataFolder(), "Codec2Voice");
+        Directory.CreateDirectory(folder);
+        string sat = string.Concat((snapshot.Satellite?.name ?? "Unknown").Split(Path.GetInvalidFileNameChars()));
+        string path = Path.Combine(folder, $"{DateTime.Now:yyyyMMdd_HHmmss}_{sat}_voice.wav");
+        File.WriteAllBytes(path, product.Wav);
+
+        var meta = new
+        {
+          Utc = DateTime.UtcNow,
+          Satellite = snapshot.Satellite?.name,
+          Norad = snapshot.Satellite?.norad_cat_id,
+          Transmitter = snapshot.Transmitter.description,
+          TransmitterUuid = snapshot.Transmitter.uuid,
+          product.DurationSeconds,
+          product.SampleRate,
+          product.FirstNumber,
+          product.LastNumber,
+          product.SubFramesReceived,
+          product.SubFramesExpected,
+          product.Complete
+        };
+        File.WriteAllText(Path.ChangeExtension(path, ".json"),
+          JObject.FromObject(meta).ToString(Formatting.Indented));
+        return path;
+      }
+      catch (Exception e)
+      {
+        Log.Error(e, "Failed to save the received voice message");
+        return null;
+      }
+    }
+
+    private void ShowVoiceMessage(VoiceProduct product, DecodeSnapshot snapshot,
+      Dictionary<int, TreeNode> voiceNodes, string? savedPath, bool final)
+    {
+      var (passNode, txPassInfo) = EnsureCurrentPassNode(snapshot);
+
+      bool isNew = !voiceNodes.TryGetValue(product.FirstNumber, out TreeNode? node);
+      if (isNew)
+      {
+        node = new TreeNode { ContextMenuStrip = VoiceMenu };
+        node.Tag = new VoiceMessageInfo(snapshot, product);
+        voiceNodes[product.FirstNumber] = node;
+        AddLeaf(passNode, node);
+      }
+
+      var info = (VoiceMessageInfo)node!.Tag;
+      info.Product = product;
+      info.Final |= final;
+      if (savedPath != null) info.SavedPath = savedPath;
+      // no "of N": nothing on air says how long a message is, so the label counts what arrived and how long
+      // the reconstruction plays, and claims nothing more
+      node.Text = $"{info.FirstSeen:HH:mm:ss}  Voice  " +
+        $"{product.SubFramesReceived} sub-frames, {product.DurationSeconds:0.0} s";
+
+      // an accepted sub-frame is real content: un-gray the pass entry the way a valid frame does
+      if (!txPassInfo.HasValidFrame)
+      {
+        txPassInfo.HasValidFrame = true;
+        passNode.ForeColor = Color.Empty;
+      }
+
+      if (!final) UpdateStatusLabel("DECODING...", Color.Green);
+
+      if (treeView1.SelectedNode == node) DisplayVoiceInfo(info);
+      else if (treeView1.SelectedNode == passNode) richTextBox1.Text = txPassInfo.Describe(DescribeSignalParamsOrUnknown(txPassInfo.SignalParams));
+    }
+
+    // a voice node has no picture, so the right pane goes back to plain text rather than to the image
+    // splitter, and the text itself becomes the play button (the FM transcript's interaction, minus the
+    // per-line routing — a message is one clip, so anywhere in the pane means the same thing)
+    private void DisplayVoiceInfo(VoiceMessageInfo info)
+    {
+      ShowTelemetryText();
+      richTextBox1.Text = info.Describe();
+    }
+
+    // Play the message as it currently stands. Decoding the WAV rather than keeping a parallel float buffer
+    // keeps one representation of the audio: the product's file IS the audio, and it is rebuilt from every
+    // sub-frame received so far, so what plays is always what would be saved.
+    private void PlayVoice(VoiceMessageInfo info)
+    {
+      var wav = info.Product.Wav;
+      if (wav.Length <= WavHeaderBytes) return;
+
+      var pcm = new float[(wav.Length - WavHeaderBytes) / 2];
+      for (int i = 0; i < pcm.Length; i++)
+        pcm[i] = BitConverter.ToInt16(wav, WavHeaderBytes + 2 * i) / 32768f;
+
+      PlayAudioClip(pcm, info.Product.SampleRate);
+    }
+
+    // SkyTlm's WavWriter emits the canonical 44-byte RIFF/fmt/data header and nothing else
+    private const int WavHeaderBytes = 44;
+
+    private void VoiceMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+    {
+      var info = treeView1.SelectedNode?.Tag as VoiceMessageInfo;
+      OpenVoiceMNU.Enabled = info?.SavedPath != null && File.Exists(info.SavedPath);
+    }
+
+    private void PlayVoiceMNU_Click(object sender, EventArgs e)
+    {
+      if (treeView1.SelectedNode?.Tag is VoiceMessageInfo info) PlayVoice(info);
+    }
+
+    private void SaveVoiceMNU_Click(object sender, EventArgs e)
+    {
+      if (treeView1.SelectedNode?.Tag is not VoiceMessageInfo info) return;
+      using var dlg = new SaveFileDialog { Filter = "WAV audio|*.wav", FileName = info.SaveFileName };
+      if (dlg.ShowDialog() == DialogResult.OK) File.WriteAllBytes(dlg.FileName, info.Product.Wav);
+    }
+
+    private void OpenVoiceMNU_Click(object sender, EventArgs e)
+    {
+      if (treeView1.SelectedNode?.Tag is not VoiceMessageInfo info || info.SavedPath == null) return;
+      try
+      {
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(info.SavedPath) { UseShellExecute = true });
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, "Failed to open the voice message in a player");
       }
     }
 
@@ -2008,51 +2237,59 @@ namespace SkyRoof
 
     private void richTextBox1_MouseMove(object sender, MouseEventArgs e)
     {
+      if (CurrentVoice != null) { richTextBox1.Cursor = Cursors.Hand; return; }
+
       var (completed, pending) = FmLineAt(e.Location);
       richTextBox1.Cursor = completed != null || pending ? Cursors.Hand : Cursors.Default;
     }
 
     private void richTextBox1_MouseClick(object sender, MouseEventArgs e)
     {
+      // the whole pane is the play button for a voice message, so there is no hit-testing to do — unlike
+      // a transcript, which is a list of separately playable lines
+      if (CurrentVoice != null) { PlayVoice(CurrentVoice); return; }
+
       var (completed, pending) = FmLineAt(e.Location);
       if (completed != null)
       {
-        if (completed.Audio.Length > 0) PlayFmClip(completed.Audio, CurrentFmTranscript!.SampleRate);
+        if (completed.Audio.Length > 0) PlayAudioClip(completed.Audio, CurrentFmTranscript!.SampleRate);
       }
       else if (pending && CurrentFmTranscript!.Pending is { } pendingLine)
       {
         // the open line isn't captured into an FmLineEntry until it closes, so fetch its audio-so-far
         // on demand from the retained decoder rather than pre-capturing it on every LineUpdated tick
         var audio = CurrentFmTranscript.Engine.GetAudio(pendingLine.StartSeconds, pendingLine.EndSeconds);
-        if (audio.Length > 0) PlayFmClip(audio, CurrentFmTranscript.SampleRate);
+        if (audio.Length > 0) PlayAudioClip(audio, CurrentFmTranscript.SampleRate);
       }
     }
 
-    // play one transcript line's audio fragment through the same soundcard (device and gain) used for slicer
-    // output playback, replacing any clip already playing
-    private void PlayFmClip(float[] audio, int sampleRate)
+    // play one decoded mono clip — an FM transcript line, or a codec2 voice message — through the same
+    // soundcard (device and gain) used for slicer output playback, replacing any clip already playing.
+    // Shared rather than duplicated per source: the two things easy to get wrong here are honouring the
+    // configured device and turning it back off afterwards, and both are solved once.
+    private void PlayAudioClip(float[] audio, int sampleRate)
     {
       try
       {
-        var resampled = sampleRate == SdrConst.AUDIO_SAMPLING_RATE ? audio : ResampleFmClip(audio, sampleRate);
-        StopFmClip();
+        var resampled = sampleRate == SdrConst.AUDIO_SAMPLING_RATE ? audio : ResampleClip(audio, sampleRate);
+        StopAudioClip();
 
         // mirror RecordingManager.StartPlayback: temporarily enable the shared speaker soundcard for the
         // duration of the clip if the user has speaker output turned off
         if (!ctx.SpeakerSoundcard.Enabled)
         {
           ctx.SpeakerSoundcard.Enabled = true;
-          SpeakerEnabledForFmClip = true;
+          SpeakerEnabledForClip = true;
         }
 
         ctx.SpeakerSoundcard.AddSamples(resampled);
 
-        if (SpeakerEnabledForFmClip)
+        if (SpeakerEnabledForClip)
         {
           int clipMs = (int)(1000.0 * resampled.Length / SdrConst.AUDIO_SAMPLING_RATE) + 300;
-          FmClipEndTimer = new System.Windows.Forms.Timer { Interval = Math.Max(clipMs, 1) };
-          FmClipEndTimer.Tick += FmClipEndTimer_Tick;
-          FmClipEndTimer.Start();
+          ClipEndTimer = new System.Windows.Forms.Timer { Interval = Math.Max(clipMs, 1) };
+          ClipEndTimer.Tick += ClipEndTimer_Tick;
+          ClipEndTimer.Start();
         }
       }
       catch (Exception ex)
@@ -2061,7 +2298,7 @@ namespace SkyRoof
       }
     }
 
-    private static float[] ResampleFmClip(float[] audio, int sampleRate)
+    private static float[] ResampleClip(float[] audio, int sampleRate)
     {
       var bytes = new byte[audio.Length * sizeof(float)];
       Buffer.BlockCopy(audio, 0, bytes, 0, bytes.Length);
@@ -2077,27 +2314,27 @@ namespace SkyRoof
       return resampled.ToArray();
     }
 
-    private void FmClipEndTimer_Tick(object? sender, EventArgs e)
+    private void ClipEndTimer_Tick(object? sender, EventArgs e)
     {
-      StopFmClip();
+      StopAudioClip();
     }
 
-    private void StopFmClip()
+    private void StopAudioClip()
     {
-      if (FmClipEndTimer != null)
+      if (ClipEndTimer != null)
       {
-        FmClipEndTimer.Stop();
-        FmClipEndTimer.Tick -= FmClipEndTimer_Tick;
-        FmClipEndTimer.Dispose();
-        FmClipEndTimer = null;
+        ClipEndTimer.Stop();
+        ClipEndTimer.Tick -= ClipEndTimer_Tick;
+        ClipEndTimer.Dispose();
+        ClipEndTimer = null;
       }
 
       ctx.SpeakerSoundcard.Buffer.Clear();
 
-      if (SpeakerEnabledForFmClip)
+      if (SpeakerEnabledForClip)
       {
         ctx.SpeakerSoundcard.Enabled = false;
-        SpeakerEnabledForFmClip = false;
+        SpeakerEnabledForClip = false;
       }
     }
 
@@ -2215,6 +2452,16 @@ namespace SkyRoof
       Decoder?.StartProcessing(e);
     }
 
+    // a right-click does not select in a TreeView, but every context menu here — the tree's own, and the
+    // image and voice menus attached to the leaf nodes — reads treeView1.SelectedNode, so the node under
+    // the cursor is selected first. MouseDown, not NodeMouseClick, because the menu opens on mouse up.
+    private void treeView1_MouseDown(object sender, MouseEventArgs e)
+    {
+      if (e.Button != MouseButtons.Right) return;
+      var node = treeView1.GetNodeAt(e.X, e.Y);
+      if (node != null) treeView1.SelectedNode = node;
+    }
+
     private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
     {
       var node = e.Node;
@@ -2222,10 +2469,19 @@ namespace SkyRoof
 
       // showing non-FM content clears the click-to-play routing; RenderFmTranscript re-arms it for an FM node
       CurrentFmTranscript = null;
+      // and the voice routing, which the same click handler serves — only one of the two can be armed
+      CurrentVoice = null;
 
       if (node.Tag is IImageNodeInfo imageInfo)
       {
         DisplayImageInfo(imageInfo);
+        return;
+      }
+
+      if (node.Tag is VoiceMessageInfo voiceInfo)
+      {
+        CurrentVoice = voiceInfo;
+        DisplayVoiceInfo(voiceInfo);
         return;
       }
 

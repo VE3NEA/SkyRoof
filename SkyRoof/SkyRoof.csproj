@@ -77,6 +77,10 @@
     <None Include="..\Vendor\VE3NEA.Dsp\fec.dll" Link="fec.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <!-- codec2 (David Rowe), P/Invoked by VE3NEA.Dsp's NativeCodec2 for the HADES-SA voice downlink -->
+    <None Include="..\Vendor\VE3NEA.Dsp\codec2.dll" Link="codec2.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="..\Vendor\ft4_coder\ft4_coder.dll" Link="ft4_coder.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

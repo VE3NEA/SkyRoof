@@ -1,7 +1,9 @@
 using MathNet.Numerics;
+using Serilog;
 using VE3NEA;
 using VE3NEA.SkyFM;
 using VE3NEA.SkySSTV;
+using VE3NEA.SkyTlm.Audio;
 using VE3NEA.SkyTlm.Core;
 using VE3NEA.SkyTlm.Imaging;
 
@@ -17,6 +19,10 @@ namespace SkyRoof
     // when the satellite sends no images we can reconstruct. Unlike the branches above it consumes FRAMES,
     // not samples, so nothing feeds it here — the panel's frame handler does (see TelemetryPanel).
     public IImageAssembler? Images;
+    // the voice assembler for this transmitter's frames (codec2 sub-frames), or null when the satellite
+    // sends no audio. Fed from the same frame handler as Images, and for the same reason: voice rides the
+    // telemetry frames rather than arriving on a transmitter of its own.
+    public IAudioAssembler? Voice;
 
     // Detection-only options for the discovery burst source: segment the stream and hand the samples over,
     // but never demodulate or deframe. The shape gate is off because the template it would gate on is built
@@ -43,6 +49,17 @@ namespace SkyRoof
       {
         Pipeline = new StreamingPipeline(signalParams);
         Images = ImageAssemblerFactory.Create(signalParams, noradId);
+        // Unlike the image assembler this one binds a native library (codec2.dll) the moment it is built,
+        // and throws if it is missing or unusable. That must not cost the pass its telemetry: voice is an
+        // extra payload type on this downlink, so a broken install loses the audio and nothing else.
+        try
+        {
+          Voice = AudioAssemblerFactory.Create(signalParams, noradId);
+        }
+        catch (Exception e)
+        {
+          Log.Error(e, "Voice decoding is unavailable; telemetry continues without it");
+        }
       }
       if (detectParams != null) Detector = new StreamingPipeline(detectParams, DetectOnlyOptions);
       if (sstv) Sstv = new SstvDecoder();
@@ -73,6 +90,13 @@ namespace SkyRoof
       // this the last image of every pass would be lost rather than saved.
       Images?.Flush();
       Images = null;
+
+      // and the voice assembler, for the same reason and more urgently: a voice message carries no length,
+      // so nothing but this flush can ever declare one over. Without it the recording still being received
+      // at LOS would not merely be unsaved, it would never be announced at all.
+      Voice?.Flush();
+      (Voice as IDisposable)?.Dispose();
+      Voice = null;
 
       // drain the decoder so the partially received image is finalized (ImageCompleted fires with the
       // rows decoded before LOS / the transmitter switch), then free its filter chains

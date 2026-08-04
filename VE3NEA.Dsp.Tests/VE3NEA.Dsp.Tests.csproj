@@ -22,4 +22,22 @@
     <ProjectReference Include="..\SkyRoof\SkyRoof.csproj" />
   </ItemGroup>
 
+  <!-- SkyRoof consumes VE3NEA.SkyTlm as a vendored assembly, and an assembly reference does not flow to a
+       referencing project the way a project reference would, so tests that name SkyTlm types have to point
+       at the same copy themselves. -->
+  <ItemGroup>
+    <Reference Include="VE3NEA.SkyTlm">
+      <HintPath>..\Vendor\VE3NEA.SkySignals\VE3NEA.SkyTlm.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="VE3NEA.SkyFM">
+      <HintPath>..\Vendor\VE3NEA.SkySignals\VE3NEA.SkyFM.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="VE3NEA.Dsp">
+      <HintPath>..\Vendor\VE3NEA.Dsp\VE3NEA.Dsp.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
 </Project>
