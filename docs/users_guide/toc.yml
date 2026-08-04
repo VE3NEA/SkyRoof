@@ -93,6 +93,10 @@ items:
       href: decode_telemetry.md
     - name: Receive SSTV Images
       href: recevie_sstv.md
+    - name: Receive SSDV Images
+      href: receive_ssdv.md
+    - name: Receive CODEC2 Voice Messages
+      href: receive_voice.md
     - name: Receive FSK & AFSK Telemetry
       href: fsk_afsk_telemetry.md
   - name: Miscellaneous

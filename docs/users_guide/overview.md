@@ -26,6 +26,9 @@ The main features of SkyRoof are:
 - frequency scale with satellite names and transponder segments, Doppler-corrected;
 - built-in telemetry decoder for FSK, AFSK, GFSK, GMSK and BPSK downlinks, with automatic frame submission to the SatNOGS network;
 - built-in SSTV image decoder for the Robot and PD modes, with no external program required;
+- built-in SSDV image decoder that rebuilds the pictures sent as data in the telemetry stream, and can
+  combine the receptions of several passes into one picture;
+- decoding and playback of the Codec2 voice messages that satellites transmit in their telemetry frames;
 - FT4 Console for making FT4 contacts through linear-transponder satellites, without an external program;
 - QSO logging with ADIF export, and a QSO Scheduler;
 - audio recording of satellite passes;
