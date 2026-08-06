@@ -22,8 +22,9 @@ namespace SkyRoof
     private readonly Slicer.Mode[] LsbModes = [Slicer.Mode.LSB, Slicer.Mode.LSB_D];
 
     // Transverter band the SDR is currently centered on (null when transverter is disabled
-    // or no SDR band matches the active RF). Updated by SetSlicerFrequency on band changes.
-    private TransverterBand? ActiveSdrBand;
+    // or no SDR band matches the active RF). Owned by XverterSetSlicerFrequency, which uses it
+    // to detect band changes and retune the SDR to the center of the new band.
+    private TransverterBand? XverterBand;
 
     // cached so the Terrestrial/normal toggle does not allocate (and leak) a new font each update
     private readonly Font DownlinkRegularFont, DownlinkBoldFont;
@@ -239,7 +240,10 @@ namespace SkyRoof
       ctx.CatControl.Tx?.SetTxMode(RadioLink.UplinkMode);
 
       // freq in slicer
-      SetSlicerFrequency();
+      if (ctx.Settings.Transverter.SdrOffsetEnabled)
+        XverterSetSlicerFrequency();
+      else
+        SetSlicerFrequency();
 
       // freq in external radio (with optional transverter CAT offset)
       if (ctx.CatControl.Rx != null)
@@ -307,46 +311,99 @@ namespace SkyRoof
       if (ctx.Sdr?.Enabled != true) return;
 
       double bandwidth = ctx.Sdr.Info.MaxBandwidth;
+      double low = ctx.Sdr.Frequency - bandwidth / 2;
+      double high = ctx.Sdr.Frequency + bandwidth / 2;
+
+      double targetFrequency = RadioLink.CorrectedDownlinkFrequency!;
+
+      if (targetFrequency < low || targetFrequency > high)
+        if (ctx.Sdr.IsFrequencySupported(targetFrequency))
+        {
+          BringToPassband(targetFrequency);
+          ctx.WaterfallPanel?.SetCenterFrequency(ctx.Sdr.Info.Frequency);
+        }
+        else
+          return;
+
+      low = ctx.Sdr.Frequency - bandwidth / 2;
+      high = ctx.Sdr.Frequency + bandwidth / 2;
+
+      if (targetFrequency >= low && targetFrequency <= high)
+        if (ctx.Slicer?.Enabled == true)
+        {
+          // terrestrial has no doppler ramp; otherwise extrapolate at the last estimated rate
+          double rate = RadioLink.IsTerrestrial ? 0 : RadioLink.DownlinkDopplerRate;
+          ctx.Slicer.SetOffset(targetFrequency - ctx.Sdr.Frequency, rate);
+        }
+    }
+
+    private bool BringToPassband(double frequency)
+    {
+      double bandWing = SdrConst.MAX_BANDWIDTH / 2;
+      double sdrWing = ctx.Sdr!.Info.MaxBandwidth / 2;
+
+      bool uhf = frequency >= SdrConst.UHF_CENTER_FREQUENCY - bandWing &&
+        frequency <= SdrConst.UHF_CENTER_FREQUENCY + bandWing;
+
+      if (uhf)
+      {
+        double minCenter = SdrConst.UHF_CENTER_FREQUENCY - bandWing + sdrWing;
+        double maxCenter = SdrConst.UHF_CENTER_FREQUENCY + bandWing - sdrWing;
+        frequency = Math.Max(minCenter, Math.Min(maxCenter, frequency));
+      }
+
+      bool vhf = frequency >= SdrConst.VHF_CENTER_FREQUENCY - bandWing &&
+        frequency <= SdrConst.VHF_CENTER_FREQUENCY + bandWing;
+
+      if (vhf)
+      {
+        double minCenter = SdrConst.VHF_CENTER_FREQUENCY - bandWing + sdrWing;
+        double maxCenter = SdrConst.VHF_CENTER_FREQUENCY + bandWing - sdrWing;
+        frequency = Math.Max(minCenter, Math.Min(maxCenter, frequency));
+      }
+
+      if (ctx.Sdr.IsFrequencySupported(frequency))
+      {
+        ctx.Sdr.Frequency = frequency;
+        return true;
+      }
+      else return false;
+    }
+
+
+
+
+    //----------------------------------------------------------------------------------------------
+    //                                       transverter
+    //----------------------------------------------------------------------------------------------
+    // Slicer tuning when a transverter feeds the SDR: the SDR is tuned to the IF, which is the
+    // RF minus the LO offset of the transverter band. When no band covers the RF, no offset
+    // applies and the no-transverter code does the tuning.
+    private void XverterSetSlicerFrequency()
+    {
+      if (ctx.Sdr?.Enabled != true) return;
+
       double rfFrequency = RadioLink.CorrectedDownlinkFrequency!;
-      var transverter = ctx.Settings.Transverter;
+      var band = ctx.Settings.Transverter.GetSdrBand(rfFrequency);
 
-      // Resolve transverter band (null if disabled or RF doesn't match any band)
-      TransverterBand? prevBand = ActiveSdrBand;
-      TransverterBand? band = transverter.SdrOffsetEnabled ? transverter.GetSdrBand(rfFrequency) : null;
-      ActiveSdrBand = band;
-      bool bandChanged = band != prevBand;
-
-      // IF frequency the SDR sees (= RF when no transverter offset applies)
-      long loOffset = band?.LoOffset ?? 0;
-      double ifFrequency = rfFrequency - loOffset;
-
-      // Determine the band-limit constraints for the SDR center
-      double bandIfLow, bandIfHigh;
-      if (band != null)
+      if (band == null)
       {
-        bandIfLow = band.RfLow - band.LoOffset;
-        bandIfHigh = band.RfHigh - band.LoOffset;
-      }
-      else if (SatnogsDbTransmitter.IsVhfFrequency(rfFrequency))
-      {
-        bandIfLow = SdrConst.VHF_CENTER_FREQUENCY - SdrConst.MAX_BANDWIDTH / 2;
-        bandIfHigh = SdrConst.VHF_CENTER_FREQUENCY + SdrConst.MAX_BANDWIDTH / 2;
-      }
-      else if (SatnogsDbTransmitter.IsUhfFrequency(rfFrequency))
-      {
-        bandIfLow = SdrConst.UHF_CENTER_FREQUENCY - SdrConst.MAX_BANDWIDTH / 2;
-        bandIfHigh = SdrConst.UHF_CENTER_FREQUENCY + SdrConst.MAX_BANDWIDTH / 2;
-      }
-      else
-      {
-        // unknown / non-ham band: no constraint, let the SDR tune directly
-        bandIfLow = ifFrequency - bandwidth;
-        bandIfHigh = ifFrequency + bandwidth;
+        XverterBand = null;
+        SetSlicerFrequency();
+        return;
       }
 
-      // Transverter mode: on first activation or band crossing, retune SDR to the IF center
-      // of the new band so the entire IF band is in view (when bandwidth allows).
-      if (band != null && bandChanged)
+      var prevBand = XverterBand;
+      XverterBand = band;
+
+      double bandwidth = ctx.Sdr.Info.MaxBandwidth;
+      double ifFrequency = rfFrequency - band.LoOffset;
+      double bandIfLow = band.RfLow - band.LoOffset;
+      double bandIfHigh = band.RfHigh - band.LoOffset;
+
+      // on first activation or band crossing, retune the SDR to the IF center of the new band
+      // so that the entire IF band is in view (when bandwidth allows)
+      if (band != prevBand)
       {
         double ifCenter = (bandIfLow + bandIfHigh) / 2;
         if (ctx.Sdr.IsFrequencySupported(ifCenter))
@@ -359,11 +416,10 @@ namespace SkyRoof
       double low = ctx.Sdr.Frequency - bandwidth / 2;
       double high = ctx.Sdr.Frequency + bandwidth / 2;
 
-      // Signal outside current SDR passband: reposition SDR center (constrained by band)
       if (ifFrequency < low || ifFrequency > high)
         if (ctx.Sdr.IsFrequencySupported(ifFrequency))
         {
-          BringToPassband(ifFrequency, bandIfLow, bandIfHigh);
+          XverterBringToPassband(ifFrequency, band);
           ctx.WaterfallPanel?.SetCenterFrequency(GetSdrRfCenter());
         }
         else
@@ -381,21 +437,23 @@ namespace SkyRoof
         }
     }
 
-    private bool BringToPassband(double frequency, double bandLow, double bandHigh)
+    private bool XverterBringToPassband(double ifFrequency, TransverterBand band)
     {
       double sdrWing = ctx.Sdr!.Info.MaxBandwidth / 2;
+      double bandIfLow = band.RfLow - band.LoOffset;
+      double bandIfHigh = band.RfHigh - band.LoOffset;
 
-      // constrain the new SDR center so the passband stays within [bandLow, bandHigh]
-      if (bandHigh - bandLow >= 2 * sdrWing)
+      // constrain the new SDR center so that the passband stays within the transverter band
+      if (bandIfHigh - bandIfLow >= 2 * sdrWing)
       {
-        double minCenter = bandLow + sdrWing;
-        double maxCenter = bandHigh - sdrWing;
-        frequency = Math.Max(minCenter, Math.Min(maxCenter, frequency));
+        double minCenter = bandIfLow + sdrWing;
+        double maxCenter = bandIfHigh - sdrWing;
+        ifFrequency = Math.Max(minCenter, Math.Min(maxCenter, ifFrequency));
       }
 
-      if (ctx.Sdr.IsFrequencySupported(frequency))
+      if (ctx.Sdr.IsFrequencySupported(ifFrequency))
       {
-        ctx.Sdr.Frequency = frequency;
+        ctx.Sdr.Frequency = ifFrequency;
         return true;
       }
       else return false;
@@ -407,7 +465,12 @@ namespace SkyRoof
     public double GetSdrRfCenter()
     {
       if (ctx?.Sdr == null) return 0;
-      return ctx.Sdr.Info.Frequency + (ActiveSdrBand?.LoOffset ?? 0);
+
+      var xverter = ctx.Settings.Transverter;
+      if (!xverter.SdrOffsetEnabled) return ctx.Sdr.Info.Frequency;
+
+      var band = xverter.GetSdrBand(RadioLink.CorrectedDownlinkFrequency);
+      return ctx.Sdr.Info.Frequency + (band?.LoOffset ?? 0);
     }
 
 
