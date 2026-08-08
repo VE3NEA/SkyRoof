@@ -54,12 +54,12 @@ picture fills with coloured speckle. SkyRoof applies a mild **Wiener** filter to
 automatically, which is what you see while the image is building. When a pass was marginal you can do
 considerably better afterwards: right-click a finished image and choose **Denoise Image...**.
 
-The command becomes available once an image is complete, because the filter works on the raw
-reconstruction that is stored with the finished image.
-
 | As received | After non-local means |
 |---|---|
 | ![before](../images/sstv_denoise_before.png) | ![after](../images/sstv_denoise_after.png) |
+
+The command becomes available once an image is complete, because the filter works on the raw
+reconstruction that is stored with the finished image.
 
 ![Denoise Image dialog](../images/sstv_denoise_dialog.png)
 
@@ -68,7 +68,7 @@ is hard to judge at 1:1. Roll the **mouse wheel** over the picture to zoom, from
 where it fills the pane; enlarging or maximizing the window raises that limit, so maximizing gives you
 a close look at fine detail.
 
-Choose the algorithm on the left:
+Choose the algorithm:
 
 - **None** — the raw reconstruction, with no filtering at all. Note that this is *not* the image you
   started with: the automatic Wiener filter is switched off too, so this is the noisiest of the three.
