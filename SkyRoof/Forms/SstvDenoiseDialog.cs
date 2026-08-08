@@ -22,10 +22,10 @@ namespace SkyRoof
     // the raw, unfiltered reconstruction: the source every Apply starts from
     private SstvImagePlanes Planes = null!;
 
-    // the picture as it was before the dialog opened, shown for None. Not planes.ToRgb(): the planes are
-    // byte-quantized while the decoder's own image converts from unquantized doubles, so this is the exact
-    // original and cancelling out of the dialog is exact rather than nearly exact.
-    private RgbImage Original = null!;
+    // that same reconstruction as a picture — what None shows. NOT the image the panel was displaying:
+    // that one has ALREADY been through the decode-time Wiener, which is the decoder's default (D15), so
+    // showing it under None would label a filtered picture as unfiltered. None here means what it says.
+    private RgbImage Unfiltered = null!;
 
     // the rendering currently on display, and what OK hands back
     public RgbImage Result { get; private set; } = null!;
@@ -44,19 +44,19 @@ namespace SkyRoof
       InitializeComponent();
     }
 
-    /// <summary>Open on one image. <paramref name="planes"/> is the event's raw reconstruction and
-    /// <paramref name="original"/> the picture the panel is showing.</summary>
-    public DialogResult Open(SstvImagePlanes planes, RgbImage original, string caption, Control? anchor = null)
+    /// <summary>Open on one image. <paramref name="planes"/> is the event's raw reconstruction, which is
+    /// both the source every filter runs on and the picture the dialog opens showing.</summary>
+    public DialogResult Open(SstvImagePlanes planes, string caption, Control? anchor = null)
     {
       Planes = planes;
-      Original = original;
-      Result = original;
+      Unfiltered = planes.ToRgb();
+      Result = Unfiltered;
       AnchorControl = anchor;
       if (anchor != null) StartPosition = FormStartPosition.Manual;
 
       Text = $"Denoise Image — {caption}";
       LoadDefaults();
-      ShowImage(original, "original");
+      ShowImage(Unfiltered, "unfiltered");
       return ShowDialog();
     }
 
@@ -77,27 +77,24 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     //                                          controls
     //----------------------------------------------------------------------------------------------
-    // The controls open on the library defaults, which are the settled values of the plan's §9 sweeps and
-    // are also what the decode path runs (D22). So the dialog opens showing exactly what produced the
-    // picture behind it, and every control is a departure from that.
+    // The spinners open on the library defaults, which are the settled values of the plan's §9 sweeps and
+    // are also what the decode path runs (D22), so every control is a departure from a known-good setting.
+    // The METHOD opens on None, though, not on the library default: the dialog starts by showing the raw
+    // reconstruction, and a radio button saying anything else would be describing a filter that has not run.
     private void LoadDefaults()
     {
       var d = new SstvDenoiseOptions();
       Loading = true;
 
-      NoneRadio.Checked = false;
       WienerRadio.Checked = false;
-      NlmRadio.Checked = true;
+      NlmRadio.Checked = false;
+      NoneRadio.Checked = true;
 
       WienerWidthSpinner.Value = d.WienerWindowW;
       WienerHeightSpinner.Value = d.WienerWindowH;
-      WienerFloorSpinner.Value = (decimal)d.WienerGainFloor;
-      WienerChromaSpinner.Value = (decimal)d.WienerChromaK;
 
       NlmStrengthSpinner.Value = (decimal)d.NlmSig;
       NlmPatchSpinner.Value = d.NlmPatchWing;
-      NlmSearchSpinner.Value = d.NlmSearchWing;
-      NlmChromaSpinner.Value = (decimal)d.NlmChromaK;
       NlmTwoPassCheckBox.Checked = d.NlmTwoPass;
 
       SkipNoiseBandsCheckBox.Checked = d.SkipNoiseOnlyBands;
@@ -124,10 +121,10 @@ namespace SkyRoof
       EnableControls();
     }
 
-    /// <summary>The settings the controls currently hold. Everything the plan left as a probe sweep axis —
-    /// the §9.1 mapping law, the chroma arms, the second-pass constants — keeps its default here: those are
-    /// measurement arms, and exposing them would make this a research console rather than a picture
-    /// control.</summary>
+    /// <summary>The settings the controls currently hold. Everything not named here keeps its library
+    /// default — the §9.1 mapping law and the chroma arms because they are measurement axes rather than
+    /// taste, and the search radius, both colour strengths and the Wiener gain floor because their sweeps
+    /// are settled and re-litigating them per image is not what this dialog is for.</summary>
     private SstvDenoiseOptions CurrentOptions() => new()
     {
       Method = NoneRadio.Checked ? SstvDenoiseMethod.None
@@ -136,13 +133,9 @@ namespace SkyRoof
 
       WienerWindowW = (int)WienerWidthSpinner.Value,
       WienerWindowH = (int)WienerHeightSpinner.Value,
-      WienerGainFloor = (double)WienerFloorSpinner.Value,
-      WienerChromaK = (double)WienerChromaSpinner.Value,
 
       NlmSig = (double)NlmStrengthSpinner.Value,
       NlmPatchWing = (int)NlmPatchSpinner.Value,
-      NlmSearchWing = (int)NlmSearchSpinner.Value,
-      NlmChromaK = (double)NlmChromaSpinner.Value,
       NlmTwoPass = NlmTwoPassCheckBox.Checked,
 
       SkipNoiseOnlyBands = SkipNoiseBandsCheckBox.Checked
@@ -159,8 +152,8 @@ namespace SkyRoof
       if (options.Method == SstvDenoiseMethod.None)
       {
         Options = options;
-        Result = Original;
-        ShowImage(Original, "original");
+        Result = Unfiltered;
+        ShowImage(Unfiltered, "unfiltered");
         return;
       }
 

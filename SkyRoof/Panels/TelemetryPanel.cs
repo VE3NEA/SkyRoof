@@ -1595,10 +1595,10 @@ namespace SkyRoof
 
       using var dlg = new SstvDenoiseDialog();
       string caption = $"{info.Snapshot.Satellite?.name ?? "Unknown"}  {info.FirstSeen:HH:mm:ss}  {info.Event.Mode}";
-      if (dlg.Open(planes, info.Event.Image, caption, this) != DialogResult.OK) return;
+      if (dlg.Open(planes, caption, this) != DialogResult.OK) return;
 
       info.Rendering = dlg.Result;
-      info.Filter = dlg.Options.Method == SstvDenoiseMethod.None ? null : DescribeFilter(dlg.Options);
+      info.Filter = DescribeFilter(dlg.Options);
 
       var oldBitmap = info.Bitmap;
       info.Bitmap = info.Rendering.ToBitmap();
@@ -1616,12 +1616,17 @@ namespace SkyRoof
       if (treeView1.SelectedNode?.Tag == info) richTextBox1.Text = info.Describe();
     }
 
+    // None is reported rather than left blank, because it is not the same picture the node started with: the
+    // decode path applies the Wiener by default (D15), so choosing None strips a filter rather than leaving
+    // the image alone.
     private static string DescribeFilter(SstvDenoiseOptions o)
     {
+      if (o.Method == SstvDenoiseMethod.None) return "none (raw reconstruction)";
+
       string gate = o.SkipNoiseOnlyBands ? ", skipping noise-only bands" : "";
       return o.Method == SstvDenoiseMethod.Wiener
-        ? $"Wiener {o.WienerWindowW}x{o.WienerWindowH}, floor {o.WienerGainFloor:0.00}{gate}"
-        : $"NLM strength {o.NlmSig:0.00}, patch {o.NlmPatchWing}, search {o.NlmSearchWing}" +
+        ? $"Wiener {o.WienerWindowW}x{o.WienerWindowH}{gate}"
+        : $"NLM strength {o.NlmSig:0.00}, patch {o.NlmPatchWing}" +
           $"{(o.NlmTwoPass ? ", two-pass" : "")}{gate}";
     }
 
