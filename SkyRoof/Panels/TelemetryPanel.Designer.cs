@@ -45,6 +45,7 @@ namespace SkyRoof
       OpenImageMNU = new ToolStripMenuItem();
       ImageMenuSeparator = new ToolStripSeparator();
       CombineImageMNU = new ToolStripMenuItem();
+      DenoiseImageMNU = new ToolStripMenuItem();
       VoiceMenu = new ContextMenuStrip(components);
       PlayVoiceMNU = new ToolStripMenuItem();
       SaveVoiceMNU = new ToolStripMenuItem();
@@ -181,9 +182,9 @@ namespace SkyRoof
       // 
       // ImageMenu
       // 
-      ImageMenu.Items.AddRange(new ToolStripItem[] { SaveImageMNU, CopyImageMNU, OpenImageMNU, ImageMenuSeparator, CombineImageMNU });
+      ImageMenu.Items.AddRange(new ToolStripItem[] { SaveImageMNU, CopyImageMNU, OpenImageMNU, ImageMenuSeparator, CombineImageMNU, DenoiseImageMNU });
       ImageMenu.Name = "ImageMenu";
-      ImageMenu.Size = new Size(155, 70);
+      ImageMenu.Size = new Size(155, 92);
       ImageMenu.Opening += ImageMenu_Opening;
       // 
       // SaveImageMNU
@@ -219,6 +220,13 @@ namespace SkyRoof
       CombineImageMNU.Size = new Size(154, 22);
       CombineImageMNU.Text = "Combine with Previous Passes";
       CombineImageMNU.Click += CombineImageMNU_Click;
+      //
+      // DenoiseImageMNU
+      //
+      DenoiseImageMNU.Name = "DenoiseImageMNU";
+      DenoiseImageMNU.Size = new Size(154, 22);
+      DenoiseImageMNU.Text = "Denoise Image...";
+      DenoiseImageMNU.Click += DenoiseImageMNU_Click;
       //
       // VoiceMenu
       //
@@ -300,6 +308,7 @@ namespace SkyRoof
     private ToolStripMenuItem OpenImageMNU;
     private ToolStripSeparator ImageMenuSeparator;
     private ToolStripMenuItem CombineImageMNU;
+    private ToolStripMenuItem DenoiseImageMNU;
     // the voice node's own menu, attached per-node in ShowVoiceMessage rather than to the whole tree —
     // the tree's MenuStrip belongs to the pass and frame nodes
     private ContextMenuStrip VoiceMenu;

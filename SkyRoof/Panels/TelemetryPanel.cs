@@ -159,10 +159,21 @@ namespace SkyRoof
       public Bitmap? Bitmap { get; set; }
       public string? SavedPath { get; set; }
 
+      // The picture currently on display, which is the decoder's own image until the denoise dialog
+      // replaces it. Everything that shows, copies or writes the image reads this rather than
+      // Event.Image, so "Save Image As..." writes what the operator is looking at (denoise plan §8).
+      // Reset whenever a new event arrives, because a filtered rendering describes the reconstruction
+      // it was computed from and not the one that just replaced it.
+      internal RgbImage Rendering;
+
+      // how Rendering was produced, for the info pane; null while it is the unfiltered reconstruction
+      internal string? Filter;
+
       internal SstvImageInfo(DecodeSnapshot snapshot, SstvImageEvent evt)
       {
         Snapshot = snapshot;
         Event = evt;
+        Rendering = evt.Image;
       }
 
       public string Describe()
@@ -174,12 +185,13 @@ namespace SkyRoof
           $"VIS: {(Event.FromVis ? "decoded" : "not decoded, mode from sync cadence")}\r\n" +
           $"Rows: {Event.ValidRows} of {Event.Image.Height}\r\n" +
           $"Status: {(Event.Final ? "complete" : "receiving...")}\r\n" +
+          (Filter != null ? $"Filter: {Filter}\r\n" : "") +
           (SavedPath != null ? $"Saved: {SavedPath}\r\n" : "");
       }
 
       public string SaveFilter => "PNG Image|*.png";
       public string SaveFileName => $"{FirstSeen:yyyyMMdd_HHmmss}_{Event.Mode}.png";
-      public void SaveAs(string path) => Event.Image.SavePng(path);
+      public void SaveAs(string path) => Rendering.SavePng(path);
     }
 
     // one progressively-built SSDV / raw-JPEG image: the tree node's Tag, updated in place as fragments
@@ -1432,6 +1444,9 @@ namespace SkyRoof
       var info = (SstvImageInfo)node!.Tag;
       var oldBitmap = info.Bitmap;
       info.Event = evt;
+      // the new reconstruction is what is now on display; any filtered rendering described the previous one
+      info.Rendering = evt.Image;
+      info.Filter = null;
       info.Bitmap = evt.Image.ToBitmap();
       if (savedPath != null) info.SavedPath = savedPath;
       node.Text = $"{info.FirstSeen:HH:mm:ss}  {evt.Mode}  {evt.ValidRows}/{evt.Image.Height} rows";
@@ -1571,6 +1586,45 @@ namespace SkyRoof
       if (ImageBox.Image != null) Clipboard.SetImage(ImageBox.Image);
     }
 
+    // Post-filter a completed image (denoise plan §8). The dialog filters evt.Planes — the raw, unfiltered
+    // reconstruction the event carries alongside the picture — so it always starts from the original however
+    // many times it is applied, and choosing None is an exact undo rather than an inverse filter.
+    private void DenoiseImageMNU_Click(object sender, EventArgs e)
+    {
+      if (treeView1.SelectedNode?.Tag is not SstvImageInfo info || info.Event.Planes is not { } planes) return;
+
+      using var dlg = new SstvDenoiseDialog();
+      string caption = $"{info.Snapshot.Satellite?.name ?? "Unknown"}  {info.FirstSeen:HH:mm:ss}  {info.Event.Mode}";
+      if (dlg.Open(planes, info.Event.Image, caption, this) != DialogResult.OK) return;
+
+      info.Rendering = dlg.Result;
+      info.Filter = dlg.Options.Method == SstvDenoiseMethod.None ? null : DescribeFilter(dlg.Options);
+
+      var oldBitmap = info.Bitmap;
+      info.Bitmap = info.Rendering.ToBitmap();
+      if (ImageBox.Image == oldBitmap) ImageBox.Image = info.Bitmap;
+      oldBitmap?.Dispose();
+
+      // the auto-saved PNG is the pass's record of this image, so it follows the display rather than
+      // preserving a rendering the operator has just rejected
+      if (info.SavedPath != null)
+      {
+        try { info.Rendering.SavePng(info.SavedPath); }
+        catch (Exception ex) { Log.Error(ex, "Failed to re-save denoised SSTV image"); }
+      }
+
+      if (treeView1.SelectedNode?.Tag == info) richTextBox1.Text = info.Describe();
+    }
+
+    private static string DescribeFilter(SstvDenoiseOptions o)
+    {
+      string gate = o.SkipNoiseOnlyBands ? ", skipping noise-only bands" : "";
+      return o.Method == SstvDenoiseMethod.Wiener
+        ? $"Wiener {o.WienerWindowW}x{o.WienerWindowH}, floor {o.WienerGainFloor:0.00}{gate}"
+        : $"NLM strength {o.NlmSig:0.00}, patch {o.NlmPatchWing}, search {o.NlmSearchWing}" +
+          $"{(o.NlmTwoPass ? ", two-pass" : "")}{gate}";
+    }
+
     // gray the "Open in Viewer" item until the selected image has been auto-saved to a file on disk, and
     // the "Combine with Previous Passes" item until this picture has actually been heard before — the
     // archive is searched here, on demand, rather than kept indexed
@@ -1578,6 +1632,10 @@ namespace SkyRoof
     {
       var info = treeView1.SelectedNode?.Tag as IImageNodeInfo;
       OpenImageMNU.Enabled = info?.SavedPath != null && File.Exists(info.SavedPath);
+
+      // denoising needs the raw reconstruction, which rides only on the FINAL image event: a picture still
+      // being drawn has no planes to filter, and filtering it would be overwritten by the next line anyway
+      DenoiseImageMNU.Enabled = info is SstvImageInfo sstv && sstv.Event.Planes != null;
 
       var ssdv = info as SsdvImageInfo;
       bool canCombine = ssdv != null && CanCombine(ssdv);
