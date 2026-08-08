@@ -1022,6 +1022,36 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/sstv_denoise_after.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/sstv_denoise_after.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/sstv_denoise_before.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/sstv_denoise_before.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/sstv_denoise_dialog.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/sstv_denoise_dialog.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/sstv_image.png",
       "output": {
         "resource": {
