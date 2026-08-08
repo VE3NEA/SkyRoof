@@ -17,7 +17,7 @@ namespace SkyRoof
   // Settings are deliberately NOT remembered between images (user, 2026-08-07). The right strength depends
   // on the capture — §9.3 measured the working window moving with SNR — so a value carried over from a
   // different pass is a misleading starting point rather than a convenience.
-  public partial class SstvDenoiseDialog : Form
+  public partial class SstvDenoiseDialog : Form, IMessageFilter
   {
     // the raw, unfiltered reconstruction: the source every Apply starts from
     private SstvImagePlanes Planes = null!;
@@ -63,6 +63,7 @@ namespace SkyRoof
     protected override void OnLoad(EventArgs e)
     {
       base.OnLoad(e);
+      Application.AddMessageFilter(this);            // see PreFilterMessage: wheel zoom over the preview
       if (AnchorControl == null || !AnchorControl.IsHandleCreated) return;
 
       var r = AnchorControl.RectangleToScreen(AnchorControl.ClientRectangle);
@@ -199,15 +200,23 @@ namespace SkyRoof
     //----------------------------------------------------------------------------------------------
     private void ShowImage(RgbImage image, string status)
     {
+      Displayed = image;
+      DisplayStatus = status;
+      Zoom = ClampZoom(Zoom);                 // the picture may have changed shape, so the fit limit may have too
+      RenderPreview();
+    }
+
+    private void RenderPreview()
+    {
+      if (Displayed == null) return;
+
       var old = PreviewBox.Image;
-      PreviewBox.Image = Scale2x(image);
+      PreviewBox.Image = Scale(Displayed, Zoom);
       PreviewBox.Size = PreviewBox.Image.Size;
       old?.Dispose();
       CenterPreview();
-      StatusLabel.Text = $"{image.Width} x {image.Height}  —  {status}";
+      StatusLabel.Text = $"{Displayed.Width} x {Displayed.Height}  —  {DisplayStatus}  —  {Zoom:0.##}x";
     }
-
-    private void PreviewPanel_ClientSizeChanged(object sender, EventArgs e) => CenterPreview();
 
     // center the picture while it is smaller than the pane, and pin it to the top left once it is larger and
     // the pane has become a scrolling viewport. The offset by AutoScrollPosition is what makes Location mean
@@ -221,25 +230,88 @@ namespace SkyRoof
       PreviewBox.Location = new Point(x, y);
     }
 
-    /// <summary>Pixel-double the picture for display. NEAREST NEIGHBOUR deliberately: this dialog exists to
-    /// judge what a smoother did to fine detail, and any interpolating resampler would add smoothing of its
-    /// own to the very thing being judged. Doubling rather than 1:1 because the artifacts at stake —
-    /// residual speckle, the dash texture of §9.7, a stroke thinned by the Wiener — are one to three pixels
-    /// across and simply are not resolvable at 1:1 on a modern display.</summary>
-    private static Bitmap Scale2x(RgbImage image)
+    /// <summary>Resample the picture for display. NEAREST NEIGHBOUR deliberately: this dialog exists to judge
+    /// what a smoother did to fine detail, and any interpolating resampler would add smoothing of its own to
+    /// the very thing being judged.</summary>
+    private static Bitmap Scale(RgbImage image, double zoom)
     {
       using var src = image.ToBitmap();
-      var dst = new Bitmap(src.Width * 2, src.Height * 2);
+      int w = Math.Max(1, (int)Math.Round(src.Width * zoom));
+      int h = Math.Max(1, (int)Math.Round(src.Height * zoom));
+      var dst = new Bitmap(w, h);
       using var g = Graphics.FromImage(dst);
       g.InterpolationMode = InterpolationMode.NearestNeighbor;
       g.PixelOffsetMode = PixelOffsetMode.Half;
-      g.DrawImage(src, 0, 0, dst.Width, dst.Height);
+      g.DrawImage(src, 0, 0, w, h);
       return dst;
+    }
+
+
+    //----------------------------------------------------------------------------------------------
+    //                                             zoom
+    //----------------------------------------------------------------------------------------------
+    // Opens at 2x, because the artifacts at stake — residual speckle, the dash texture of §9.7, a stroke
+    // thinned by the Wiener — are one to three pixels across and are simply not resolvable at 1:1 on a
+    // modern display. The wheel then runs from 1x to the magnification at which the picture just fills the
+    // pane, so it is always whole: there is nothing to scroll to and nothing hidden off the edge. Enlarging
+    // the dialog raises that upper limit, which is what makes real magnification available — maximizing the
+    // window is how you get to 5x or 6x on a Robot 36 image.
+
+    private const double ZoomMin = 1.0;
+    private const double ZoomStep = 0.25;
+
+    // the picture on display, kept so a zoom can re-render without re-filtering
+    private RgbImage? Displayed;
+    private string DisplayStatus = "";
+    private double Zoom = 2.0;
+
+    public bool PreFilterMessage(ref Message m)
+    {
+      const int WmMouseWheel = 0x020A;
+      if (m.Msg != WmMouseWheel || Displayed == null) return false;
+
+      // the wheel goes to whichever control has FOCUS, which for this dialog is a spinner or a button — so
+      // the message is intercepted here and routed by cursor position instead, which is what makes the wheel
+      // work over a picture that can never take the focus
+      int lp = (int)(long)m.LParam;
+      var cursor = new Point((short)(lp & 0xFFFF), (short)(lp >> 16));
+      if (!PreviewPanel.RectangleToScreen(PreviewPanel.ClientRectangle).Contains(cursor)) return false;
+
+      int delta = (short)((long)m.WParam >> 16);
+      double zoom = ClampZoom(Zoom + (delta > 0 ? ZoomStep : -ZoomStep));
+      if (zoom != Zoom)
+      {
+        Zoom = zoom;
+        RenderPreview();
+      }
+      return true;                            // swallowed: never let it scroll the pane as well
+    }
+
+    // The upper limit is the fit: the magnification at which the picture just fills the pane. Measured
+    // against PreviewPanel.Size rather than ClientSize deliberately — the client shrinks when a scroll bar
+    // appears, so a fit derived from it would lower the limit, hide the bar, raise the limit again and
+    // oscillate. The lower limit stands at 1x even for a picture too large to fit (PD 290 in a small
+    // window), which is the one case the pane really does have to scroll.
+    private double ClampZoom(double zoom)
+    {
+      if (Displayed == null) return zoom;
+      var pane = PreviewPanel.Size;
+      double fit = Math.Min((double)pane.Width / Displayed.Width, (double)pane.Height / Displayed.Height);
+      return Math.Clamp(zoom, ZoomMin, Math.Max(ZoomMin, fit));
+    }
+
+    // resizing the dialog moves the fit limit, so a zoom sitting at the old one follows it up or down
+    private void PreviewPanel_ClientSizeChanged(object sender, EventArgs e)
+    {
+      double zoom = ClampZoom(Zoom);
+      if (zoom != Zoom) { Zoom = zoom; RenderPreview(); }
+      else CenterPreview();
     }
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
       base.OnFormClosed(e);
+      Application.RemoveMessageFilter(this);
       var img = PreviewBox.Image;
       PreviewBox.Image = null;
       img?.Dispose();
