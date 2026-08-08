@@ -31,6 +31,7 @@ namespace SkyRoof
       PreviewPanel = new Panel();
       PreviewBox = new PictureBox();
       SidePanel = new Panel();
+      AlgorithmGroupBox = new GroupBox();
       NoneRadio = new RadioButton();
       WienerRadio = new RadioButton();
       NlmRadio = new RadioButton();
@@ -62,6 +63,7 @@ namespace SkyRoof
       PreviewPanel.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)PreviewBox).BeginInit();
       SidePanel.SuspendLayout();
+      AlgorithmGroupBox.SuspendLayout();
       WienerGroupBox.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)WienerWidthSpinner).BeginInit();
       ((System.ComponentModel.ISupportInitialize)WienerHeightSpinner).BeginInit();
@@ -98,22 +100,33 @@ namespace SkyRoof
       //
       // SidePanel
       //
+      SidePanel.Controls.Add(ApplyBtn);
       SidePanel.Controls.Add(SkipNoiseBandsCheckBox);
       SidePanel.Controls.Add(NlmGroupBox);
       SidePanel.Controls.Add(WienerGroupBox);
-      SidePanel.Controls.Add(NlmRadio);
-      SidePanel.Controls.Add(WienerRadio);
-      SidePanel.Controls.Add(NoneRadio);
+      SidePanel.Controls.Add(AlgorithmGroupBox);
       SidePanel.Dock = DockStyle.Right;
       SidePanel.Location = new Point(654, 0);
       SidePanel.Name = "SidePanel";
       SidePanel.Size = new Size(250, 596);
       SidePanel.TabIndex = 1;
       //
+      // AlgorithmGroupBox
+      //
+      AlgorithmGroupBox.Controls.Add(NlmRadio);
+      AlgorithmGroupBox.Controls.Add(WienerRadio);
+      AlgorithmGroupBox.Controls.Add(NoneRadio);
+      AlgorithmGroupBox.Location = new Point(10, 10);
+      AlgorithmGroupBox.Name = "AlgorithmGroupBox";
+      AlgorithmGroupBox.Size = new Size(230, 104);
+      AlgorithmGroupBox.TabIndex = 0;
+      AlgorithmGroupBox.TabStop = false;
+      AlgorithmGroupBox.Text = "Algorithm";
+      //
       // NoneRadio
       //
       NoneRadio.AutoSize = true;
-      NoneRadio.Location = new Point(14, 14);
+      NoneRadio.Location = new Point(14, 25);
       NoneRadio.Name = "NoneRadio";
       NoneRadio.Size = new Size(54, 19);
       NoneRadio.TabIndex = 0;
@@ -124,7 +137,7 @@ namespace SkyRoof
       // WienerRadio
       //
       WienerRadio.AutoSize = true;
-      WienerRadio.Location = new Point(14, 39);
+      WienerRadio.Location = new Point(14, 50);
       WienerRadio.Name = "WienerRadio";
       WienerRadio.Size = new Size(62, 19);
       WienerRadio.TabIndex = 1;
@@ -136,7 +149,7 @@ namespace SkyRoof
       //
       NlmRadio.AutoSize = true;
       NlmRadio.Checked = true;
-      NlmRadio.Location = new Point(14, 64);
+      NlmRadio.Location = new Point(14, 75);
       NlmRadio.Name = "NlmRadio";
       NlmRadio.Size = new Size(122, 19);
       NlmRadio.TabIndex = 2;
@@ -155,7 +168,7 @@ namespace SkyRoof
       WienerGroupBox.Controls.Add(WienerHeightLabel);
       WienerGroupBox.Controls.Add(WienerWidthSpinner);
       WienerGroupBox.Controls.Add(WienerWidthLabel);
-      WienerGroupBox.Location = new Point(10, 96);
+      WienerGroupBox.Location = new Point(10, 122);
       WienerGroupBox.Name = "WienerGroupBox";
       WienerGroupBox.Size = new Size(230, 150);
       WienerGroupBox.TabIndex = 3;
@@ -254,7 +267,7 @@ namespace SkyRoof
       NlmGroupBox.Controls.Add(NlmPatchLabel);
       NlmGroupBox.Controls.Add(NlmStrengthSpinner);
       NlmGroupBox.Controls.Add(NlmStrengthLabel);
-      NlmGroupBox.Location = new Point(10, 258);
+      NlmGroupBox.Location = new Point(10, 284);
       NlmGroupBox.Name = "NlmGroupBox";
       NlmGroupBox.Size = new Size(230, 186);
       NlmGroupBox.TabIndex = 4;
@@ -354,10 +367,10 @@ namespace SkyRoof
       // SkipNoiseBandsCheckBox
       //
       SkipNoiseBandsCheckBox.AutoSize = true;
-      SkipNoiseBandsCheckBox.Location = new Point(14, 456);
+      SkipNoiseBandsCheckBox.Location = new Point(24, 482);
       SkipNoiseBandsCheckBox.Name = "SkipNoiseBandsCheckBox";
       SkipNoiseBandsCheckBox.Size = new Size(150, 19);
-      SkipNoiseBandsCheckBox.TabIndex = 5;
+      SkipNoiseBandsCheckBox.TabIndex = 3;
       SkipNoiseBandsCheckBox.Text = "Skip Noise-Only Bands";
       SkipNoiseBandsCheckBox.UseVisualStyleBackColor = true;
       //
@@ -365,7 +378,6 @@ namespace SkyRoof
       //
       BottomPanel.Controls.Add(CancelBtn);
       BottomPanel.Controls.Add(OkBtn);
-      BottomPanel.Controls.Add(ApplyBtn);
       BottomPanel.Controls.Add(StatusLabel);
       BottomPanel.Dock = DockStyle.Bottom;
       BottomPanel.Location = new Point(0, 596);
@@ -383,11 +395,10 @@ namespace SkyRoof
       //
       // ApplyBtn
       //
-      ApplyBtn.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-      ApplyBtn.Location = new Point(577, 10);
+      ApplyBtn.Location = new Point(24, 518);
       ApplyBtn.Name = "ApplyBtn";
-      ApplyBtn.Size = new Size(75, 25);
-      ApplyBtn.TabIndex = 1;
+      ApplyBtn.Size = new Size(90, 27);
+      ApplyBtn.TabIndex = 4;
       ApplyBtn.Text = "Apply";
       ApplyBtn.UseVisualStyleBackColor = true;
       ApplyBtn.Click += ApplyBtn_Click;
@@ -433,6 +444,8 @@ namespace SkyRoof
       ((System.ComponentModel.ISupportInitialize)PreviewBox).EndInit();
       SidePanel.ResumeLayout(false);
       SidePanel.PerformLayout();
+      AlgorithmGroupBox.ResumeLayout(false);
+      AlgorithmGroupBox.PerformLayout();
       WienerGroupBox.ResumeLayout(false);
       WienerGroupBox.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)WienerWidthSpinner).EndInit();
@@ -455,6 +468,7 @@ namespace SkyRoof
     private Panel PreviewPanel;
     private PictureBox PreviewBox;
     private Panel SidePanel;
+    private GroupBox AlgorithmGroupBox;
     private RadioButton NoneRadio;
     private RadioButton WienerRadio;
     private RadioButton NlmRadio;
