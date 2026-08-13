@@ -90,7 +90,11 @@ See the [Frequency Scale](frequency_scale.md) section for details.
 
 The FM repeater satellites relay your signal only if a sub-audible CTCSS (PL) tone is present on the
 uplink. The small button with a triangle, to the right of the **Transmit** button, opens the menu with
-two tone commands. The button is not shown if the radio cannot switch the CTCSS encoder over CAT.
+two tone commands:
+
+![CTCSS Tone Menu](../images/ctcss_menu.png)
+
+The button is shown only if the uplink mode is FM and the radio can switch the CTCSS encoder over CAT.
 
 ### Send Tone When Transmitting
 
