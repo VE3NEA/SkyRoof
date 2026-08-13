@@ -152,6 +152,16 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/ctcss_menu.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/ctcss_menu.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/current_group.png",
       "output": {
         "resource": {
