@@ -56,11 +56,18 @@
       DownlinkFrequencyLabel = new Label();
       DownlinkLabel = new Label();
       TxBtn = new Button();
+      CtcssBtn = new Button();
+      CtcssMenu = new ContextMenuStrip(components);
+      SendToneMnu = new ToolStripMenuItem();
+      CtcssEnabledMnu = new ToolStripMenuItem();
+      CtcssSeparator = new ToolStripSeparator();
+      SendArmingToneMnu = new ToolStripMenuItem();
       toolTip1 = new ToolTip(components);
       ((System.ComponentModel.ISupportInitialize)RitSpinner).BeginInit();
       ((System.ComponentModel.ISupportInitialize)UplinkManualSpinner).BeginInit();
       contextMenuStrip1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)DownlinkManualSpinner).BeginInit();
+      CtcssMenu.SuspendLayout();
       SuspendLayout();
       // 
       // label7
@@ -334,17 +341,62 @@
       // 
       TxBtn.Location = new Point(524, 51);
       TxBtn.Name = "TxBtn";
-      TxBtn.Size = new Size(131, 21);
+      TxBtn.Size = new Size(133, 21);
       TxBtn.TabIndex = 49;
       TxBtn.Text = "Transmit";
       TxBtn.UseVisualStyleBackColor = true;
       TxBtn.Click += TxBtn_Click;
+      // 
+      // CtcssBtn
+      // 
+      CtcssBtn.Font = new Font("Wingdings 3", 8.25F);
+      CtcssBtn.Location = new Point(655, 51);
+      CtcssBtn.Name = "CtcssBtn";
+      CtcssBtn.Size = new Size(16, 21);
+      CtcssBtn.TabIndex = 50;
+      CtcssBtn.Text = "q";
+      CtcssBtn.UseVisualStyleBackColor = true;
+      CtcssBtn.MouseDown += CtcssBtn_MouseDown;
+      // 
+      // CtcssMenu
+      // 
+      CtcssMenu.Items.AddRange(new ToolStripItem[] { SendToneMnu, SendArmingToneMnu });
+      CtcssMenu.Name = "CtcssMenu";
+      CtcssMenu.Size = new Size(234, 70);
+      CtcssMenu.Opening += CtcssMenu_Opening;
+      // 
+      // SendToneMnu
+      // 
+      SendToneMnu.DropDownItems.AddRange(new ToolStripItem[] { CtcssEnabledMnu, CtcssSeparator });
+      SendToneMnu.Name = "SendToneMnu";
+      SendToneMnu.Size = new Size(233, 22);
+      SendToneMnu.Text = "Send Tone When Transmitting";
+      // 
+      // CtcssEnabledMnu
+      // 
+      CtcssEnabledMnu.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+      CtcssEnabledMnu.Name = "CtcssEnabledMnu";
+      CtcssEnabledMnu.Size = new Size(180, 22);
+      CtcssEnabledMnu.Text = "Enabled";
+      CtcssEnabledMnu.Click += CtcssEnabledMnu_Click;
+      // 
+      // CtcssSeparator
+      // 
+      CtcssSeparator.Name = "CtcssSeparator";
+      CtcssSeparator.Size = new Size(113, 6);
+      // 
+      // SendArmingToneMnu
+      // 
+      SendArmingToneMnu.Name = "SendArmingToneMnu";
+      SendArmingToneMnu.Size = new Size(233, 22);
+      SendArmingToneMnu.Text = "Send Arming Tone Now";
       // 
       // FrequencyWidget
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
       BorderStyle = BorderStyle.FixedSingle;
+      Controls.Add(CtcssBtn);
       Controls.Add(TxBtn);
       Controls.Add(label7);
       Controls.Add(RitCheckbox);
@@ -375,6 +427,7 @@
       ((System.ComponentModel.ISupportInitialize)UplinkManualSpinner).EndInit();
       contextMenuStrip1.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)DownlinkManualSpinner).EndInit();
+      CtcssMenu.ResumeLayout(false);
       ResumeLayout(false);
       PerformLayout();
     }
@@ -408,6 +461,12 @@
     private ToolStripMenuItem ShowNominalFrequencyMNU;
     private ToolStripMenuItem ShowCorrectedFrequencyMNU;
     private Button TxBtn;
+    private Button CtcssBtn;
+    private ContextMenuStrip CtcssMenu;
+    private ToolStripMenuItem SendToneMnu;
+    private ToolStripMenuItem CtcssEnabledMnu;
+    private ToolStripSeparator CtcssSeparator;
+    private ToolStripMenuItem SendArmingToneMnu;
     private ToolTip toolTip1;
     private Label label8;
   }

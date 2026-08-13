@@ -145,5 +145,10 @@ namespace SkyRoof
     public Slicer.Mode DownlinkMode;
     public Slicer.Mode UplinkMode;
     public double TransponderOffset;
+
+    // CTCSS encode on the uplink. the tone value and the on/off state are stored separately so that
+    // turning the encoder off does not lose the tone selected for this transmitter
+    public double CtcssTone = CtcssTones.DEFAULT_TONE;
+    public bool CtcssEnabled;
   }
 }

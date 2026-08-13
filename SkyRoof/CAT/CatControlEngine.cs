@@ -27,6 +27,13 @@ namespace SkyRoof
     private Slicer.Mode? RequestedTxMode, LastWrittenTxMode;
     private bool? RequestedPtt;
 
+    // CTCSS encode state requested by the UI. CtcssEnabled is null until the app sets it,
+    // CtcssPending is true while the state still has to be written to the radio
+    private double CtcssTone = CtcssTones.DEFAULT_TONE;
+    private bool? CtcssEnabled;
+    private bool CtcssPending;
+    private double? RequestedArmingTone;
+
     public event EventHandler? RxTuned;
     public event EventHandler? TxTuned;
 
@@ -106,6 +113,25 @@ namespace SkyRoof
       RequestedPtt = ptt;
     }
 
+    // called whenever the transmitter settings are applied, including on every Doppler update,
+    // so the radio is written to only when the tone or the on/off state actually changes
+    public void SetCtcssTone(double toneHz, bool enabled)
+    {
+      if (toneHz == CtcssTone && enabled == CtcssEnabled) return;
+
+      LogInfo($"SetCtcssTone {toneHz} {(enabled ? "on" : "off")}");
+      CtcssTone = toneHz;
+      CtcssEnabled = enabled;
+      CtcssPending = true;
+    }
+
+    // one-shot keyed carrier with the given tone, used to arm the SO-50 timer
+    public void SendArmingTone(double toneHz)
+    {
+      LogInfo($"SendArmingTone {toneHz}");
+      RequestedArmingTone = toneHz;
+    }
+
 
 
 
@@ -116,6 +142,7 @@ namespace SkyRoof
     {
       ReadPtt();
       if (NeedToWriteTxFreqModeBeforePtt()) TryWriteTxFreqModeBeforePtt();
+      if (NeedToWriteCtcss()) TryWriteCtcss();
       TryWritePtt();
 
       if (NeedToReadRxFrequency()) TryReadRxFrequency();
@@ -126,6 +153,8 @@ namespace SkyRoof
 
       if (NeedToWriteRxMode()) TryWriteRxMode();
       if (NeedToWriteTxMode()) TryWriteTxMode();
+
+      if (RequestedArmingTone.HasValue) TrySendArmingTone();
     }
 
     protected override bool Setup()
@@ -409,6 +438,79 @@ namespace SkyRoof
 
 
     //----------------------------------------------------------------------------------------------
+    //                                        ctcss
+    //----------------------------------------------------------------------------------------------
+    // the radio can turn the CTCSS encoder on and off
+    internal bool CanEnableCtcss()
+    {
+      return CatMode != OperatingMode.RxOnly &&
+             Caps != null &&
+             commands.enable_ctcss != null &&
+             commands.disable_ctcss != null &&
+             Caps.Can(CatAction.enable_ctcss, false) &&
+             Caps.Can(CatAction.disable_ctcss, false);
+    }
+
+    // the radio can select the CTCSS tone frequency over CAT. some rigs, e.g. the IC-706MKIIG,
+    // can only switch the encoder on and off, the tone must be selected on the front panel
+    internal bool CanSetCtcssTone()
+    {
+      return CatMode != OperatingMode.RxOnly &&
+             Caps != null &&
+             commands.set_ctcss_tone != null &&
+             Caps.Can(CatAction.write_ctcss_tone, false);
+    }
+
+    // the arming burst needs the tone, the encoder switch and CAT PTT
+    internal bool CanSendArmingTone()
+    {
+      return CanSetCtcssTone() && CanEnableCtcss() && CanPtt();
+    }
+
+    private void TryWriteCtcss()
+    {
+      if (CanSetCtcssTone())
+        SendWriteCommand(commands.set_ctcss_tone!.Replace("{tone}", $"{CtcssTones.ToTenths(CtcssTone)}"));
+
+      if (CanEnableCtcss())
+        SendWriteCommand(CtcssEnabled == true ? commands.enable_ctcss! : commands.disable_ctcss!);
+
+      CtcssPending = false;
+    }
+
+    private void TrySendArmingTone()
+    {
+      double toneHz = RequestedArmingTone!.Value;
+      RequestedArmingTone = null;
+
+      if (!CanSendArmingTone()) return;
+
+      // the operator is transmitting, do not interfere
+      if (Ptt) return;
+
+      Log.Information($"Sending {CtcssTones.ARMING_DURATION_MS} ms arming carrier with a {toneHz} Hz tone");
+
+      SendWriteCommand(commands.set_ctcss_tone!.Replace("{tone}", $"{CtcssTones.ToTenths(toneHz)}"));
+      SendWriteCommand(commands.enable_ctcss!);
+
+      SendWriteCommand(commands.set_ptt_on!);
+      Ptt = true;
+      LastWrittenTxFrequency = NOT_ASSIGNED;
+
+      Thread.Sleep(CtcssTones.ARMING_DURATION_MS);
+
+      SendWriteCommand(commands.set_ptt_off!);
+      Ptt = false;
+      LastWrittenRxFrequency = NOT_ASSIGNED;
+
+      // re-apply the tone and the on/off state saved for this transmitter
+      TryWriteCtcss();
+    }
+
+
+
+
+    //----------------------------------------------------------------------------------------------
     //                                    get command
     //----------------------------------------------------------------------------------------------
     private string GetReadRxFrequencyCommand()
@@ -606,6 +708,17 @@ namespace SkyRoof
       if (RequestedTxFrequency == NOT_ASSIGNED) return false;
       if (CatMode == OperatingMode.Simplex && PttChanged) return true;
       return IsDiff(RequestedTxFrequency, LastWrittenTxFrequency);
+    }
+
+    private bool NeedToWriteCtcss()
+    {
+      // never set by the app
+      if (!CtcssEnabled.HasValue) return false;
+      if (CtcssPending) return true;
+
+      // Icom Auto Repeater and similar features may drop the tone when the frequency changes,
+      // re-assert it immediately before every transmission
+      return RequestedPtt == true && Ptt == false;
     }
 
     private bool NeedToWriteRxMode()

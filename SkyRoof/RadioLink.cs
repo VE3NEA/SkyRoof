@@ -31,6 +31,16 @@ namespace SkyRoof
       get => TxCust!.TransponderOffset;
       set => TxCust!.TransponderOffset = value;
     }
+    public double CtcssTone
+    {
+      get => TxCust!.CtcssTone;
+      set => TxCust!.CtcssTone = value;
+    }
+    public bool CtcssEnabled
+    {
+      get => TxCust!.CtcssEnabled;
+      set => TxCust!.CtcssEnabled = value;
+    }
     public double DownlinkManualCorrection
     {
       get => SatCust!.DownlinkManualCorrection;

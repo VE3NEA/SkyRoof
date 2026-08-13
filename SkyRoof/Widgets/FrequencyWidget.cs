@@ -20,6 +20,7 @@ namespace SkyRoof
     private bool Changing;
     private readonly FrequencyEntryForm FrequencyDialog = new();
     private readonly Slicer.Mode[] LsbModes = [Slicer.Mode.LSB, Slicer.Mode.LSB_D];
+    private readonly Slicer.Mode[] FmModes = [Slicer.Mode.FM, Slicer.Mode.FM_D];
 
     // Transverter band the SDR is currently centered on (null when transverter is disabled
     // or no SDR band matches the active RF). Owned by XverterSetSlicerFrequency, which uses it
@@ -40,6 +41,7 @@ namespace SkyRoof
       DownlinkModeCombobox.SelectedIndex = 0;
       UplinkModeCombobox.SelectedIndex = 0;
       Changing = false;
+      BuildCtcssMenu();
     }
 
     internal string GetBandName(bool uplink)
@@ -238,6 +240,9 @@ namespace SkyRoof
       // mode in external radio
       ctx.CatControl.Rx?.SetRxMode(RadioLink.DownlinkMode);
       ctx.CatControl.Tx?.SetTxMode(RadioLink.UplinkMode);
+
+      // ctcss tone of this transmitter in external radio
+      ctx.CatControl.Tx?.SetCtcssTone(RadioLink.CtcssTone, RadioLink.CtcssEnabled);
 
       // freq in slicer
       if (ctx.Settings.Transverter.SdrOffsetEnabled)
@@ -757,6 +762,95 @@ namespace SkyRoof
       TxBtn.Visible = ctx.CatControl.Tx?.CanPtt() == true;
       var ptt = ctx.CatControl.Tx?.Ptt == true;
       TxBtn.Text = ptt ? "Stop Transmitting" : "Transmit";
+
+      // the tone applies to an FM uplink only, and both commands need the encoder on/off switch
+      CtcssBtn.Visible = RadioLink.HasUplink &&
+        RadioLink.TxCust != null && FmModes.Contains(RadioLink.UplinkMode) &&
+        ctx.CatControl.Tx?.CanEnableCtcss() == true;
+    }
+
+
+
+
+    //----------------------------------------------------------------------------------------------
+    //                                      ctcss menu
+    //----------------------------------------------------------------------------------------------
+    // the tone entries of both commands are created here, the fixed items are in the designer.
+    // the arming tone is a one-shot action and has no check mark, the default tone is shown in bold
+    private void BuildCtcssMenu()
+    {
+      var boldFont = new Font(CtcssMenu.Font, FontStyle.Bold);
+
+      foreach (double tone in CtcssTones.All)
+      {
+        SendToneMnu.DropDownItems.Add(MakeToneMenuItem(tone, CtcssToneMnu_Click));
+
+        var armingItem = MakeToneMenuItem(tone, ArmingToneMnu_Click);
+        if (tone == CtcssTones.ARMING_TONE) armingItem.Font = boldFont;
+        SendArmingToneMnu.DropDownItems.Add(armingItem);
+      }
+    }
+
+    private ToolStripMenuItem MakeToneMenuItem(double tone, EventHandler handler)
+    {
+      var item = new ToolStripMenuItem(CtcssTones.Format(tone)) { Tag = tone };
+      item.Click += handler;
+      return item;
+    }
+
+    private void CtcssBtn_MouseDown(object sender, MouseEventArgs e)
+    {
+      CtcssMenu.Show(CtcssBtn, new Point(CtcssBtn.Width, CtcssBtn.Height), ToolStripDropDownDirection.BelowLeft);
+    }
+
+    // reflect the state of the active transmitter, and what the connected radio can do.
+    // unavailable commands are disabled with an explanation, never hidden
+    private void CtcssMenu_Opening(object sender, CancelEventArgs e)
+    {
+      var tx = ctx.CatControl.Tx;
+      bool canSetTone = tx?.CanSetCtcssTone() == true;
+      bool hasTransmitter = RadioLink.TxCust != null;
+
+      SendToneMnu.Enabled = hasTransmitter && tx?.CanEnableCtcss() == true;
+      SendToneMnu.ToolTipText = tx?.CanEnableCtcss() == true ? string.Empty :
+        "The radio does not support switching the CTCSS encoder over CAT";
+
+      SendArmingToneMnu.Enabled = tx?.CanSendArmingTone() == true;
+      SendArmingToneMnu.ToolTipText = SendArmingToneMnu.Enabled ? string.Empty :
+        "The radio cannot select the tone or key the transmitter over CAT, send the arming tone from the front panel";
+
+      CtcssEnabledMnu.Checked = hasTransmitter && RadioLink.CtcssEnabled;
+
+      foreach (ToolStripItem item in SendToneMnu.DropDownItems)
+      {
+        if (item.Tag is not double tone) continue;
+        item.Enabled = canSetTone;
+        item.ToolTipText = canSetTone ? string.Empty :
+          "The radio has no CAT command for the tone frequency, select the tone on the front panel";
+        ((ToolStripMenuItem)item).Checked = hasTransmitter && tone == RadioLink.CtcssTone;
+      }
+    }
+
+    // turns the encoder on and off without changing the tone selected for this transmitter
+    private void CtcssEnabledMnu_Click(object sender, EventArgs e)
+    {
+      if (RadioLink.TxCust == null) return;
+
+      RadioLink.CtcssEnabled = !RadioLink.CtcssEnabled;
+      ctx.CatControl.Tx?.SetCtcssTone(RadioLink.CtcssTone, RadioLink.CtcssEnabled);
+    }
+
+    private void CtcssToneMnu_Click(object? sender, EventArgs e)
+    {
+      if (RadioLink.TxCust == null) return;
+
+      RadioLink.CtcssTone = (double)((ToolStripMenuItem)sender!).Tag!;
+      ctx.CatControl.Tx?.SetCtcssTone(RadioLink.CtcssTone, RadioLink.CtcssEnabled);
+    }
+
+    private void ArmingToneMnu_Click(object? sender, EventArgs e)
+    {
+      ctx.CatControl.Tx?.SendArmingTone((double)((ToolStripMenuItem)sender!).Tag!);
     }
   }
 }

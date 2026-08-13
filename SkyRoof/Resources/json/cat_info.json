@@ -1,12 +1,12 @@
 {
-  "version": 1,
+  "version": 2,
 
   "model": "rigctld.exe",
   "cross_band_split": false,
   "simplex": {
-    "when_receiving": [ "read_rx_frequency", "read_rx_mode", "read_ptt", "write_rx_frequency", "write_rx_mode", "write_ptt_off", "write_ptt_on" ],
-    "when_transmitting": [ "read_tx_frequency", "read_tx_mode", "read_ptt", "write_tx_frequency", "write_tx_mode", "write_ptt_off", "write_ptt_on" ],
-    "when_setting_up": [ "setup", "read_rx_frequency", "read_rx_mode", "read_ptt", "write_rx_frequency", "write_rx_mode", "write_ptt_off", "write_ptt_on" ]
+    "when_receiving": [ "read_rx_frequency", "read_rx_mode", "read_ptt", "write_rx_frequency", "write_rx_mode", "write_ptt_off", "write_ptt_on", "write_ctcss_tone", "enable_ctcss", "disable_ctcss" ],
+    "when_transmitting": [ "read_tx_frequency", "read_tx_mode", "read_ptt", "write_tx_frequency", "write_tx_mode", "write_ptt_off", "write_ptt_on", "write_ctcss_tone", "enable_ctcss", "disable_ctcss" ],
+    "when_setting_up": [ "setup", "read_rx_frequency", "read_rx_mode", "read_ptt", "write_rx_frequency", "write_rx_mode", "write_ptt_off", "write_ptt_on", "write_ctcss_tone", "enable_ctcss", "disable_ctcss" ]
   },
   "split": null,
   "duplex": null

@@ -86,6 +86,42 @@ the external radio between the RX and TX modes.
 The **Manual Correction** setting of the uplink allows you to align your transmit and receive frequencies.
 See the [Frequency Scale](frequency_scale.md) section for details.
 
+## CTCSS Tone
+
+The FM repeater satellites relay your signal only if a sub-audible CTCSS (PL) tone is present on the
+uplink. The small button with a triangle, to the right of the **Transmit** button, opens the menu with
+two tone commands. The button is not shown if the radio cannot switch the CTCSS encoder over CAT.
+
+### Send Tone When Transmitting
+
+The tone that the radio sends during every transmission. Check **Enabled** to turn the encoder on and
+off, and select the tone below the separator, for example 67.0 Hz for SO-50 and 141.3 Hz for PO-101.
+The menu lists the 38 tones that all supported radios can send, which includes every tone used by the
+FM satellites.
+
+The tone and the on/off state are saved separately for each satellite transmitter, so switching to
+another satellite applies the tone of that satellite, and turning the tone off does not lose the tone
+that you selected.
+
+If the radio has no CAT command for the tone frequency, for example the IC-706MKIIG, the tone entries
+are disabled, and only **Enabled** is available. Select the tone frequency on the radio in that case.
+
+### Send Arming Tone Now
+
+SO-50 has a 10-minute on-board timer that must be armed before the satellite passes traffic. Select
+74.4 in this menu to send a 2-second carrier with the 74.4 Hz arming tone. Sending it again within
+the 10-minute window restarts the timer. When the burst ends, SkyRoof restores the tone and the
+on/off state of the **Send Tone When Transmitting** command.
+
+The command is disabled if the radio cannot select the tone or cannot be keyed over CAT. Key the
+radio manually for about 2 seconds with the arming tone selected in that case.
+
+> [!Note]
+> On Icom radios, the **Auto Repeater** function turns CTCSS off when the frequency changes, and the
+Doppler correction changes the frequency continuously. SkyCAT turns Auto Repeater off automatically
+on the radios whose CI-V supports it. On the IC-910 and IC-706MKIIG, and when the radio is controlled
+via rigctld, turn Auto Repeater off in the menu of the radio.
+
 ## Dial Knob
 
 The dial knob of the transceiver can be used to tune the frequency when CAT control is enabled

@@ -20,6 +20,11 @@
     public string? set_ptt_on;
     public string? set_ptt_off;
 
+    // CTCSS encode (transmit side). {tone} is in tenths of Hz
+    public string? set_ctcss_tone;
+    public string? enable_ctcss;
+    public string? disable_ctcss;
+
     // SkyCAT commands
     public static readonly RigCtldCommands SkyCat = new RigCtldCommands
     {
@@ -36,6 +41,9 @@
       write_tx_mode = "X {mode} 0",
       set_ptt_on = "T 1",
       set_ptt_off = "T 0",
+      set_ctcss_tone = "C {tone}",
+      enable_ctcss = "U TONE 1",
+      disable_ctcss = "U TONE 0",
     };
 
     // Standard RigCtld commands in the simplex mode. read/write rx and tx frequencies both map to the f/F commands
@@ -51,6 +59,9 @@
       write_tx_mode = "M {mode} 0",
       set_ptt_on = "T 1",
       set_ptt_off = "T 0",
+      set_ctcss_tone = "C {tone}",
+      enable_ctcss = "U TONE 1",
+      disable_ctcss = "U TONE 0",
     };
   }
 }
