@@ -19,7 +19,10 @@ namespace SkyRoof
     write_tx_mode,
     read_ptt,
     write_ptt_on,
-    write_ptt_off
+    write_ptt_off,
+    write_ctcss_tone,
+    enable_ctcss,
+    disable_ctcss
   }
 
   public class RadioCapabilities
@@ -89,13 +92,13 @@ namespace SkyRoof
 
   public class AvailableCommands
   {
-    [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
+    [JsonConverter(typeof(TolerantCatActionArrayConverter))]
     public CatAction[] when_receiving { get; set; } = Array.Empty<CatAction>();
-    
-    [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
+
+    [JsonConverter(typeof(TolerantCatActionArrayConverter))]
     public CatAction[] when_transmitting { get; set; } = Array.Empty<CatAction>();
-    
-    [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
+
+    [JsonConverter(typeof(TolerantCatActionArrayConverter))]
     public CatAction[] when_setting_up { get; set; } = Array.Empty<CatAction>();
 
     internal bool Can(CatAction action, bool ptt)
@@ -106,6 +109,40 @@ namespace SkyRoof
     internal bool CanSetup(CatAction action)
     {
       return when_setting_up.Contains(action);
+    }
+  }
+
+
+
+
+  // parses a JSON array of action names into CatAction[], silently dropping names this version does
+  // not know. this keeps a newer SkyCAT (which may advertise commands added later) from breaking an
+  // older SkyRoof, which the default StringEnumConverter would do by throwing on an unknown name.
+  public class TolerantCatActionArrayConverter : JsonConverter<CatAction[]>
+  {
+    public override CatAction[] ReadJson(JsonReader reader, Type objectType, CatAction[]? existingValue, bool hasExistingValue, JsonSerializer serializer)
+    {
+      if (reader.TokenType == JsonToken.Null) return Array.Empty<CatAction>();
+      if (reader.TokenType != JsonToken.StartArray)
+        throw new JsonException($"Expected an array of CatAction names but found {reader.TokenType}.");
+
+      var actions = new List<CatAction>();
+      while (reader.Read())
+      {
+        if (reader.TokenType == JsonToken.EndArray) break;
+        if (reader.TokenType == JsonToken.String
+          && Enum.TryParse<CatAction>((string)reader.Value!, ignoreCase: true, out var action))
+          actions.Add(action);
+      }
+      return actions.ToArray();
+    }
+
+    public override void WriteJson(JsonWriter writer, CatAction[]? value, JsonSerializer serializer)
+    {
+      writer.WriteStartArray();
+      if (value != null)
+        foreach (var action in value) writer.WriteValue(action.ToString());
+      writer.WriteEndArray();
     }
   }
 }
