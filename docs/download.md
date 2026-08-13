@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.48](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.48/SkyRoofSetup-v.1.48.zip)
+[SkyRoof v.1.49](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.49/SkyRoofSetup-v.1.49.zip)
 
 <br>
 
@@ -15,6 +15,10 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.49
+
+- added support of CTCSS tones
 
 #### v.1.48
 
