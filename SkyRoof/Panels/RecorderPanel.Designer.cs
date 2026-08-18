@@ -64,6 +64,7 @@
       StatusBar.Location = new Point(0, 150);
       StatusBar.Name = "StatusBar";
       StatusBar.Size = new Size(612, 22);
+      StatusBar.SizingGrip = false;
       StatusBar.TabIndex = 0;
       StatusBar.Text = "statusStrip1";
       // 

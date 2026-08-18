@@ -130,8 +130,8 @@ namespace SkyRoof
   public class Ft4BackgroundColors
   {
     [DisplayName("Separator")]
-    [DefaultValue(typeof(Color), "Gray")]
-    public Color Separator { get; set; } = Color.Gray; // fixed: user color, identical in both themes
+    [DefaultValue(typeof(Color), "DarkGray")]
+    public Color Separator { get; set; } = Color.DarkGray; // fixed: user color, identical in both themes
 
     [DisplayName("Transmitted Message")]
     [DefaultValue(typeof(Color), "LightCoral")]

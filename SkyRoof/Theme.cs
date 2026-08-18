@@ -137,6 +137,12 @@ namespace SkyRoof
     public static Color Now => Pick(Color.Green, Color.Lime);
     public static Brush NowBrush { get; private set; } = Brushes.Green;
 
+    // timeline chart: a sky gradient behind the passes, deeper overhead than at the horizon. In
+    // the dark theme both ends move down the same scale, keeping that relationship - and the top
+    // is a muted MidnightBlue rather than a saturated Navy, so the labels on it stay legible
+    public static Color TimelineTop => Pick(Color.SkyBlue, Color.Black);
+    public static Color TimelineBottom => Pick(Color.White, Color.RoyalBlue);
+
     // Earth view: the space around the globe. The light value is the 0.7 gray the panel always
     // cleared to - darker than the panel around it, and the dark value is lighter than its panel,
     // so the surround stays distinct from the chrome in both themes

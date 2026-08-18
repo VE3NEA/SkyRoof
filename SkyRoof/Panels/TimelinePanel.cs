@@ -86,8 +86,8 @@ namespace SkyRoof
     {
       // chart
       var rect = new RectangleF(0, 0, ClientSize.Width, Math.Max(1, ClientSize.Height - ScaleHeight));
-      // the chart gradient and everything drawn on it are themed in step 4
-      LinearGradientBrush lgb = new LinearGradientBrush(rect, Color.SkyBlue, Color.White, LinearGradientMode.Vertical); // pending: step 4
+      // the gradient is themed; the black ticks and labels drawn on it are still step 4
+      LinearGradientBrush lgb = new LinearGradientBrush(rect, Theme.TimelineTop, Theme.TimelineBottom, LinearGradientMode.Vertical);
       g.FillRectangle(lgb, rect);
 
       // time scale
@@ -252,7 +252,7 @@ namespace SkyRoof
           y0 - (float)pass.MaxElevation * scaleY - size.Height,
           size.Width + 1, size.Height); // without +1 the last char is sometimes truncated
 
-        g.DrawString(text, Font, Brushes.Black, rect.Left, rect.Top); // pending: on the light chart gradient, step 4
+        g.DrawString(text, Font, SystemBrushes.WindowText, rect.Left, rect.Top);
         SatLabelRects[rect] = pass;
       }
     }
