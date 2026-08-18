@@ -30,9 +30,9 @@
     {
       components = new System.ComponentModel.Container();
       splitContainer1 = new SplitContainer();
-      SatellitePropertyGrid = new PropertyGrid();
+      SatellitePropertyGrid = new VE3NEA.PropertyGridEx();
       SatAkaLabel = new Label();
-      listView1 = new ListView();
+      listView1 = new VE3NEA.ListViewEx();
       columnHeader1 = new ColumnHeader();
       columnHeader2 = new ColumnHeader();
       columnHeader3 = new ColumnHeader();
@@ -41,7 +41,7 @@
       WebsiteLabel = new LinkLabel();
       SatnogsLabel = new LinkLabel();
       label2 = new Label();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       SatNameLabel = new Label();
       ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
       splitContainer1.Panel1.SuspendLayout();
@@ -214,17 +214,17 @@
 
     public SplitContainer splitContainer1;
     private Label label2;
-    public PropertyGrid SatellitePropertyGrid;
+    public VE3NEA.PropertyGridEx SatellitePropertyGrid;
     public Label SatAkaLabel;
     private FlowLayoutPanel LinksPanel;
     private LinkLabel ImageLabel;
     private LinkLabel WebsiteLabel;
     private LinkLabel SatnogsLabel;
-    private ListView listView1;
+    private VE3NEA.ListViewEx listView1;
     private ColumnHeader columnHeader1;
     private ColumnHeader columnHeader2;
     private ColumnHeader columnHeader3;
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
     public Label SatNameLabel;
   }
 }

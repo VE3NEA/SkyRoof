@@ -33,7 +33,7 @@
       RealTimeRadioBtn = new RadioButton();
       OrbitRadioBtn = new RadioButton();
       DrawPanel = new Panel();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       FlowPanel = new FlowLayoutPanel();
       RadioButtonsPanel.SuspendLayout();
       SuspendLayout();
@@ -122,7 +122,7 @@
     private RadioButton RealTimeRadioBtn;
     private RadioButton OrbitRadioBtn;
     private Panel DrawPanel;
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
     private FlowLayoutPanel FlowPanel;
   }
 }

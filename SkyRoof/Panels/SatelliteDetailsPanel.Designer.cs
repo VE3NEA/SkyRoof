@@ -34,9 +34,9 @@
       ImageLabel = new LinkLabel();
       LinksPanel = new FlowLayoutPanel();
       SatAkaLabel = new Label();
-      SatellitePropertyGrid = new PropertyGrid();
+      SatellitePropertyGrid = new VE3NEA.PropertyGridEx();
       SatNameLabel = new Label();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       LinksPanel.SuspendLayout();
       SuspendLayout();
       // 
@@ -143,8 +143,8 @@
     private LinkLabel ImageLabel;
     private FlowLayoutPanel LinksPanel;
     public Label SatAkaLabel;
-    public PropertyGrid SatellitePropertyGrid;
+    public VE3NEA.PropertyGridEx SatellitePropertyGrid;
     public Label SatNameLabel;
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
   }
 }

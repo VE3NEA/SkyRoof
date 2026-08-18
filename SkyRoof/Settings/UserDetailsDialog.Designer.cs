@@ -34,9 +34,9 @@
       flowLayoutPanel1 = new FlowLayoutPanel();
       label1 = new Label();
       label2 = new Label();
-      textBox1 = new TextBox();
+      textBox1 = new VE3NEA.TextBoxEx();
       label3 = new Label();
-      textBox2 = new TextBox();
+      textBox2 = new VE3NEA.TextBoxEx();
       label4 = new Label();
       numericUpDown1 = new NumericUpDown();
       panel1.SuspendLayout();

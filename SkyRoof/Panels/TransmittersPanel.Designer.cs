@@ -30,7 +30,7 @@
     {
       components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TransmittersPanel));
-      listView1 = new ListView();
+      listView1 = new VE3NEA.ListViewEx();
       columnHeader1 = new ColumnHeader();
       columnHeader3 = new ColumnHeader();
       columnHeader2 = new ColumnHeader();
@@ -106,7 +106,7 @@
 
     #endregion
 
-    private ListView listView1;
+    private VE3NEA.ListViewEx listView1;
     private ColumnHeader columnHeader1;
     private ColumnHeader columnHeader2;
     private ColumnHeader columnHeader3;

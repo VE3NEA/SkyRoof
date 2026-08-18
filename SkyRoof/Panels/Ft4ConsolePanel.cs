@@ -289,9 +289,9 @@ namespace SkyRoof
       //bool sending = Ft4Sender.stage == SendStage.Sending;
 
 
-      EnableTxBtn.BackColor = sendEnabled ? Color.LightCoral : Color.Transparent;
-      HaltTxBtn.BackColor = Sender.SenderPhase == SendingStage.Sending ? Color.Red : Color.Transparent;
-      TuneBtn.BackColor = tuning ? Color.LightCoral : Color.Transparent;
+      MarkButton(EnableTxBtn, sendEnabled, Color.LightCoral); // fixed: active mark, both themes
+      MarkButton(HaltTxBtn, Sender.SenderPhase == SendingStage.Sending, Color.Red); // fixed: both themes
+      MarkButton(TuneBtn, tuning, Color.LightCoral); // fixed: active mark, both themes
 
       TuneBtn.Refresh();
       EnableTxBtn.Refresh();
@@ -377,10 +377,22 @@ namespace SkyRoof
       {
         var msg = GetButtonMessage(btn);
         btn.Enabled = Sequencer.IsMessageAvailable(msg);
-        btn.BackColor = msg == Sequencer.MessageType ? Color.LightCoral : SystemColors.Control;
+        MarkButton(btn, msg == Sequencer.MessageType, Color.LightCoral); // fixed: active mark, both themes
       }
 
       TxMessageLabel.Text = Sequencer.Message;
+    }
+
+    // a Button drawn by the themed renderer ignores its BackColor, and in dark mode every button
+    // takes that path - which is where the active-button color went. Only the flat renderer fills
+    // with BackColor unconditionally, so the marked state switches to it and back
+    private static void MarkButton(Button btn, bool active, Color color)
+    {
+      btn.FlatStyle = active ? FlatStyle.Flat : FlatStyle.Standard;
+      btn.UseVisualStyleBackColor = !active;
+      btn.BackColor = active ? color : SystemColors.Control;
+      // the mark colors are light in both themes, so the caption on them is black in both
+      btn.ForeColor = active ? Color.Black : SystemColors.ControlText; // fixed: on the light mark
     }
 
 

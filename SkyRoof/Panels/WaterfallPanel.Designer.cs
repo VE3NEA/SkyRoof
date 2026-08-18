@@ -40,7 +40,7 @@
       ReportToAmsatMNU = new ToolStripMenuItem();
       satelliteDetailsToolStripMenuItem = new ToolStripMenuItem();
       WaterfallControl = new WaterfallControl();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       ((System.ComponentModel.ISupportInitialize)SplitContainer).BeginInit();
       SplitContainer.Panel1.SuspendLayout();
       SplitContainer.Panel2.SuspendLayout();
@@ -168,7 +168,7 @@
     public FrequencyScale ScaleControl;
     private Button SlidersBtn;
     public SplitContainer SplitContainer;
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
     private ContextMenuStrip SatDetailsMNU;
     private ToolStripMenuItem SelectTransmitterMNU;
     private ToolStripMenuItem AddToGroupMNU;

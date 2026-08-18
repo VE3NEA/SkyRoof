@@ -52,7 +52,7 @@
       DetailsMNU = new ToolStripMenuItem();
       toolStripMenuItem1 = new ToolStripMenuItem();
       panel5 = new Panel();
-      listView1 = new ListView();
+      listView1 = new VE3NEA.ListViewEx();
       columnHeader1 = new ColumnHeader();
       columnHeader2 = new ColumnHeader();
       columnHeader3 = new ColumnHeader();
@@ -62,7 +62,7 @@
       panel6 = new Panel();
       flowLayoutPanel5 = new FlowLayoutPanel();
       label3 = new Label();
-      FilterTextbox = new TextBox();
+      FilterTextbox = new VE3NEA.TextBoxEx();
       ClearSearchBtn = new Button();
       UpdatedDateLabel = new Label();
       flowLayoutPanel4 = new FlowLayoutPanel();
@@ -85,7 +85,7 @@
       FutureCheckbox = new CheckBox();
       ReEnteredCheckbox = new CheckBox();
       label1 = new Label();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       panel1.SuspendLayout();
       panel8.SuspendLayout();
       panel2.SuspendLayout();
@@ -771,7 +771,7 @@
     private Panel panel6;
     private FlowLayoutPanel flowLayoutPanel5;
     private Label label3;
-    private TextBox FilterTextbox;
+    private VE3NEA.TextBoxEx FilterTextbox;
     private Button ClearSearchBtn;
     private Label UpdatedDateLabel;
     private FlowLayoutPanel flowLayoutPanel4;
@@ -795,7 +795,7 @@
     private CheckBox ReEnteredCheckbox;
     private Panel panel7;
     private Label CountLabel;
-    public ListView listView1;
+    public VE3NEA.ListViewEx listView1;
     private ColumnHeader columnHeader1;
     private ColumnHeader columnHeader2;
     private ColumnHeader columnHeader3;
@@ -810,7 +810,7 @@
     private Button AddGroupBtn;
     private Button DeleteSatBtn;
     private Button AddSatBtn;
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
     private ContextMenuStrip GroupsTreePopupMenu;
     private ToolStripMenuItem RenameMNU2;
     private ToolStripMenuItem DetailsMNU2;

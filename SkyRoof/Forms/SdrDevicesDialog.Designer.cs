@@ -34,13 +34,13 @@ namespace SkyRoof
       okBtn = new Button();
       cancelBtn = new Button();
       label1 = new Label();
-      Grid = new PropertyGrid();
+      Grid = new VE3NEA.PropertyGridEx();
       DeviceListMenu = new ContextMenuStrip(components);
       SelectSdrMNU = new ToolStripMenuItem();
       DeleteSdrMNU = new ToolStripMenuItem();
       imageList1 = new ImageList(components);
-      toolTip = new ToolTip(components);
-      listBox1 = new ListBox();
+      toolTip = new VE3NEA.ToolTipEx(components);
+      listBox1 = new VE3NEA.ListBoxEx();
       label2 = new Label();
       DeviceListMenu.SuspendLayout();
       SuspendLayout();
@@ -168,12 +168,12 @@ namespace SkyRoof
     private Button okBtn;
     private Button cancelBtn;
     private Label label1;
-    private PropertyGrid Grid;
+    private VE3NEA.PropertyGridEx Grid;
     private ImageList imageList1;
-    private ToolTip toolTip;
+    private VE3NEA.ToolTipEx toolTip;
     private ContextMenuStrip DeviceListMenu;
     private ToolStripMenuItem SelectSdrMNU;
-    private ListBox listBox1;
+    private VE3NEA.ListBoxEx listBox1;
     private Label label2;
     private ToolStripMenuItem DeleteSdrMNU;
   }

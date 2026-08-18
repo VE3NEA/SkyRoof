@@ -60,7 +60,7 @@
       HaltTxBtn = new Button();
       EnableTxBtn = new Button();
       TuneBtn = new Button();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       ((System.ComponentModel.ISupportInitialize)SplitContainer).BeginInit();
       SplitContainer.Panel1.SuspendLayout();
       SplitContainer.Panel2.SuspendLayout();
@@ -511,7 +511,7 @@
     private Label TxMessageLabel;
     public SplitContainer SplitContainer;
     private Ft4AmplitudeBar AmplitudeBar;
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
     private TrackBar TxGainSlider;
     private Button LogBtn;
   }

@@ -112,7 +112,7 @@
       NoiseFloorLabel = new ToolStripStatusLabel();
       CpuLoadlabel = new ToolStripStatusLabel();
       UpdateLabel = new ToolStripStatusLabel();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       panel4 = new Panel();
       Toolbar.SuspendLayout();
       panel3.SuspendLayout();
@@ -901,7 +901,7 @@
     private ToolStripStatusLabel IqOutputStatusLabel;
     private ToolStripStatusLabel NoiseFloorLabel;
     private ToolStripStatusLabel CpuLoadlabel;
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
     private ToolStripMenuItem DownloadTleMNU;
     public ToolStripMenuItem TransmittersMNU;
     public SatelliteSelectorWidget SatelliteSelecionWidget;

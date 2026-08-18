@@ -10,7 +10,7 @@ namespace SkyRoof
     private static readonly Color waveformAxisColor = Color.Teal;
 
     private readonly List<MarkerInfo> waveformMarkers = [];
-    private readonly ToolTip toolTip = new();
+    private readonly VE3NEA.ToolTipEx toolTip = new();
     private string? hoveredMarkerTooltip;
     private RecordingManager? recordingManager;
 

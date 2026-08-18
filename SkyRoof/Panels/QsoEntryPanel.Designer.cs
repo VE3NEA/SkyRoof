@@ -32,7 +32,7 @@
       flowLayoutPanel1 = new FlowLayoutPanel();
       panel1 = new Panel();
       UtcFrame = new Panel();
-      UtcPicker = new DateTimePicker();
+      UtcPicker = new VE3NEA.DateTimePickerEx();
       UtcLabel = new Label();
       panel2 = new Panel();
       BandFrame = new Panel();
@@ -77,7 +77,7 @@
       ButtonsPanel = new Panel();
       ClearBtn = new Button();
       SaveBtn = new Button();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       flowLayoutPanel1.SuspendLayout();
       panel1.SuspendLayout();
       UtcFrame.SuspendLayout();
@@ -692,14 +692,14 @@
     private Panel SentFrame;
     private VE3NEA.TextBoxEx GridEdit;
     private Panel RecvFrame;
-    private TextBox textBox4;
+    private VE3NEA.TextBoxEx textBox4;
     private Panel NameFrame;
     private VE3NEA.TextBoxEx NameEdit;
     private Panel UtcFrame;
-    private DateTimePicker UtcPicker;
-    private DateTimePicker dateTimePicker1;
+    private VE3NEA.DateTimePickerEx UtcPicker;
+    private VE3NEA.DateTimePickerEx dateTimePicker1;
     private ComboBox comboBox1;
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
     private Panel panel12;
     private Panel NotesFrame;
     private VE3NEA.TextBoxEx NotesEdit;

@@ -42,7 +42,7 @@
       PaletteComboBox = new ComboBox();
       PerfLabel = new Label();
       perfTimer = new System.Windows.Forms.Timer(components);
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       panel1 = new Panel();
       ((System.ComponentModel.ISupportInitialize)BrightnessTrackbar).BeginInit();
       ((System.ComponentModel.ISupportInitialize)ContrastTrackbar).BeginInit();
@@ -248,7 +248,7 @@
     private ComboBox PaletteComboBox;
     private Label PerfLabel;
     private System.Windows.Forms.Timer perfTimer;
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
     private Panel panel1;
   }
 }

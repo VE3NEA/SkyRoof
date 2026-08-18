@@ -29,7 +29,7 @@
     private void InitializeComponent()
     {
       components = new System.ComponentModel.Container();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       SuspendLayout();
       // 
       // toolTip1
@@ -60,6 +60,6 @@
 
     #endregion
 
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
   }
 }

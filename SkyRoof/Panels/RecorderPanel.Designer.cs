@@ -38,7 +38,7 @@
       SaveMenuBtn = new Button();
       LoadBtn = new Button();
       PlaybackBtn = new Button();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       GainSlider = new TrackBar();
       RecordMenu = new ContextMenuStrip(components);
       RecordAudioMNU = new ToolStripMenuItem();
@@ -286,6 +286,6 @@
     private WaveformWidget WaveformWidget;
     private Panel SliderPanel;
     private TrackBar GainSlider;
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
   }
 }

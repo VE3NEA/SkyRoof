@@ -37,7 +37,7 @@
       toolStripMenuItem1 = new ToolStripSeparator();
       FindOnQrzMNU = new ToolStripMenuItem();
       FindOnGoogleMNU = new ToolStripMenuItem();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       settingsToolStripMenuItem = new ToolStripMenuItem();
       toolStripMenuItem2 = new ToolStripSeparator();
       contextMenuStrip1.SuspendLayout();
@@ -133,7 +133,7 @@
     }
 
     #endregion
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
     public VE3NEA.ListBoxEx listBox;
     private ContextMenuStrip contextMenuStrip1;
     private ToolStripMenuItem ClearMNU;

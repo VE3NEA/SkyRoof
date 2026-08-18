@@ -38,9 +38,9 @@ namespace SkyRoof
       TelemetryFormatLabel = new Label();
       ModulationCombo = new ComboBox();
       FramingCombo = new ComboBox();
-      BaudTextBox = new TextBox();
-      DeviationTextBox = new TextBox();
-      AfCarrierTextBox = new TextBox();
+      BaudTextBox = new VE3NEA.TextBoxEx();
+      DeviationTextBox = new VE3NEA.TextBoxEx();
+      AfCarrierTextBox = new VE3NEA.TextBoxEx();
       ManchesterCombo = new ComboBox();
       DifferentialCombo = new ComboBox();
       TelemetryFormatCombo = new ComboBox();
@@ -369,9 +369,9 @@ namespace SkyRoof
     private Label TelemetryFormatLabel;
     private ComboBox ModulationCombo;
     private ComboBox FramingCombo;
-    private TextBox BaudTextBox;
-    private TextBox DeviationTextBox;
-    private TextBox AfCarrierTextBox;
+    private VE3NEA.TextBoxEx BaudTextBox;
+    private VE3NEA.TextBoxEx DeviationTextBox;
+    private VE3NEA.TextBoxEx AfCarrierTextBox;
     private ComboBox ManchesterCombo;
     private ComboBox DifferentialCombo;
     private ComboBox TelemetryFormatCombo;

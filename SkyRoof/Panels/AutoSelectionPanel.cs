@@ -33,7 +33,7 @@ namespace SkyRoof
       ctx.AutoSelectionPanel = this;
       ctx.MainForm.AutoSelectionMNU.Checked = true;
 
-      var tips = new ToolTip();
+      var tips = new VE3NEA.ToolTipEx();
       tips.SetToolTip(EnableCheck, "Turn automatic satellite selection on or off for the current group");
       tips.SetToolTip(EditBtn, "Edit the schedule of passes for the current group");
 

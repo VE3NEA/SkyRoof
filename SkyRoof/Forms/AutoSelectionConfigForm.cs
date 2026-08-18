@@ -43,7 +43,7 @@ namespace SkyRoof
       RecordCombo.Items.AddRange(new object[] { "Off", "Audio", "I/Q" });
       TransmitterCombo.DisplayMember = "description";
 
-      var tips = new ToolTip();
+      var tips = new VE3NEA.ToolTipEx();
       tips.SetToolTip(RotationTree, "Check the passes to include in the rotation");
       tips.SetToolTip(MoveUpBtn, "Raise the selected satellite's priority");
       tips.SetToolTip(MoveDownBtn, "Lower the selected satellite's priority");

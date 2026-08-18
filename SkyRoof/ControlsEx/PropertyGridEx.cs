@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace VE3NEA
 {
-  internal class PropertyGridEx : PropertyGrid
+  public class PropertyGridEx : PropertyGrid
   {
     protected override void OnHandleCreated(EventArgs e)
     {

@@ -34,7 +34,7 @@
       SatelliteComboBox = new ComboBox();
       GroupComboBox = new ComboBox();
       label1 = new Label();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       label2 = new Label();
       SuspendLayout();
       // 
@@ -126,7 +126,7 @@
     private ComboBox SatelliteComboBox;
     private ComboBox GroupComboBox;
     private Label label1;
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
     private Label label2;
   }
 }

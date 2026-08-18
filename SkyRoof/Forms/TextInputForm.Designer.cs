@@ -29,7 +29,7 @@ namespace SkyRoof
     private void InitializeComponent()
     {
       promptLabel = new Label();
-      textBox = new TextBox();
+      textBox = new VE3NEA.TextBoxEx();
       okButton = new Button();
       cancelButton = new Button();
       SuspendLayout();
@@ -96,7 +96,7 @@ namespace SkyRoof
     #endregion
 
     private Label promptLabel;
-    private TextBox textBox;
+    private VE3NEA.TextBoxEx textBox;
     private Button okButton;
     private Button cancelButton;
   }

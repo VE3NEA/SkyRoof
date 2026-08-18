@@ -32,7 +32,7 @@ namespace SkyRoof
     {
       components = new System.ComponentModel.Container();
       Picture = new PictureBox();
-      Tooltip = new ToolTip(components);
+      Tooltip = new VE3NEA.ToolTipEx(components);
       ((System.ComponentModel.ISupportInitialize)Picture).BeginInit();
       SuspendLayout();
       // 
@@ -62,6 +62,6 @@ namespace SkyRoof
     #endregion
 
     private PictureBox Picture;
-    private ToolTip Tooltip;
+    private VE3NEA.ToolTipEx Tooltip;
   }
 }

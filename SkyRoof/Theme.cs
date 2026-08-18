@@ -150,7 +150,7 @@ namespace SkyRoof
 
     // the DXCC world map is a light bitmap and stays content, not chrome: the fragment shader
     // dims it as a whole in the dark theme rather than recoloring it
-    public static float EarthMapBrightness => IsDark ? 0.6f : 1;
+    public static float EarthMapBrightness => IsDark ? 0.7f : 1;
 
     // frequency scale: the accent marks the pass that is happening now - its label text, the line
     // under the label, and the frame around the active span

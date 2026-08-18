@@ -38,7 +38,7 @@ namespace SkyRoof
       AntennaElevationLabel = new Label();
       AntennaAzimuthLabel = new Label();
       StopBtn = new Button();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       SuspendLayout();
       // 
       // SatelliteAzimuthLabel
@@ -161,6 +161,6 @@ namespace SkyRoof
     private Label AntennaAzimuthLabel;
     private Button StopBtn;
     public CheckBox TrackCheckbox;
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
   }
 }

@@ -186,8 +186,8 @@ namespace SkyRoof
       float dy = (y - TopMargin) / 3;
       for (int el = 0; el <= 90; el += 30)
       {
-        g.DrawLine(Pens.Black, 0, y, 7, y); // pending: on the light chart gradient, step 4
-        g.DrawString($"{el:00}°", Font, Brushes.Black, 8, y - TopMargin); // pending: step 4
+        g.DrawLine(SystemPens.WindowText, 0, y, 7, y);
+        g.DrawString($"{el:00}°", Font, SystemBrushes.WindowText, 8, y - TopMargin);
         y -= dy;
       }
     }

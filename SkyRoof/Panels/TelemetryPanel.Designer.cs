@@ -30,7 +30,7 @@
     {
       components = new System.ComponentModel.Container();
       SatNameLabel = new Label();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       SettingsButton = new Button();
       StatusLabel = new Label();
       treeView1 = new TreeView();
@@ -293,7 +293,7 @@
 
     #endregion
     public Label SatNameLabel;
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
     private Button SettingsButton;
     public Label StatusLabel;
     private TreeView treeView1;

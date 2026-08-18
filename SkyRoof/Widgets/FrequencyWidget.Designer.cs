@@ -62,7 +62,7 @@
       CtcssEnabledMnu = new ToolStripMenuItem();
       CtcssSeparator = new ToolStripSeparator();
       SendArmingToneMnu = new ToolStripMenuItem();
-      toolTip1 = new ToolTip(components);
+      toolTip1 = new VE3NEA.ToolTipEx(components);
       ((System.ComponentModel.ISupportInitialize)RitSpinner).BeginInit();
       ((System.ComponentModel.ISupportInitialize)UplinkManualSpinner).BeginInit();
       contextMenuStrip1.SuspendLayout();
@@ -467,7 +467,7 @@
     private ToolStripMenuItem CtcssEnabledMnu;
     private ToolStripSeparator CtcssSeparator;
     private ToolStripMenuItem SendArmingToneMnu;
-    private ToolTip toolTip1;
+    private VE3NEA.ToolTipEx toolTip1;
     private Label label8;
   }
 }

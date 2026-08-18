@@ -32,7 +32,7 @@ namespace SkyRoof
       label1 = new Label();
       label2 = new Label();
       SatelliteComboBox = new ComboBox();
-      DxSquareEdit = new TextBox();
+      DxSquareEdit = new VE3NEA.TextBoxEx();
       PredictionList = new VE3NEA.ListViewEx();
       columnHeader1 = new ColumnHeader();
       SuspendLayout();
@@ -128,7 +128,7 @@ namespace SkyRoof
     private Label label1;
     private Label label2;
     private ComboBox SatelliteComboBox;
-    private TextBox DxSquareEdit;
+    private VE3NEA.TextBoxEx DxSquareEdit;
     private VE3NEA.ListViewEx PredictionList;
     private ColumnHeader columnHeader1;
   }
