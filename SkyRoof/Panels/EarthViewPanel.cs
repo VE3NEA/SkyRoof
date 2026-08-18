@@ -28,6 +28,7 @@ namespace SkyRoof
 
     public GeoPoint Home, Center, SatGeoPoint;
     public double Zoom = 1;
+    public float Brightness = Theme.EarthMapBrightness; // the fragment shader scales the map by this
     public SatnogsDbSatellite Satellite;
 
     public enum EarthViewMode { RealTime, Pass }
@@ -359,8 +360,10 @@ namespace SkyRoof
       CheckError();
       ShaderProgram.SetUniform1(gl, "in_zoom", (float)Zoom);
       CheckError();
+      ShaderProgram.SetUniform1(gl, "in_brightness", Brightness);
+      CheckError();
 
-      gl.ClearColor(0.7f, 0.7f, 0.7f, 1);
+      gl.ClearColor(Theme.EarthSpace.R / 255f, Theme.EarthSpace.G / 255f, Theme.EarthSpace.B / 255f, 1);
       CheckError();
       gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT);
       CheckError();

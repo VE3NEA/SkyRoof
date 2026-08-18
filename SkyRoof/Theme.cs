@@ -137,6 +137,15 @@ namespace SkyRoof
     public static Color Now => Pick(Color.Green, Color.Lime);
     public static Brush NowBrush { get; private set; } = Brushes.Green;
 
+    // Earth view: the space around the globe. The light value is the 0.7 gray the panel always
+    // cleared to - darker than the panel around it, and the dark value is lighter than its panel,
+    // so the surround stays distinct from the chrome in both themes
+    public static Color EarthSpace => Pick(Color.FromArgb(179, 179, 179), Color.FromArgb(64, 64, 64));
+
+    // the DXCC world map is a light bitmap and stays content, not chrome: the fragment shader
+    // dims it as a whole in the dark theme rather than recoloring it
+    public static float EarthMapBrightness => IsDark ? 0.6f : 1;
+
     // frequency scale: the accent marks the pass that is happening now - its label text, the line
     // under the label, and the frame around the active span
     public static Color ScaleAccent => Pick(Color.Blue, Color.SkyBlue);

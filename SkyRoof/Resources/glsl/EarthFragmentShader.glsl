@@ -8,6 +8,7 @@ uniform float in_zoom;
 uniform float in_homeLat;
 uniform float in_homeLon;
 uniform float in_footprint;
+uniform float in_brightness;
 
 uniform sampler2D worldMapTexture;
 
@@ -37,6 +38,9 @@ void main(void)
 	float t = 0.5 - lat / Pi;
 	float s = 0.5 + lon / TwoPi;
   out_Color = texture(worldMapTexture, vec2(s, t));
+
+	// the map bitmap is a light image: dim it without touching alpha
+  out_Color.rgb *= in_brightness;
 
 	// shadow
   //if (ro > Pi / in_zoom) out_Color *= 0; else
