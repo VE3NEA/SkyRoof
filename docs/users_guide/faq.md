@@ -2,22 +2,38 @@
 
 **Q: I downloaded SkyRoof, and my virus scanner shows an infection. Is it real?**
 
-**A:** Most likely, it is a false detection. However, it is always a good idea to test the download links **before** downloading **any** software. There are several online virus scanning services that you can use to check the link.
-[VirusTotal](https://www.virustotal.com/gui/home/url) and [Hybrid Analysis](https://www.hybrid-analysis.com/})
+**A:** Most likely, it is a false detection. A false detection is a **bug in the virus scanner**, not malicious
+code in SkyRoof, and the scanner is what needs to be corrected.
+
+Modern scanners do not rely on signature detection alone. Alongside it they run machine-learning classifiers,
+and these are the usual source of false alarms. A signature detection means the scanner actually found known
+malicious code inside the file. A machine-learning verdict means nothing of the sort: it is a guess based on
+how the file looks from the outside and on how many people have downloaded it before you. A newly released
+installer that the scanner has never seen is unfamiliar by definition, and it can be flagged for that reason
+alone. In Microsoft Defender such verdicts are easy to recognize, because the detection name ends in `!ml`,
+as in `Trojan:Script/Wacatac.B!ml`.
+
+The right way to check any download, from any author, is to scan it with several independent engines at once.
+There are several online virus scanning services that you can use to check the link.
+[VirusTotal](https://www.virustotal.com/gui/home/url) and [Hybrid Analysis](https://www.hybrid-analysis.com/)
 are just two examples.
 
 Copy the download link and paste it in the virus scanner page. The scanner
 will download the file, test it with multiple antivirus programs, and show you the results.
 
-In the screenshot below the download link of SkyRoof 1.5 beta was tested with VirtusTotal, and all virus scanners, except one, agreed that the file was clean. When you see something like this, you know that it was a false alarm.
+In the screenshot below the download link of SkyRoof 1.5 beta was tested with VirusTotal, and all virus scanners, except one, agreed that the file was clean. When you see something like this, you know that it was a false alarm.
 
 If the file is clean, you can add it to the exception list of your virus scanner and safely install it. For Windows Defender follow
 [these instructions](https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26#ID0EBF=Windows_11), for other anti-virus products
 follow the instructions in their documentation.
 
-To prevent such problems in the future, please submit the file to Microsoft for analysis using this link:
+The only real fix is in the scanner itself, so please report the false detection to its vendor. For Microsoft
+Defender, submit the file for analysis using this link:
 
 [https://www.microsoft.com/en-us/wdsi/filesubmission](https://www.microsoft.com/en-us/wdsi/filesubmission)
+
+On our side we do what we can to make a false detection less likely, but those measures only reduce the odds
+of a wrong guess. They are a work-around, not a fix.
 
 <br><br>
 

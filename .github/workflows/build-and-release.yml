@@ -87,13 +87,16 @@ jobs:
           wait-for-completion: true
           output-artifact-directory: install
 
-      - name: Copy and Zip Installer
+      # the installer ships as a bare .exe on purpose. Zipping it hides the Authenticode
+      # signature from Defender and SmartScreen at download time, and an executable inside
+      # an archive is itself a trait the ML models weigh. Do not add the .zip back, and do
+      # not offer both.
+      - name: Copy Installer
         run: |
           $version = "${{ steps.get_version.outputs.version }}"
           $versionedName = "SkyRoofSetup-v.$version"
 
           Copy-Item install\SkyRoofSetup.exe -Destination "install\$versionedName.exe"
-          Compress-Archive -Path install\$versionedName.exe -DestinationPath install\$versionedName.zip
           Get-ChildItem -Path install\*.* -recurse
         shell: pwsh
 
@@ -104,6 +107,6 @@ jobs:
           tag_name: v.${{ steps.get_version.outputs.version }}
           body: See [Version History](https://ve3nea.github.io/SkyRoof/download.html).
           # body: This is an experimental build, please ignore.
-          files:  install/SkyRoofSetup-v.${{ steps.get_version.outputs.version }}.zip
+          files:  install/SkyRoofSetup-v.${{ steps.get_version.outputs.version }}.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

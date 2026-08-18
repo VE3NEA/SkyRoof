@@ -1,0 +1,179 @@
+# Assembles the data a WDSI false-positive submission needs, and runs a released asset past
+# VirusTotal. Runs on demand against any existing release, because false-positive reports
+# arrive from users days after a release, long after the build workflow is done.
+#
+# It deliberately does NOT scan with Defender: hosted runners have real-time protection off,
+# block-at-first-sight off, MAPS off and C:\ excluded, so Start-MpScan there reports "clean"
+# on any input at all.
+# VirusTotal covers every engine except Microsoft, which is the one that actually blocks us,
+# so a clean result here is not a clearance - it only catches the other engines regressing.
+# The real detection path is the manual pre-announce check.
+
+name: Verify Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag, e.g. v.1.50. Leave empty to use the latest release.'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify released asset
+    runs-on: windows-latest
+
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      VT_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
+      INPUT_TAG: ${{ inputs.tag }}
+
+    steps:
+      - name: Download the released asset
+        id: asset
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $tag = $env:INPUT_TAG
+          if ([string]::IsNullOrWhiteSpace($tag)) {
+            $tag = gh release view --repo ${{ github.repository }} --json tagName --jq '.tagName'
+            Write-Host "no tag given, using the latest release: $tag"
+          }
+
+          # read the asset name off the release rather than reconstructing it, so that
+          # switching the shipped file from .zip to .exe needs no change here
+          $names = @(gh release view $tag --repo ${{ github.repository }} --json assets --jq '.assets[].name' |
+                     Where-Object { $_ -like 'SkyRoofSetup*' })
+          if ($names.Count -eq 0) { throw "no SkyRoofSetup asset on release $tag" }
+
+          # older releases carry a .zip, newer ones a bare .exe; the .exe is what users run
+          $name = @($names | Sort-Object { if ($_ -like '*.exe') { 0 } else { 1 } })[0]
+          Write-Host "asset: $name"
+
+          New-Item -ItemType Directory -Path asset -Force | Out-Null
+          gh release download $tag --repo ${{ github.repository }} --pattern $name --dir asset
+          $file = Join-Path 'asset' $name
+
+          $sha = (Get-FileHash $file -Algorithm SHA256).Hash.ToLower()
+          $size = (Get-Item $file).Length
+          $url = "${{ github.server_url }}/${{ github.repository }}/releases/download/$tag/$name"
+
+          "tag=$tag"    | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "name=$name"  | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "path=$file"  | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "sha256=$sha" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "size=$size"  | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "url=$url"    | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Submit to VirusTotal
+        id: vt
+        if: env.VT_API_KEY != ''
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $headers = @{ 'x-apikey' = $env:VT_API_KEY }
+          $file = '${{ steps.asset.outputs.path }}'
+          $size = [long]'${{ steps.asset.outputs.size }}'
+
+          # direct upload tops out at 32 MB; past that VT hands out a one-shot upload URL
+          $endpoint = 'https://www.virustotal.com/api/v3/files'
+          if ($size -gt 32MB) {
+            $endpoint = (Invoke-RestMethod -Uri 'https://www.virustotal.com/api/v3/files/upload_url' -Headers $headers).data
+          }
+
+          $submitted = Invoke-RestMethod -Uri $endpoint -Method Post -Headers $headers -Form @{ file = Get-Item $file }
+          $id = $submitted.data.id
+          Write-Host "analysis id: $id"
+
+          # the free tier allows 4 requests/minute, so poll slowly; a fresh file takes minutes
+          $analysis = $null
+          foreach ($attempt in 1..30) {
+            Start-Sleep -Seconds 20
+            $analysis = Invoke-RestMethod -Uri "https://www.virustotal.com/api/v3/analyses/$id" -Headers $headers
+            $state = $analysis.data.attributes.status
+            Write-Host "attempt ${attempt}: $state"
+            if ($state -eq 'completed') { break }
+          }
+
+          if ($analysis.data.attributes.status -ne 'completed') {
+            throw 'VirusTotal analysis did not complete in time'
+          }
+
+          $stats = $analysis.data.attributes.stats
+          $flagged = @($analysis.data.attributes.results.PSObject.Properties |
+                       Where-Object { $_.Value.category -in @('malicious', 'suspicious') } |
+                       ForEach-Object { "$($_.Name): $($_.Value.result) [$($_.Value.category)]" })
+
+          Write-Host "malicious=$($stats.malicious) suspicious=$($stats.suspicious) undetected=$($stats.undetected)"
+          $flagged | ForEach-Object { Write-Host $_ }
+
+          "malicious=$($stats.malicious)"   | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "suspicious=$($stats.suspicious)" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "undetected=$($stats.undetected)" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "flagged=$($flagged -join '; ')"  | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+          if ($stats.malicious -gt 0 -or $stats.suspicious -gt 0) {
+            Write-Host "::warning::VirusTotal flagged this build: $($flagged -join '; ')"
+          }
+
+      - name: Write submission block
+        if: always()
+        shell: pwsh
+        env:
+          ASSET_TAG: ${{ steps.asset.outputs.tag }}
+          ASSET_NAME: ${{ steps.asset.outputs.name }}
+          ASSET_SHA: ${{ steps.asset.outputs.sha256 }}
+          ASSET_SIZE: ${{ steps.asset.outputs.size }}
+          ASSET_URL: ${{ steps.asset.outputs.url }}
+          VT_OUTCOME: ${{ steps.vt.outcome }}
+          VT_MALICIOUS: ${{ steps.vt.outputs.malicious }}
+          VT_SUSPICIOUS: ${{ steps.vt.outputs.suspicious }}
+          VT_UNDETECTED: ${{ steps.vt.outputs.undetected }}
+          VT_FLAGGED: ${{ steps.vt.outputs.flagged }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $vtLines = switch ($env:VT_OUTCOME) {
+            'success' {
+              @("- **VirusTotal:** $env:VT_MALICIOUS malicious, $env:VT_SUSPICIOUS suspicious, $env:VT_UNDETECTED undetected",
+                "- **Flagged by:** $(if ($env:VT_FLAGGED) { $env:VT_FLAGGED } else { 'nothing' })")
+            }
+            'skipped' { @('- **VirusTotal:** skipped, no VIRUSTOTAL_API_KEY secret set') }
+            default   { @('- **VirusTotal:** FAILED, see the step log') }
+          }
+
+          $lines = @(
+            '## False-positive submission block',
+            '',
+            'Paste into <https://aka.ms/wdsi>, choosing **"Software developer - false positive"**.',
+            '',
+            "- **File:** $env:ASSET_NAME",
+            "- **Release:** $env:ASSET_TAG",
+            "- **SHA-256:** ``$env:ASSET_SHA``",
+            "- **Size:** $env:ASSET_SIZE bytes",
+            "- **Download URL:** $env:ASSET_URL",
+            "- **Checked:** $(Get-Date -Format 'yyyy-MM-dd'), ${{ github.repository }} run ${{ github.run_id }}",
+            "- **VirusTotal report:** https://www.virustotal.com/gui/file/$env:ASSET_SHA"
+          ) + $vtLines + @(
+            '',
+            'The Defender engine and signature versions and the detection name are deliberately',
+            'absent: the runner cannot scan (Phase 0). Take them from the manual pre-announce',
+            'check in release_steps.txt, and only submit if that check actually fired.'
+          )
+
+          $lines | ForEach-Object { Write-Host $_ }
+          $lines | Out-File -FilePath submission.md -Encoding utf8
+          $lines | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
+      - name: Upload submission block
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: submission-block
+          path: submission.md
