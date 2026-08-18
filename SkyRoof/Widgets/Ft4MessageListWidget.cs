@@ -60,13 +60,13 @@ namespace SkyRoof
       Font messageFont = new Font(listBox.Font.Name, sett.FontSize);
       listBox.Font = messageFont;
       listBox.ItemHeight = messageFont.Height;
-      listBox.ForeColor = sett.TextColor;
+      listBox.ForeColor = SystemColors.WindowText;
 
       // bg colors
-      listBox.BackColor = sett.BkColors.Window;
+      listBox.BackColor = SystemColors.Window;
       SeparatorBkBrush = new SolidBrush(sett.BkColors.Separator);
       TxBkBrush = new SolidBrush(sett.BkColors.TxMessage);
-      RxBkBrush = new SolidBrush(sett.BkColors.Window);
+      RxBkBrush = SystemBrushes.Window;
       ToMeBkBrush = new SolidBrush(sett.BkColors.ToMe);
       FromMeBkBrush = new SolidBrush(sett.BkColors.FromMe);
       HotBkBrush = new SolidBrush(sett.BkColors.Hot);
@@ -351,6 +351,11 @@ namespace SkyRoof
       else if (item.Type == DecodedItemType.TxMessage) bgBrush = TxBkBrush;
       e.Graphics.FillRectangle(bgBrush, e.Bounds);
 
+      // text ink: the system color only on the console's own background. Every other row color is a
+      // fixed user color, light in both themes, so the text on it stays black
+      Brush inkBrush = bgBrush == RxBkBrush
+        ? SystemBrushes.WindowText : Brushes.Black; // fixed: the other row colors are light user colors
+
       // hot item
       if (item == HotItem)
         e.Graphics.FillRectangle(HotBkBrush, e.Bounds);
@@ -366,8 +371,12 @@ namespace SkyRoof
         SizeF size = e.Graphics.MeasureString(token.text, font);
         RectangleF rect = new RectangleF(p, size);
 
+        // a token background is a fixed user color too, so it takes the black ink as well
+        Brush fgBrush = token.fgBrush
+          ?? (token.bgBrush == Brushes.Transparent ? inkBrush : Brushes.Black); // fixed: light user chip
+
         e.Graphics.FillRectangle(token.bgBrush, rect);
-        e.Graphics.DrawString(token.text, font, token.fgBrush, p);
+        e.Graphics.DrawString(token.text, font, fgBrush, p);
 
         ownedFont?.Dispose();
 

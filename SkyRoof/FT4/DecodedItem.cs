@@ -16,9 +16,9 @@ namespace SkyRoof
       public string text;
       public bool Underlined;
       public Brush bgBrush = Brushes.Transparent;
-      // the console background is still the user's Window color (white), so the text on it stays
-      // black. Both flip together in step 7
-      public Brush fgBrush = Brushes.Black; // pending: step 7
+      // null means "the ink the painter picks for the surface under this token": the system text
+      // color on the console's own background, black on the user's fixed row and chip colors
+      public Brush? fgBrush;
       public bool AppendSpace = true;
 
       public DisplayToken(string text)

@@ -37,6 +37,7 @@ namespace SkyRoof
 
       VhfTintBrush = new SolidBrush(VhfTint);
       UhfTintBrush = new SolidBrush(UhfTint);
+      NowBrush = new SolidBrush(Now);
     }
 
     private static SystemColorMode ToColorMode(ThemeMode mode)
@@ -131,11 +132,14 @@ namespace SkyRoof
     // dark, where the bar then disappears into the panel, so the dark end is silver instead.
     public static Color BarRemainder => Pick(Color.White, Color.Silver);
 
-    // "now" marker on a pass row: green is too dark to read on the dark row surface
-    public static Brush NowBrush => IsDark ? Brushes.Lime : Brushes.Green;
+    // "now" marker on a pass row, and the pass path in the mini sky views, which the marker sits
+    // on: green is too dark to read on the dark row surface
+    public static Color Now => Pick(Color.Green, Color.Lime);
+    public static Brush NowBrush { get; private set; } = Brushes.Green;
 
-    // frequency scale: the accent marks the pass that is happening now
-    public static Color ScaleAccent => Pick(Color.Blue, Color.Aqua);
+    // frequency scale: the accent marks the pass that is happening now - its label text, the line
+    // under the label, and the frame around the active span
+    public static Color ScaleAccent => Pick(Color.Blue, Color.SkyBlue);
 
     // the transponder span is a wash over the scale. A 20/255 tint that reads on #F0F0F0
     // disappears on #202020, so the dark alpha is doubled

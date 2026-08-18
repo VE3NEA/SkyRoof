@@ -157,8 +157,13 @@ namespace SkyRoof
           var token = HotItem.Tokens.FirstOrDefault(t => t.text == HotItem.Parse.DECallsign);
           if (token != null)
           {
-            if ((token.bgBrush as SolidBrush)?.Color != Color.Transparent) bgBrush = token.bgBrush;
-            if ((token.fgBrush as SolidBrush)?.Color != Color.Silver) fgBrush = token.fgBrush; // fixed: sentinel, not painted
+            if ((token.bgBrush as SolidBrush)?.Color != Color.Transparent)
+            {
+              bgBrush = token.bgBrush;
+              fgBrush = Brushes.Black; // fixed: a token background is a light user color in both themes
+            }
+            if (token.fgBrush != null && (token.fgBrush as SolidBrush)?.Color != Color.Silver) // fixed: sentinel, not painted
+              fgBrush = token.fgBrush;
           }
         }
 

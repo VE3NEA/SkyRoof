@@ -226,21 +226,24 @@ namespace SkyRoof
       LastXPositions.Clear();
       foreach (var label in VisibleLabels) DrawLabel(g, label, now);
 
-      // past triangles. ControlDark/ControlLightLight keep the light theme's relationship to the
-      // surface - past is darker than it, future is lighter - which White and Silver would lose
+      // past triangles. ControlDark keeps the light theme's relationship to the surface - past is
+      // darker than it - which a fixed gray would lose
       foreach (var label in VisibleLabels)
         if (label.Pass.EndTime < now)
-          DrawTriangle(label, g, SystemBrushes.ControlDark);
+          DrawTriangle(label, g, SystemBrushes.ControlDark, SystemPens.ControlText);
 
-      // future triangles
+      // future triangles, the satellites awaiting AOS. ControlLightLight is white on the light
+      // scale but #1F1F1F on the dark one, where the triangle vanished into the surface, so this
+      // one is white in both themes
       foreach (var label in VisibleLabels)
         if (label.Pass.StartTime > now && label.Pass.StartTime < now.AddMinutes(6))
-          DrawTriangle(label, g, SystemBrushes.ControlLightLight);
+          DrawTriangle(label, g, Brushes.White, SystemPens.ControlText); // fixed: awaiting AOS, white on either scale
 
-      // current triangles
+      // current triangles. Both halves of the marker are fixed: the lime fill is a signal color,
+      // and only green frames it without the outline reading as the darker "past" triangle
       foreach (var label in VisibleLabels)
         if (label.Pass.StartTime <= now && label.Pass.EndTime >= now)
-          DrawTriangle(label, g, Brushes.Lime);
+          DrawTriangle(label, g, Brushes.Lime, Pens.Green); // fixed: lime on green, both themes
     }
 
     private void DrawLabel(Graphics g, TransmitterLabel label, DateTime now)
@@ -278,7 +281,7 @@ namespace SkyRoof
           g.FillRectangle(Brushes.Aqua, label.Rect);
 
       // sat name. The selected label sits on that fixed aqua chip, so its text is fixed too -
-      // the accent is aqua in the dark theme and would vanish into it
+      // the accent is a blue in either theme and has too little contrast against the chip
       Brush brush = AccentBrush;
       if (selected) brush = Brushes.Black; // fixed: on the aqua chip
       else if (label.Pass.StartTime > now) brush = SystemBrushes.ControlText;
@@ -301,7 +304,7 @@ namespace SkyRoof
       g.DrawRectangle(isNow ? AccentPen : SystemPens.GrayText, r);
     }
 
-    private void DrawTriangle(TransmitterLabel label, Graphics g, Brush brush)
+    private void DrawTriangle(TransmitterLabel label, Graphics g, Brush brush, Pen pen)
     {
       if (label.Span != null && label.Span != 0) return;
       if (label.x < 0 || label.x > width) return;
@@ -315,7 +318,7 @@ namespace SkyRoof
       };
 
       g.FillPolygon(brush, points);
-      g.DrawPolygon(SystemPens.ControlText, points);
+      g.DrawPolygon(pen, points);
     }
 
 

@@ -33,7 +33,7 @@ namespace SkyRoof
     private List<ListViewItem> Items = new();
 
     private readonly Font BoldFont;
-    private readonly Pen PathPen = new Pen(Brushes.Teal, 2);
+    private readonly Pen PathPen = new Pen(Theme.Now, 2);
 
     public QsoSchedulerPanel()
     {

@@ -116,10 +116,6 @@ namespace SkyRoof
     [DefaultValue(false)]
     public bool ArchiveToFile { get; set; }
 
-    [DisplayName("Text Color")]
-    [DefaultValue(typeof(SystemColors), "WindowText")]
-    public Color TextColor { get; set; } = SystemColors.WindowText;
-
     [DisplayName("Font Size")]
     [DefaultValue(11f)]
     public float FontSize { get; set; } = 11f;
@@ -133,13 +129,9 @@ namespace SkyRoof
 
   public class Ft4BackgroundColors
   {
-    [DisplayName("Window")]
-    [DefaultValue(typeof(Color), "White")]
-    public Color Window { get; set; } = Color.White; // pending: deleted in step 7, the console reads SystemColors.Window
-
     [DisplayName("Separator")]
     [DefaultValue(typeof(Color), "233, 233, 233")]
-    public Color Separator { get; set; } = Color.FromArgb(233, 233, 233); // pending: user color, default revisited in step 7
+    public Color Separator { get; set; } = Color.FromArgb(233, 233, 233); // fixed: user color, identical in both themes; default revisited in the polish pass
 
     [DisplayName("Transmitted Message")]
     [DefaultValue(typeof(Color), "LightCoral")]
