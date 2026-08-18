@@ -48,11 +48,11 @@
       label12 = new Label();
       panel5 = new Panel();
       CallFrame = new Panel();
-      CallEdit = new TextBox();
+      CallEdit = new VE3NEA.TextBoxEx();
       label13 = new Label();
       panel6 = new Panel();
       GridFrame = new Panel();
-      GridEdit = new TextBox();
+      GridEdit = new VE3NEA.TextBoxEx();
       label14 = new Label();
       panel11 = new Panel();
       StateFrame = new Panel();
@@ -60,19 +60,19 @@
       label1 = new Label();
       panel7 = new Panel();
       SentFrame = new Panel();
-      SentEdit = new TextBox();
+      SentEdit = new VE3NEA.TextBoxEx();
       label15 = new Label();
       panel8 = new Panel();
       RecvFrame = new Panel();
-      RecvEdit = new TextBox();
+      RecvEdit = new VE3NEA.TextBoxEx();
       label16 = new Label();
       panel9 = new Panel();
       NameFrame = new Panel();
-      NameEdit = new TextBox();
+      NameEdit = new VE3NEA.TextBoxEx();
       label17 = new Label();
       panel12 = new Panel();
       NotesFrame = new Panel();
-      NotesEdit = new TextBox();
+      NotesEdit = new VE3NEA.TextBoxEx();
       label2 = new Label();
       ButtonsPanel = new Panel();
       ClearBtn = new Button();
@@ -654,7 +654,7 @@
     private FlowLayoutPanel flowLayoutPanel1;
     private Panel panel1;
     private Label UtcLabel;
-    private TextBox SentEdit;
+    private VE3NEA.TextBoxEx SentEdit;
     private Panel panel2;
     private Label label10;
     private Panel panel3;
@@ -684,17 +684,17 @@
     private Panel SatFrame;
     private ComboBox SatComboBox;
     private Panel CallFrame;
-    private TextBox RecvEdit;
+    private VE3NEA.TextBoxEx RecvEdit;
     private Panel GridFrame;
-    private TextBox CallEdit;
+    private VE3NEA.TextBoxEx CallEdit;
     private Panel StateFrame;
     private ComboBox StateComboBox;
     private Panel SentFrame;
-    private TextBox GridEdit;
+    private VE3NEA.TextBoxEx GridEdit;
     private Panel RecvFrame;
     private TextBox textBox4;
     private Panel NameFrame;
-    private TextBox NameEdit;
+    private VE3NEA.TextBoxEx NameEdit;
     private Panel UtcFrame;
     private DateTimePicker UtcPicker;
     private DateTimePicker dateTimePicker1;
@@ -702,7 +702,7 @@
     private ToolTip toolTip1;
     private Panel panel12;
     private Panel NotesFrame;
-    private TextBox NotesEdit;
+    private VE3NEA.TextBoxEx NotesEdit;
     private Label label2;
   }
 }

@@ -256,12 +256,11 @@ namespace SkyRoof
       string text = overlap.Satellite.name;
       var size = e.Graphics.MeasureString(text, BoldFont);
       var rect = new RectangleF(e.Bounds.X, e.Bounds.Y, size.Width, size.Height);
-      bool tinted = overlap.Satellite.Flags.HasFlag(SatelliteFlags.Uhf) || overlap.Satellite.Flags.HasFlag(SatelliteFlags.Vhf);
       Brush brush = SystemBrushes.Window;
-      if (overlap.Satellite.Flags.HasFlag(SatelliteFlags.Uhf)) brush = Brushes.LightCyan;
-      else if (overlap.Satellite.Flags.HasFlag(SatelliteFlags.Vhf)) brush = Brushes.LightGoldenrodYellow;
+      if (overlap.Satellite.Flags.HasFlag(SatelliteFlags.Uhf)) brush = Theme.UhfTintBrush;
+      else if (overlap.Satellite.Flags.HasFlag(SatelliteFlags.Vhf)) brush = Theme.VhfTintBrush;
       e.Graphics.FillRectangle(brush, rect);
-      e.Graphics.DrawString(text, BoldFont, Theme.RowTextBrush(tinted, false), rect);
+      e.Graphics.DrawString(text, BoldFont, Theme.RowTextBrush(false), rect);
 
       // orbit number
       text = $"#{overlap.OrbitNumber}";
@@ -286,7 +285,7 @@ namespace SkyRoof
 
       // wait time to start of common segment
       text = now ? "Now" : $"in {Utils.TimespanToString(overlap.CommonStart - DateTime.UtcNow)}";
-      brush = now ? Brushes.Green : SystemBrushes.WindowText;
+      brush = now ? Theme.NowBrush : SystemBrushes.WindowText;
       size = e.Graphics.MeasureString(text, BoldFont);
       rect = new RectangleF(e.Bounds.X + w - size.Width, e.Bounds.Y, size.Width, size.Height);
       e.Graphics.DrawString(text, BoldFont, brush, rect);
@@ -321,7 +320,7 @@ namespace SkyRoof
         g.DrawLines(PathPen, points);
 
         // green start, red end
-        g.FillEllipse(Brushes.Green, points.First().X - 3, points.First().Y - 3, 6, 6);
+        g.FillEllipse(Theme.NowBrush, points.First().X - 3, points.First().Y - 3, 6, 6);
         g.FillEllipse(Brushes.Red, points.Last().X - 3, points.Last().Y - 3, 6, 6);
       }
     }

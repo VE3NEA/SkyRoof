@@ -186,12 +186,11 @@ namespace SkyRoof
       string text = pass.Satellite.name;
       var size = e.Graphics.MeasureString(text, BoldFont);
       var rect = new RectangleF(e.Bounds.X, e.Bounds.Y, size.Width, size.Height);
-      bool tinted = pass.Satellite.Flags.HasFlag(SatelliteFlags.Uhf) || pass.Satellite.Flags.HasFlag(SatelliteFlags.Vhf);
       Brush brush = SystemBrushes.Window;
-      if (pass.Satellite.Flags.HasFlag(SatelliteFlags.Uhf)) brush = Brushes.LightCyan;
-      else if (pass.Satellite.Flags.HasFlag(SatelliteFlags.Vhf)) brush = Brushes.LightGoldenrodYellow;
+      if (pass.Satellite.Flags.HasFlag(SatelliteFlags.Uhf)) brush = Theme.UhfTintBrush;
+      else if (pass.Satellite.Flags.HasFlag(SatelliteFlags.Vhf)) brush = Theme.VhfTintBrush;
       e.Graphics.FillRectangle(brush, rect);
-      e.Graphics.DrawString(text, BoldFont, Theme.RowTextBrush(tinted, false), rect);
+      e.Graphics.DrawString(text, BoldFont, Theme.RowTextBrush(false), rect);
 
       // orbit number
       text = $"#{pass.OrbitNumber}";
@@ -215,7 +214,7 @@ namespace SkyRoof
 
       // wait time
       text = now ? "Now" : $"in {Utils.TimespanToString(pass.StartTime - DateTime.UtcNow)}";
-      brush = now ? Brushes.Green : SystemBrushes.WindowText;
+      brush = now ? Theme.NowBrush : SystemBrushes.WindowText;
       size = e.Graphics.MeasureString(text, BoldFont);
       rect = new RectangleF(e.Bounds.X + w - size.Width, e.Bounds.Y, size.Width, size.Height);
       e.Graphics.DrawString(text, BoldFont, brush, rect);
@@ -248,7 +247,7 @@ namespace SkyRoof
         e.Graphics.DrawLines(PathPen, points);
 
         // end points
-        e.Graphics.FillEllipse(Brushes.Green, points.First().X - 3, points.First().Y - 3, 6, 6);
+        e.Graphics.FillEllipse(Theme.NowBrush, points.First().X - 3, points.First().Y - 3, 6, 6);
         e.Graphics.FillEllipse(Brushes.Red, points.Last().X - 3, points.Last().Y - 3, 6, 6);
       }
 

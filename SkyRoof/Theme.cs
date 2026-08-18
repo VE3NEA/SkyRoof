@@ -34,6 +34,9 @@ namespace SkyRoof
 
       // in System mode this follows the OS setting
       IsDark = Application.IsDarkModeEnabled;
+
+      VhfTintBrush = new SolidBrush(VhfTint);
+      UhfTintBrush = new SolidBrush(UhfTint);
     }
 
     private static SystemColorMode ToColorMode(ThemeMode mode)
@@ -93,19 +96,26 @@ namespace SkyRoof
     public static Color SkyRealTimeDisk => Pick(Color.FromArgb(230, 249, 255), Color.FromArgb(120, 138, 155));
     public static Color SkyOrbitDisk => Pick(Color.FromArgb(242, 242, 242), Color.FromArgb(125, 125, 125));
 
-    // Text on a list row. The band tints are light colors in both themes, so a tinted row keeps
-    // the light theme's text colors - the system ones would be white on pale cyan. An untinted
-    // row is drawn straight on the list surface and follows it.
-    public static Color RowText(bool tinted, bool inactive)
+    // Band tints, marking the downlink band of a satellite or a transmitter. Dark but still
+    // tinted in the dark theme, and dark enough for WindowText to clear 4.5:1 on them - which is
+    // why text on a tinted row is simply the system text color in both themes.
+    public static Color VhfTint => Pick(Color.LightGoldenrodYellow, Color.FromArgb(86, 74, 30));
+    public static Color UhfTint => Pick(Color.LightCyan, Color.FromArgb(30, 80, 92));
+
+    // built in Initialize, once IsDark is known: a static field initializer would run at type
+    // init, which happens on the way into Initialize itself
+    public static Brush VhfTintBrush { get; private set; } = Brushes.LightGoldenrodYellow;
+    public static Brush UhfTintBrush { get; private set; } = Brushes.LightCyan;
+
+    // Text on a list row, tinted or not.
+    public static Color RowText(bool inactive)
     {
-      if (inactive) return tinted ? Color.Gray : SystemColors.GrayText;
-      return tinted ? Color.Black : SystemColors.WindowText;
+      return inactive ? SystemColors.GrayText : SystemColors.WindowText;
     }
 
-    public static Brush RowTextBrush(bool tinted, bool inactive)
+    public static Brush RowTextBrush(bool inactive)
     {
-      if (inactive) return tinted ? Brushes.Gray : SystemBrushes.GrayText;
-      return tinted ? Brushes.Black : SystemBrushes.WindowText;
+      return inactive ? SystemBrushes.GrayText : SystemBrushes.WindowText;
     }
 
     // QSO entry: the card behind each field, and the field's own ring while untouched - the two
@@ -120,6 +130,9 @@ namespace SkyRoof
     // The unfilled part of the FT4 bars. ControlLightLight is white in light mode but #1F1F1F in
     // dark, where the bar then disappears into the panel, so the dark end is silver instead.
     public static Color BarRemainder => Pick(Color.White, Color.Silver);
+
+    // "now" marker on a pass row: green is too dark to read on the dark row surface
+    public static Brush NowBrush => IsDark ? Brushes.Lime : Brushes.Green;
 
     // frequency scale: the accent marks the pass that is happening now
     public static Color ScaleAccent => Pick(Color.Blue, Color.Aqua);

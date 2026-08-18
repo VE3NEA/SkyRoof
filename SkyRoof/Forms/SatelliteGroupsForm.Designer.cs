@@ -542,7 +542,7 @@
       // VhfCheckbox
       // 
       VhfCheckbox.AutoSize = true;
-      VhfCheckbox.BackColor = Color.Yellow;
+      VhfCheckbox.BackColor = Theme.VhfTint;
       VhfCheckbox.Checked = true;
       VhfCheckbox.CheckState = CheckState.Checked;
       VhfCheckbox.Location = new Point(51, 3);
@@ -557,7 +557,7 @@
       // UhfCheckbox
       // 
       UhfCheckbox.AutoSize = true;
-      UhfCheckbox.BackColor = Color.Aquamarine;
+      UhfCheckbox.BackColor = Theme.UhfTint;
       UhfCheckbox.Checked = true;
       UhfCheckbox.CheckState = CheckState.Checked;
       UhfCheckbox.Location = new Point(105, 3);

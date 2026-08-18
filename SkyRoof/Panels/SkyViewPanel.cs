@@ -176,11 +176,12 @@ namespace SkyRoof
       g.DrawLine(pen, Center.X - Radius, Center.Y, Center.X + Radius, Center.Y);
       g.DrawLine(pen, Center.X, Center.Y - Radius, Center.X, Center.Y + Radius);
 
-      // compass labels
-      g.DrawString("N", DrawPanel.Font, Brushes.Teal, Center.X - sizeN.Width / 2, Center.Y - Radius - sizeN.Height - 2);
-      g.DrawString("S", DrawPanel.Font, Brushes.Teal, Center.X - sizeS.Width / 2, Center.Y + Radius + 2);
-      g.DrawString("E", DrawPanel.Font, Brushes.Teal, Center.X + Radius + 2, Center.Y - sizeE.Height / 2);
-      g.DrawString("W", DrawPanel.Font, Brushes.Teal, Center.X - Radius - sizeW.Width - 2, Center.Y - sizeW.Height / 2);
+      // compass labels, in the grid's color
+      var labelBrush = OrbitRadioBtn.Checked ? SystemBrushes.GrayText : Brushes.Teal;
+      g.DrawString("N", DrawPanel.Font, labelBrush, Center.X - sizeN.Width / 2, Center.Y - Radius - sizeN.Height - 2);
+      g.DrawString("S", DrawPanel.Font, labelBrush, Center.X - sizeS.Width / 2, Center.Y + Radius + 2);
+      g.DrawString("E", DrawPanel.Font, labelBrush, Center.X + Radius + 2, Center.Y - sizeE.Height / 2);
+      g.DrawString("W", DrawPanel.Font, labelBrush, Center.X - Radius - sizeW.Width - 2, Center.Y - sizeW.Height / 2);
     }
 
     private void DrawRealTime(Graphics g)

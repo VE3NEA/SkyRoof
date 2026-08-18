@@ -104,12 +104,11 @@ namespace SkyRoof
 
       // highlighting
 
-      bool tinted = sat.Flags.HasFlag(SatelliteFlags.Uhf) || sat.Flags.HasFlag(SatelliteFlags.Vhf);
-      if (sat.Flags.HasFlag(SatelliteFlags.Uhf)) item.BackColor = Color.LightCyan;
-      else if (sat.Flags.HasFlag(SatelliteFlags.Vhf)) item.BackColor = Color.LightGoldenrodYellow;
+      if (sat.Flags.HasFlag(SatelliteFlags.Uhf)) item.BackColor = Theme.UhfTint;
+      else if (sat.Flags.HasFlag(SatelliteFlags.Vhf)) item.BackColor = Theme.VhfTint;
 
       if (sat.Flags.HasFlag(SatelliteFlags.Ham)) item.Font = ListBoldFont;
-      item.ForeColor = Theme.RowText(tinted, !sat.status.StartsWith("alive"));
+      item.ForeColor = Theme.RowText(!sat.status.StartsWith("alive"));
       if (sat.status.StartsWith("alive") && sat.Tle == null) item.Font = ListStrikeoutFont;
 
       return item;
@@ -122,12 +121,11 @@ namespace SkyRoof
       node.ToolTipText = sat.GetTooltipText();
 
       // highlighting
-      bool tinted = sat.Flags.HasFlag(SatelliteFlags.Uhf) || sat.Flags.HasFlag(SatelliteFlags.Vhf);
-      if (sat.Flags.HasFlag(SatelliteFlags.Uhf)) node.BackColor = Color.LightCyan;
-      else if (sat.Flags.HasFlag(SatelliteFlags.Vhf)) node.BackColor = Color.LightGoldenrodYellow;
+      if (sat.Flags.HasFlag(SatelliteFlags.Uhf)) node.BackColor = Theme.UhfTint;
+      else if (sat.Flags.HasFlag(SatelliteFlags.Vhf)) node.BackColor = Theme.VhfTint;
 
       if (!sat.Flags.HasFlag(SatelliteFlags.Ham)) node.NodeFont = TreeRegularFont;
-      node.ForeColor = Theme.RowText(tinted, !sat.status.StartsWith("alive"));
+      node.ForeColor = Theme.RowText(!sat.status.StartsWith("alive"));
       if (sat.status.StartsWith("alive") && sat.Tle == null) node.NodeFont = TreeStrikeoutFont;
 
       return node;

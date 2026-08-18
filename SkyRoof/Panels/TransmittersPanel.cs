@@ -78,10 +78,10 @@ namespace SkyRoof
         item.Tag = tx;
 
         // highlighting
-        if (tx.IsVhf()) item.BackColor = Color.LightGoldenrodYellow;
-        if (tx.IsUhf()) item.BackColor = Color.LightCyan;
+        if (tx.IsVhf()) item.BackColor = Theme.VhfTint;
+        if (tx.IsUhf()) item.BackColor = Theme.UhfTint;
         if (tx.service == "Amateur") item.Font = BoldFont;
-        item.ForeColor = Theme.RowText(tx.IsVhf() || tx.IsUhf(), !tx.alive || tx.status != "active"); //item.Font = new(item.Font, FontStyle.Strikeout);
+        item.ForeColor = Theme.RowText(!tx.alive || tx.status != "active"); //item.Font = new(item.Font, FontStyle.Strikeout);
 
         // tooltip
         item.ToolTipText = tx.GetTooltipText();
@@ -97,13 +97,12 @@ namespace SkyRoof
         item.ToolTipText = t.GetTooltipText();
 
         // band color
-        bool tinted = false;
         var match = Regex.Match(t.Downlink, "^[0-9.]+");
         if (match.Success && float.TryParse(match.Groups[0].Value, CultureInfo.InvariantCulture, out float freq))
-          if (freq >= 144 && freq <= 148) { item.BackColor = Color.LightGoldenrodYellow; tinted = true; }
-          else if (freq >= 430 && freq <= 440) { item.BackColor = Color.LightCyan; tinted = true; }
+          if (freq >= 144 && freq <= 148) item.BackColor = Theme.VhfTint;
+          else if (freq >= 430 && freq <= 440) item.BackColor = Theme.UhfTint;
 
-        item.ForeColor = Theme.RowText(tinted, t.Status != "active");
+        item.ForeColor = Theme.RowText(t.Status != "active");
 
         listView1.Items.Add(item);
       }
