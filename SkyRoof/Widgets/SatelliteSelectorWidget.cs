@@ -240,11 +240,12 @@ namespace SkyRoof
     {
       if (e.Index < 0) { e.DrawBackground(); return; }
 
-      Brush backBrush = Brushes.White;
+      Brush backBrush = SystemBrushes.Window;
       FontStyle style = FontStyle.Regular;
 
       var sat = (SatnogsDbSatellite)SatelliteComboBox.Items[e.Index]!;
 
+      bool tinted = sat.Flags.HasFlag(SatelliteFlags.Uhf) || sat.Flags.HasFlag(SatelliteFlags.Vhf);
       if (sat.Flags.HasFlag(SatelliteFlags.Uhf)) backBrush = Brushes.LightCyan;
       else if (sat.Flags.HasFlag(SatelliteFlags.Vhf)) backBrush = Brushes.LightGoldenrodYellow;
 
@@ -259,7 +260,7 @@ namespace SkyRoof
 
       string text = sat.name;
       if (!GroupSatellites.Contains(sat)) text += " (not in group)";
-      e.Graphics.DrawString(text, derivedFont ?? e.Font, Brushes.Black, e.Bounds);
+      e.Graphics.DrawString(text, derivedFont ?? e.Font, Theme.RowTextBrush(tinted, false), e.Bounds);
 
       derivedFont?.Dispose();
     }
@@ -268,17 +269,17 @@ namespace SkyRoof
     {
       if (e.Index < 0) { e.DrawBackground(); return; }
 
-      Brush bacBrush = Brushes.White;
-      Brush foreBrush = Brushes.Black;
+      Brush bacBrush = SystemBrushes.Window;
 
       var tx = (SatnogsDbTransmitter)TransmitterComboBox.Items[e.Index];
 
+      bool tinted = tx.IsUhf() || tx.IsVhf();
       if (tx.IsUhf()) bacBrush = Brushes.LightCyan;
       else if (tx.IsVhf()) bacBrush = Brushes.LightGoldenrodYellow;
 
       // derived font disposed after drawing; static Brushes need no disposal
       Font? derivedFont = tx.service == "Amateur" ? new Font(e.Font, FontStyle.Bold) : null;
-      if (!tx.alive || tx.status != "active") foreBrush = Brushes.Silver;
+      Brush foreBrush = Theme.RowTextBrush(tinted, !tx.alive || tx.status != "active");
 
       e.Graphics.FillRectangle(bacBrush, e.Bounds);
       e.Graphics.DrawString(tx.description, derivedFont ?? e.Font, foreBrush, e.Bounds);

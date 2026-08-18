@@ -1,4 +1,4 @@
-using System.Reflection.Emit;
+﻿using System.Reflection.Emit;
 using Serilog;
 using SGPdotNET.Observation;
 using SGPdotNET.CoordinateSystem;
@@ -256,24 +256,25 @@ namespace SkyRoof
       string text = overlap.Satellite.name;
       var size = e.Graphics.MeasureString(text, BoldFont);
       var rect = new RectangleF(e.Bounds.X, e.Bounds.Y, size.Width, size.Height);
-      var brush = Brushes.White;
+      bool tinted = overlap.Satellite.Flags.HasFlag(SatelliteFlags.Uhf) || overlap.Satellite.Flags.HasFlag(SatelliteFlags.Vhf);
+      Brush brush = SystemBrushes.Window;
       if (overlap.Satellite.Flags.HasFlag(SatelliteFlags.Uhf)) brush = Brushes.LightCyan;
       else if (overlap.Satellite.Flags.HasFlag(SatelliteFlags.Vhf)) brush = Brushes.LightGoldenrodYellow;
       e.Graphics.FillRectangle(brush, rect);
-      e.Graphics.DrawString(text, BoldFont, Brushes.Black, rect);
+      e.Graphics.DrawString(text, BoldFont, Theme.RowTextBrush(tinted, false), rect);
 
       // orbit number
       text = $"#{overlap.OrbitNumber}";
       size = e.Graphics.MeasureString(text, PredictionList.Font);
       rect = new RectangleF(rect.Right + 10, rect.Y, size.Width, size.Height);
-      e.Graphics.DrawString(text, PredictionList.Font, Brushes.Black, rect);
+      e.Graphics.DrawString(text, PredictionList.Font, SystemBrushes.WindowText, rect);
 
       // start/end time for the common segment
       text = overlap.Geostationary ?
         "Geostationary" : $"{overlap.CommonStart.ToLocalTime():yyyy-MM-dd  HH:mm:ss}  to  {overlap.CommonEnd.ToLocalTime():HH:mm:ss}";
       size = e.Graphics.MeasureString(text, PredictionList.Font);
       rect = new RectangleF(e.Bounds.X, e.Bounds.Y + e.Bounds.Height - size.Height - 2, size.Width, size.Height);
-      e.Graphics.DrawString(text, PredictionList.Font, Brushes.Black, rect);
+      e.Graphics.DrawString(text, PredictionList.Font, SystemBrushes.WindowText, rect);
 
       // duration of common segment + max elevation per station
       string elevText = $"Me: {overlap.MyMaxElevation:F0}°, DX: {overlap.DxMaxElevation:F0}°";
@@ -281,11 +282,11 @@ namespace SkyRoof
         elevText : $"{Utils.TimespanToString(overlap.CommonEnd - overlap.CommonStart, false)}   {elevText}";
       size = e.Graphics.MeasureString(text, PredictionList.Font);
       rect = new RectangleF(e.Bounds.X + w - size.Width, e.Bounds.Y + e.Bounds.Height - size.Height - 2, size.Width, size.Height);
-      e.Graphics.DrawString(text, PredictionList.Font, Brushes.Black, rect);
+      e.Graphics.DrawString(text, PredictionList.Font, SystemBrushes.WindowText, rect);
 
       // wait time to start of common segment
       text = now ? "Now" : $"in {Utils.TimespanToString(overlap.CommonStart - DateTime.UtcNow)}";
-      brush = now ? Brushes.Green : Brushes.Black;
+      brush = now ? Brushes.Green : SystemBrushes.WindowText;
       size = e.Graphics.MeasureString(text, BoldFont);
       rect = new RectangleF(e.Bounds.X + w - size.Width, e.Bounds.Y, size.Width, size.Height);
       e.Graphics.DrawString(text, BoldFont, brush, rect);
@@ -296,7 +297,7 @@ namespace SkyRoof
 
       // item separator
       var sep = new RectangleF(e.Bounds.X, e.Bounds.Y + h, e.Bounds.Width, 1);
-      e.Graphics.FillRectangle(Brushes.Gray, sep);
+      e.Graphics.FillRectangle(SystemBrushes.ControlDark, sep);
     }
 
     private void DrawMiniSkyView(Graphics g, RectangleF rect, PointF[] path)
@@ -306,12 +307,12 @@ namespace SkyRoof
       var center = new PointF(rect.Left + radius, rect.Top + radius);
 
       // grid: horizon, 45° ring, cross hairs
-      g.DrawEllipse(Pens.Silver, rect);
-      g.DrawLine(Pens.Silver, rect.Left, center.Y, rect.Right, center.Y);
-      g.DrawLine(Pens.Silver, center.X, rect.Top, center.X, rect.Bottom);
+      g.DrawEllipse(Pens.Silver, rect); // fixed: mini sky view grid, silver in both themes
+      g.DrawLine(Pens.Silver, rect.Left, center.Y, rect.Right, center.Y); // fixed: grid
+      g.DrawLine(Pens.Silver, center.X, rect.Top, center.X, rect.Bottom); // fixed: grid
       var inner = rect;
       inner.Inflate(-radius / 2, -radius / 2);
-      g.DrawEllipse(Pens.Silver, inner);
+      g.DrawEllipse(Pens.Silver, inner); // fixed: grid
 
       if (path != null && path.Length > 1)
       {

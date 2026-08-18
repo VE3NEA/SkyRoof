@@ -46,7 +46,6 @@
       SatellitePhotoSeparator = new Panel();
       SatelliteSelecionWidget = new SatelliteSelectorWidget();
       DockHost = new WeifenLuo.WinFormsUI.Docking.DockPanel();
-      vS2015LightTheme1 = new WeifenLuo.WinFormsUI.Docking.VS2015LightTheme();
       menuStrip1 = new MenuStrip();
       fileToolStripMenuItem = new ToolStripMenuItem();
       ExitMNU = new ToolStripMenuItem();
@@ -71,6 +70,10 @@
       SatelliteGroupsMNU = new ToolStripMenuItem();
       SdrDevicesMNU = new ToolStripMenuItem();
       SettingsMNU = new ToolStripMenuItem();
+      ThemeMNU = new ToolStripMenuItem();
+      ThemeSystemMNU = new ToolStripMenuItem();
+      ThemeLightMNU = new ToolStripMenuItem();
+      ThemeDarkMNU = new ToolStripMenuItem();
       toolStripMenuItem1 = new ToolStripSeparator();
       DownloadSatDataMNU = new ToolStripMenuItem();
       DownloadTleMNU = new ToolStripMenuItem();
@@ -272,15 +275,14 @@
       // 
       DockHost.DefaultFloatWindowSize = new Size(445, 445);
       DockHost.Dock = DockStyle.Fill;
-      DockHost.DockBackColor = Color.FromArgb(238, 238, 242);
       DockHost.Location = new Point(0, 102);
       DockHost.Name = "DockHost";
       DockHost.Padding = new Padding(6);
       DockHost.ShowAutoHideContentOnHover = false;
       DockHost.Size = new Size(1834, 824);
       DockHost.TabIndex = 4;
-      DockHost.Theme = vS2015LightTheme1;
-      // 
+      // the DockHost.Theme is selected in the MainForm constructor, not here
+      //
       // menuStrip1
       // 
       menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, GroupViewPanelMNU, toolsToolStripMenuItem, helpToolStripMenuItem });
@@ -423,7 +425,7 @@
       // 
       // toolsToolStripMenuItem
       // 
-      toolsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { SatelliteGroupsMNU, SdrDevicesMNU, SettingsMNU, toolStripMenuItem1, DownloadSatDataMNU, DownloadTleMNU, DownloadAmsatMNU, toolStripMenuItem3, LoadTleMNU });
+      toolsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { SatelliteGroupsMNU, SdrDevicesMNU, SettingsMNU, ThemeMNU, toolStripMenuItem1, DownloadSatDataMNU, DownloadTleMNU, DownloadAmsatMNU, toolStripMenuItem3, LoadTleMNU });
       toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
       toolsToolStripMenuItem.Size = new Size(47, 20);
       toolsToolStripMenuItem.Text = "&Tools";
@@ -448,9 +450,37 @@
       SettingsMNU.Size = new Size(216, 22);
       SettingsMNU.Text = "S&ettings...";
       SettingsMNU.Click += SettingsMNU_Click;
-      // 
+      //
+      // ThemeMNU
+      //
+      ThemeMNU.DropDownItems.AddRange(new ToolStripItem[] { ThemeSystemMNU, ThemeLightMNU, ThemeDarkMNU });
+      ThemeMNU.Name = "ThemeMNU";
+      ThemeMNU.Size = new Size(216, 22);
+      ThemeMNU.Text = "T&heme";
+      //
+      // ThemeSystemMNU
+      //
+      ThemeSystemMNU.Name = "ThemeSystemMNU";
+      ThemeSystemMNU.Size = new Size(180, 22);
+      ThemeSystemMNU.Text = "&System";
+      ThemeSystemMNU.Click += ThemeSystemMNU_Click;
+      //
+      // ThemeLightMNU
+      //
+      ThemeLightMNU.Name = "ThemeLightMNU";
+      ThemeLightMNU.Size = new Size(180, 22);
+      ThemeLightMNU.Text = "&Light";
+      ThemeLightMNU.Click += ThemeLightMNU_Click;
+      //
+      // ThemeDarkMNU
+      //
+      ThemeDarkMNU.Name = "ThemeDarkMNU";
+      ThemeDarkMNU.Size = new Size(180, 22);
+      ThemeDarkMNU.Text = "&Dark";
+      ThemeDarkMNU.Click += ThemeDarkMNU_Click;
+      //
       // toolStripMenuItem1
-      // 
+      //
       toolStripMenuItem1.Name = "toolStripMenuItem1";
       toolStripMenuItem1.Size = new Size(213, 6);
       // 
@@ -553,7 +583,7 @@
       // SatDataLedLabel
       // 
       SatDataLedLabel.Font = new Font("Webdings", 9F);
-      SatDataLedLabel.ForeColor = Color.Gray;
+      SatDataLedLabel.ForeColor = SystemColors.GrayText;
       SatDataLedLabel.Name = "SatDataLedLabel";
       SatDataLedLabel.Size = new Size(21, 30);
       SatDataLedLabel.Text = "n";
@@ -570,7 +600,7 @@
       // SdrLedLabel
       // 
       SdrLedLabel.Font = new Font("Webdings", 9F);
-      SdrLedLabel.ForeColor = Color.Gray;
+      SdrLedLabel.ForeColor = SystemColors.GrayText;
       SdrLedLabel.Name = "SdrLedLabel";
       SdrLedLabel.Size = new Size(21, 30);
       SdrLedLabel.Text = "n";
@@ -594,7 +624,7 @@
       // SoundcardLedLabel
       // 
       SoundcardLedLabel.Font = new Font("Webdings", 9F);
-      SoundcardLedLabel.ForeColor = Color.Gray;
+      SoundcardLedLabel.ForeColor = SystemColors.GrayText;
       SoundcardLedLabel.Name = "SoundcardLedLabel";
       SoundcardLedLabel.Size = new Size(21, 30);
       SoundcardLedLabel.Text = "n";
@@ -626,7 +656,7 @@
       // VacLedLabel
       // 
       VacLedLabel.Font = new Font("Webdings", 9F);
-      VacLedLabel.ForeColor = Color.Gray;
+      VacLedLabel.ForeColor = SystemColors.GrayText;
       VacLedLabel.Name = "VacLedLabel";
       VacLedLabel.Size = new Size(21, 30);
       VacLedLabel.Text = "n";
@@ -648,7 +678,7 @@
       // RxCatLedLabel
       // 
       RxCatLedLabel.Font = new Font("Webdings", 9F);
-      RxCatLedLabel.ForeColor = Color.Gray;
+      RxCatLedLabel.ForeColor = SystemColors.GrayText;
       RxCatLedLabel.Name = "RxCatLedLabel";
       RxCatLedLabel.Size = new Size(21, 30);
       RxCatLedLabel.Text = "n";
@@ -670,7 +700,7 @@
       // TxCatLedLabel
       // 
       TxCatLedLabel.Font = new Font("Webdings", 9F);
-      TxCatLedLabel.ForeColor = Color.Gray;
+      TxCatLedLabel.ForeColor = SystemColors.GrayText;
       TxCatLedLabel.Name = "TxCatLedLabel";
       TxCatLedLabel.Size = new Size(21, 30);
       TxCatLedLabel.Text = "n";
@@ -692,7 +722,7 @@
       // IqOutputLedLabel
       // 
       IqOutputLedLabel.Font = new Font("Webdings", 9F);
-      IqOutputLedLabel.ForeColor = Color.Gray;
+      IqOutputLedLabel.ForeColor = SystemColors.GrayText;
       IqOutputLedLabel.Name = "IqOutputLedLabel";
       IqOutputLedLabel.Size = new Size(21, 30);
       IqOutputLedLabel.Text = "n";
@@ -710,7 +740,7 @@
       // RotatorLedLabel
       // 
       RotatorLedLabel.Font = new Font("Webdings", 9F);
-      RotatorLedLabel.ForeColor = Color.Gray;
+      RotatorLedLabel.ForeColor = SystemColors.GrayText;
       RotatorLedLabel.Name = "RotatorLedLabel";
       RotatorLedLabel.Size = new Size(21, 30);
       RotatorLedLabel.Text = "n";
@@ -825,7 +855,6 @@
 
     private Panel Toolbar;
     public WeifenLuo.WinFormsUI.Docking.DockPanel DockHost;
-    private WeifenLuo.WinFormsUI.Docking.VS2015LightTheme vS2015LightTheme1;
     private MenuStrip menuStrip1;
     private ToolStripMenuItem fileToolStripMenuItem;
     private ToolStripMenuItem ExitMNU;
@@ -833,6 +862,10 @@
     private ToolStripMenuItem toolsToolStripMenuItem;
     private ToolStripMenuItem SdrDevicesMNU;
     private ToolStripMenuItem SettingsMNU;
+    private ToolStripMenuItem ThemeMNU;
+    private ToolStripMenuItem ThemeSystemMNU;
+    private ToolStripMenuItem ThemeLightMNU;
+    private ToolStripMenuItem ThemeDarkMNU;
     private ToolStripMenuItem helpToolStripMenuItem;
     private ToolStripMenuItem OnlineHelpMNU;
     private ToolStripSeparator toolStripMenuItem2;

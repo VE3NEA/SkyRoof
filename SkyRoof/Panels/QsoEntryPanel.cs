@@ -70,17 +70,17 @@ namespace SkyRoof
 
     private void ClearFrames()
     {
-      UtcFrame.BackColor = Color.LightSkyBlue;
-      BandFrame.BackColor = Color.LightSkyBlue;
-      ModeFrame.BackColor = Color.LightSkyBlue;
-      SatFrame.BackColor = Color.LightSkyBlue;
-      CallFrame.BackColor = Color.LightSkyBlue;
-      GridFrame.BackColor = Color.LightSkyBlue;
-      StateFrame.BackColor = Color.LightSkyBlue;
-      SentFrame.BackColor = Color.LightSkyBlue;
-      RecvFrame.BackColor = Color.LightSkyBlue;
-      NameFrame.BackColor = Color.LightSkyBlue;
-      NotesFrame.BackColor = Color.LightSkyBlue;
+      UtcFrame.BackColor = Theme.QsoCard;
+      BandFrame.BackColor = Theme.QsoCard;
+      ModeFrame.BackColor = Theme.QsoCard;
+      SatFrame.BackColor = Theme.QsoCard;
+      CallFrame.BackColor = Theme.QsoCard;
+      GridFrame.BackColor = Theme.QsoCard;
+      StateFrame.BackColor = Theme.QsoCard;
+      SentFrame.BackColor = Theme.QsoCard;
+      RecvFrame.BackColor = Theme.QsoCard;
+      NameFrame.BackColor = Theme.QsoCard;
+      NotesFrame.BackColor = Theme.QsoCard;
     }
 
     private void QsoEntryPanel_FormClosing(object sender, FormClosingEventArgs e)
@@ -108,7 +108,7 @@ namespace SkyRoof
 
     internal void SetUtc()
     {
-      if (UtcFrame.BackColor == Color.LightSkyBlue)
+      if (UtcFrame.BackColor == Theme.QsoCard)
       {
         Changing = true;
         UtcPicker.Value = DateTime.UtcNow;
@@ -129,7 +129,7 @@ namespace SkyRoof
 
       if (SatComboBox.SelectedIndex == -1) SatComboBox.Text = string.Empty;
 
-      SatFrame.BackColor = Color.LightSkyBlue;
+      SatFrame.BackColor = Theme.QsoCard;
 
     }
 
@@ -140,7 +140,7 @@ namespace SkyRoof
 
       if (string.IsNullOrEmpty(bandName)) BandComboBox.SelectedIndex = -1;
 
-      BandFrame.BackColor = Color.LightSkyBlue;
+      BandFrame.BackColor = Theme.QsoCard;
     }
 
     internal void SetMode()
@@ -166,7 +166,7 @@ namespace SkyRoof
       ModeComboBox.Text = newMode;
       if (string.IsNullOrEmpty(newMode)) ModeComboBox.SelectedIndex = -1;
 
-      ModeFrame.BackColor = Color.LightSkyBlue;
+      ModeFrame.BackColor = Theme.QsoCard;
       SetReport();
     }
 
@@ -180,7 +180,7 @@ namespace SkyRoof
       else defaultReport = string.Empty;
 
       SentEdit.Text = RecvEdit.Text = defaultReport;
-      SentFrame.BackColor = RecvFrame.BackColor = Color.LightSkyBlue;
+      SentFrame.BackColor = RecvFrame.BackColor = Theme.QsoCard;
     }
 
     private void ClearBtn_Click(object sender, EventArgs e)
@@ -196,7 +196,7 @@ namespace SkyRoof
       // dark blue frame indicates that the value was entered manually
 
       var control = (Control)sender;
-      control.Parent!.BackColor = control.Text == "" ? Color.LightSkyBlue : Color.Blue;
+      control.Parent!.BackColor = control.Text == "" ? Theme.QsoCard : Theme.QsoFieldEdited;
 
       var qso = FieldsToQsoInfo(true);
 
@@ -214,12 +214,12 @@ namespace SkyRoof
 
     private void UtcPicker_KeyDown(object sender, KeyEventArgs e)
     {
-      UtcFrame.BackColor = Color.Blue;
+      UtcFrame.BackColor = Theme.QsoFieldEdited;
     }
 
     private void Utclabel_MouseClick(object sender, MouseEventArgs e)
     {
-      UtcFrame.BackColor = UtcFrame.BackColor == Color.LightSkyBlue ? Color.Blue : Color.LightSkyBlue;
+      UtcFrame.BackColor = UtcFrame.BackColor == Theme.QsoCard ? Theme.QsoFieldEdited : Theme.QsoCard;
     }
 
 
@@ -263,17 +263,17 @@ namespace SkyRoof
 
       if (onlyEdited)
       {
-        if (UtcFrame.BackColor == Color.Blue) info.Utc = UtcPicker.Value;
-        if (BandFrame.BackColor == Color.Blue) info.Band = BandComboBox.Text.ToUpper();
-        if (ModeFrame.BackColor == Color.Blue) info.Mode = ModeComboBox.Text.ToUpper();
-        if (SatFrame.BackColor == Color.Blue) info.Sat = SatComboBox.Text.Trim();
-        if (CallFrame.BackColor == Color.Blue) info.Call = CallEdit.Text.ToUpper();
-        if (GridFrame.BackColor == Color.Blue) info.Grid = GridEdit.Text.ToUpper();
-        if (StateFrame.BackColor == Color.Blue) info.State = StateComboBox.Text.ToUpper();
-        if (SentFrame.BackColor == Color.Blue) info.Sent = SentEdit.Text;
-        if (RecvFrame.BackColor == Color.Blue) info.Recv = RecvEdit.Text;
-        if (NameFrame.BackColor == Color.Blue) info.Name = NameEdit.Text;
-        if (NotesFrame.BackColor == Color.Blue) info.Notes = NotesEdit.Text;
+        if (UtcFrame.BackColor == Theme.QsoFieldEdited) info.Utc = UtcPicker.Value;
+        if (BandFrame.BackColor == Theme.QsoFieldEdited) info.Band = BandComboBox.Text.ToUpper();
+        if (ModeFrame.BackColor == Theme.QsoFieldEdited) info.Mode = ModeComboBox.Text.ToUpper();
+        if (SatFrame.BackColor == Theme.QsoFieldEdited) info.Sat = SatComboBox.Text.Trim();
+        if (CallFrame.BackColor == Theme.QsoFieldEdited) info.Call = CallEdit.Text.ToUpper();
+        if (GridFrame.BackColor == Theme.QsoFieldEdited) info.Grid = GridEdit.Text.ToUpper();
+        if (StateFrame.BackColor == Theme.QsoFieldEdited) info.State = StateComboBox.Text.ToUpper();
+        if (SentFrame.BackColor == Theme.QsoFieldEdited) info.Sent = SentEdit.Text;
+        if (RecvFrame.BackColor == Theme.QsoFieldEdited) info.Recv = RecvEdit.Text;
+        if (NameFrame.BackColor == Theme.QsoFieldEdited) info.Name = NameEdit.Text;
+        if (NotesFrame.BackColor == Theme.QsoFieldEdited) info.Notes = NotesEdit.Text;
       }
       else
       {
@@ -297,10 +297,10 @@ namespace SkyRoof
     {
       Changing = true;
 
-      if (GridFrame.BackColor == Color.LightSkyBlue) GridEdit.Text = qso.Grid;
-      if (NameFrame.BackColor == Color.LightSkyBlue) NameEdit.Text = qso.Name;
+      if (GridFrame.BackColor == Theme.QsoCard) GridEdit.Text = qso.Grid;
+      if (NameFrame.BackColor == Theme.QsoCard) NameEdit.Text = qso.Name;
 
-      if (StateFrame.BackColor == Color.LightSkyBlue)
+      if (StateFrame.BackColor == Theme.QsoCard)
       {
         if (qso.State == "") StateComboBox.SelectedIndex = -1;
         StateComboBox.SelectedItem = qso.State;
@@ -311,8 +311,12 @@ namespace SkyRoof
 
     public void QsoInfoToStatus(QsoInfo qso)
     {
-      CallEdit.BackColor = ColorTranslator.FromHtml(qso.BackColor);
-      CallEdit.ForeColor = ColorTranslator.FromHtml(qso.ForeColor);
+      // the logger returns white on black when it has nothing to say about the call, i.e. when the
+      // field is empty. That is "unstyled", not a status color, so let the theme paint it instead
+      bool unstyled = string.Equals(qso.BackColor, "#FFFFFF", StringComparison.OrdinalIgnoreCase);
+
+      CallEdit.BackColor = unstyled ? SystemColors.Window : ColorTranslator.FromHtml(qso.BackColor);
+      CallEdit.ForeColor = unstyled ? SystemColors.WindowText : ColorTranslator.FromHtml(qso.ForeColor);
       toolTip1.SetToolTip(CallEdit, qso.StatusString);
     }
 
@@ -332,7 +336,7 @@ namespace SkyRoof
       Changing = true;
 
       UtcPicker.Value = qso.Utc;
-      UtcFrame.BackColor = Color.Blue; // i.e. modified
+      UtcFrame.BackColor = Theme.QsoFieldEdited; // i.e. modified
 
       BandComboBox.Text = qso.Band;
       ModeComboBox.Text = qso.Mode;

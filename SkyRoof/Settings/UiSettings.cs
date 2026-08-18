@@ -9,6 +9,10 @@ namespace SkyRoof
     public Point MainWindowLocation { get; set; }
     public string? DockingLayoutString { get; set; }
     public bool ClockUtcMode { get; set; }
+
+    // applied on startup, selected in the Tools | Theme menu. Not shown in the settings dialog,
+    // so it carries no DisplayName/Description attributes
+    public ThemeMode Theme { get; set; } = ThemeMode.Light;
     public SatelliteGroupsFormSettings SatelliteGroupsForm { get; set; } = new();
     public SatelliteDetailsFormSettings SatelliteDetailsForm { get; set; } = new();
     public SatelliteDetailsPanelSettings SatelliteDetailsPanel { get; set; } = new();

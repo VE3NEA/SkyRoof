@@ -1,4 +1,4 @@
-using VE3NEA;
+﻿using VE3NEA;
 
 namespace SkyRoof
 {
@@ -14,7 +14,7 @@ namespace SkyRoof
 
       dataGridView.EnableHeadersVisualStyles = false;
       dataGridView.DefaultCellStyle.SelectionBackColor = Color.Transparent;
-      dataGridView.DefaultCellStyle.SelectionForeColor = Color.Black;
+      dataGridView.DefaultCellStyle.SelectionForeColor = SystemColors.WindowText;
       dataGridView.CellFormatting += DataGridView_CellFormatting;
       dataGridView.CellClick += (s, e) => dataGridView.ClearSelection();
     }

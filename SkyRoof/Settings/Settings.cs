@@ -66,7 +66,8 @@ namespace SkyRoof
     public TransverterSettings Transverter { get; set; } = new();
 
 
-    private static string GetFileName()
+    // internal: Theme.Initialize reads the theme setting from this file before the settings are loaded
+    internal static string GetFileName()
     {
       return Path.Combine(Utils.GetUserDataFolder(), "Settings.json");
     }

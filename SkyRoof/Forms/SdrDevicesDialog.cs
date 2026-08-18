@@ -115,7 +115,7 @@ namespace SkyRoof
     private void listBox1_DrawItem(object sender, DrawItemEventArgs e)
     {
       var selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-      Brush brush = selected ? Brushes.Lavender : Brushes.White;
+      Brush brush = selected ? SystemBrushes.Highlight : SystemBrushes.Window;
       e.Graphics.FillRectangle(brush, e.Bounds);
 
       if (e.Index < 0 || e.Index >= Devices.Count) return;
@@ -123,7 +123,8 @@ namespace SkyRoof
       var image = e.Index == listBox1.SelectedIndex ? RadioOnImage : RadioOffImage;
       e.Graphics.DrawImage(image, e.Bounds.Left, e.Bounds.Top);
 
-      brush = Devices[e.Index].Present ? Brushes.Black : Brushes.Gray;
+      brush = !Devices[e.Index].Present ? SystemBrushes.GrayText
+        : selected ? SystemBrushes.HighlightText : SystemBrushes.WindowText;
       e.Graphics.DrawString(Devices[e.Index].Name, listBox1.Font, brush, e.Bounds.Left + image.Width, e.Bounds.Top);
     }
 

@@ -5,6 +5,7 @@ namespace SkyRoof.Widgets
   public partial class Ft4TimeBar : UserControl
   {
     private Ft4Slot Slot = new();
+    private readonly Brush RemainderBrush = new SolidBrush(Theme.BarRemainder);
     public bool Transmitting;
     public Ft4TimeBar()
     {
@@ -40,7 +41,7 @@ namespace SkyRoof.Widgets
 
       if (x1 > 0) e.Graphics.FillRectangle(FgBrush, new RectangleF(0, 0, x1, h));
       if (x2 > x1) e.Graphics.FillRectangle(BgBrush, new RectangleF(x1, 0, x2 - x1, h));
-      if (x1 < w) e.Graphics.FillRectangle(Brushes.White, new RectangleF(x3, 0, w - x3, h));
+      if (x1 < w) e.Graphics.FillRectangle(RemainderBrush, new RectangleF(x3, 0, w - x3, h));
     }
 
     private void timer1_Tick(object sender, EventArgs e)

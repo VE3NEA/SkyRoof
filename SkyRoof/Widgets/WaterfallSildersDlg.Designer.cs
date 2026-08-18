@@ -174,7 +174,7 @@
       // 
       PerfLabel.AutoSize = true;
       PerfLabel.Font = new Font("Segoe UI", 8F);
-      PerfLabel.ForeColor = Color.DimGray;
+      PerfLabel.ForeColor = SystemColors.GrayText;
       PerfLabel.Location = new Point(5, 149);
       PerfLabel.MaximumSize = new Size(218, 0);
       PerfLabel.Name = "PerfLabel";

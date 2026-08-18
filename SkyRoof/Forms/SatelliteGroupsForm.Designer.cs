@@ -413,7 +413,7 @@
       // 
       // flowLayoutPanel5
       // 
-      flowLayoutPanel5.BackColor = Color.Gainsboro;
+      flowLayoutPanel5.BackColor = SystemColors.ControlLight;
       flowLayoutPanel5.BorderStyle = BorderStyle.FixedSingle;
       flowLayoutPanel5.Controls.Add(label3);
       flowLayoutPanel5.Controls.Add(FilterTextbox);
@@ -467,7 +467,7 @@
       // 
       // flowLayoutPanel4
       // 
-      flowLayoutPanel4.BackColor = Color.Gainsboro;
+      flowLayoutPanel4.BackColor = SystemColors.ControlLight;
       flowLayoutPanel4.BorderStyle = BorderStyle.FixedSingle;
       flowLayoutPanel4.Controls.Add(label5);
       flowLayoutPanel4.Controls.Add(HamCheckbox);
@@ -517,7 +517,7 @@
       // 
       // flowLayoutPanel3
       // 
-      flowLayoutPanel3.BackColor = Color.Gainsboro;
+      flowLayoutPanel3.BackColor = SystemColors.ControlLight;
       flowLayoutPanel3.BorderStyle = BorderStyle.FixedSingle;
       flowLayoutPanel3.Controls.Add(label4);
       flowLayoutPanel3.Controls.Add(VhfCheckbox);
@@ -584,7 +584,7 @@
       // 
       // flowLayoutPanel2
       // 
-      flowLayoutPanel2.BackColor = Color.Gainsboro;
+      flowLayoutPanel2.BackColor = SystemColors.ControlLight;
       flowLayoutPanel2.BorderStyle = BorderStyle.FixedSingle;
       flowLayoutPanel2.Controls.Add(label6);
       flowLayoutPanel2.Controls.Add(TransponderCheckbox);
@@ -647,7 +647,7 @@
       // 
       // flowLayoutPanel1
       // 
-      flowLayoutPanel1.BackColor = Color.Gainsboro;
+      flowLayoutPanel1.BackColor = SystemColors.ControlLight;
       flowLayoutPanel1.BorderStyle = BorderStyle.FixedSingle;
       flowLayoutPanel1.Controls.Add(label7);
       flowLayoutPanel1.Controls.Add(AliveCheckbox);

@@ -14,6 +14,7 @@ namespace SkyRoof
     public SatelliteDetailsPanel()
     {
       InitializeComponent();
+      SetLinkColors();
     }
     public SatelliteDetailsPanel(Context ctx)
     {
@@ -21,12 +22,19 @@ namespace SkyRoof
       this.ctx = ctx;
 
       InitializeComponent();
+      SetLinkColors();
       DesignedSize = Size;
 
       ctx.SatelliteDetailsPanel = this;
       ctx.MainForm.SatelliteDetailsMNU.Checked = true;
 
       SetSatellite();
+    }
+
+    // the default link color is blue, which is barely readable on the dark surface
+    private void SetLinkColors()
+    {
+      ImageLabel.LinkColor = WebsiteLabel.LinkColor = SatnogsLabel.LinkColor = Theme.Link;
     }
 
     public void SetSatellite(SatnogsDbSatellite? sat = null)

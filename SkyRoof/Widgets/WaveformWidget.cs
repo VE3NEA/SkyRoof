@@ -1,4 +1,4 @@
-using MathNet.Numerics;
+﻿using MathNet.Numerics;
 using System.ComponentModel;
 using VE3NEA;
 
@@ -50,7 +50,7 @@ namespace SkyRoof
     public WaveformWidget()
     {
       DoubleBuffered = true;
-      BackColor = Color.Black;
+      BackColor = Color.Black; // fixed: instrument display
       toolTip.ShowAlways = true;
     }
 
@@ -263,7 +263,7 @@ namespace SkyRoof
       var (color, shape) = GetMarkerStyle(eventType);
 
       using var brush = new SolidBrush(color);
-      using var pen = new Pen(Color.Black);
+      using var pen = new Pen(Color.Black); // fixed: on the black display
 
       switch (shape)
       {
@@ -302,7 +302,7 @@ namespace SkyRoof
         "transmitter" => (Color.Fuchsia, MarkerShape.Triangle),
         "mode" => (Color.Yellow, MarkerShape.Triangle),
         "qso" => (Color.Aqua, MarkerShape.Square),
-        _ => (Color.White, MarkerShape.Circle),
+        _ => (Color.White, MarkerShape.Circle), // fixed: on the black display
       };
     }
 

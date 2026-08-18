@@ -68,7 +68,7 @@
       // WebsiteLabel
       // 
       WebsiteLabel.AutoSize = true;
-      WebsiteLabel.LinkColor = Color.Blue;
+      WebsiteLabel.LinkColor = Color.Blue; // replaced by Theme.Link in the constructor
       WebsiteLabel.Location = new Point(164, 79);
       WebsiteLabel.Name = "WebsiteLabel";
       WebsiteLabel.Size = new Size(50, 15);

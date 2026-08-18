@@ -12,9 +12,12 @@ namespace SkyRoof
     private List<TransmitterLabel> VisibleLabels = new();
 
     private readonly List<float> LastXPositions = new();
-    private Brush BlueSpanBrush = new SolidBrush(Color.FromArgb(20, Color.Blue));
-    private Brush GraySpanBrush = new SolidBrush(Color.FromArgb(20, Color.Gray));
-    private Brush PassbandBrush = new SolidBrush(Color.FromArgb(200, Color.Lime));
+    private Brush ActiveSpanBrush = new SolidBrush(Theme.ScaleActiveSpan);
+    private Brush IdleSpanBrush = new SolidBrush(Theme.ScaleIdleSpan);
+    private Brush PassbandBrush = new SolidBrush(Theme.PassbandFill);
+    private readonly Pen PassbandPen = new Pen(Theme.PassbandFrame);
+    private readonly Brush AccentBrush = new SolidBrush(Theme.ScaleAccent);
+    private readonly Pen AccentPen = new Pen(Theme.ScaleAccent);
     private Brush BgBrush;
     private readonly Font BoldFont;
 
@@ -127,13 +130,13 @@ namespace SkyRoof
       // main passband
       var rect = GetPassbandRect();
       g.FillRectangle(PassbandBrush, rect);
-      g.DrawRectangle(Pens.Green, rect);
+      g.DrawRectangle(PassbandPen, rect);
 
       // rit
       if (ctx.FrequencyControl.RadioLink.RitEnabled)
       {
         rect = GetPassbandRect(true);
-        g.DrawRectangle(Pens.Green, rect);
+        g.DrawRectangle(PassbandPen, rect);
       }
 
       // carrier frequency
@@ -173,13 +176,13 @@ namespace SkyRoof
         float x = (float)FreqToPixel(freq);
         if (x > width) break;
         float y = height - 0.7f * labelSize.Height;
-        g.DrawLine(Pens.Black, x, y, x, height);
+        g.DrawLine(SystemPens.ControlText, x, y, x, height);
 
         // label
         string freqText = (freq * 1e-6).ToString("F3");
         x -= g.MeasureString(freqText, Font).Width / 2;
         y = height - 1.8f * labelSize.Height;
-        g.DrawString(freqText, Font, Brushes.Black, x, y);
+        g.DrawString(freqText, Font, SystemBrushes.ControlText, x, y);
 
         freq += LabelStep;
       }
@@ -191,7 +194,7 @@ namespace SkyRoof
         float x = (float)FreqToPixel(freq);
         if (x > width) break;
         float y = height - 0.35f * labelSize.Height;
-        g.DrawLine(Pens.Black, x, y, x, height);
+        g.DrawLine(SystemPens.ControlText, x, y, x, height);
         freq += TickStep;
       }
     }
@@ -223,15 +226,16 @@ namespace SkyRoof
       LastXPositions.Clear();
       foreach (var label in VisibleLabels) DrawLabel(g, label, now);
 
-      // past triangles
+      // past triangles. ControlDark/ControlLightLight keep the light theme's relationship to the
+      // surface - past is darker than it, future is lighter - which White and Silver would lose
       foreach (var label in VisibleLabels)
         if (label.Pass.EndTime < now)
-          DrawTriangle(label, g, Brushes.Silver);
+          DrawTriangle(label, g, SystemBrushes.ControlDark);
 
       // future triangles
       foreach (var label in VisibleLabels)
         if (label.Pass.StartTime > now && label.Pass.StartTime < now.AddMinutes(6))
-          DrawTriangle(label, g, Brushes.White);
+          DrawTriangle(label, g, SystemBrushes.ControlLightLight);
 
       // current triangles
       foreach (var label in VisibleLabels)
@@ -263,19 +267,22 @@ namespace SkyRoof
       label.Rect = new RectangleF(label.x, LastY - size.Height, size.Width + 3, size.Height);
 
       // line
-      g.DrawLine(Pens.Blue, label.x, height, label.x, LastY);
+      g.DrawLine(AccentPen, label.x, height, label.x, LastY);
 
-      // selected sat BG
-      if (label.Transmitters.Contains(ctx.SatelliteSelector.SelectedTransmitter))
+      // selected sat BG. Fixed in both themes: aqua is bright on either surface
+      bool selected = label.Transmitters.Contains(ctx.SatelliteSelector.SelectedTransmitter);
+      if (selected)
         if (ctx.FrequencyControl.RadioLink.IsTerrestrial)
           g.FillRectangle(Brushes.PaleTurquoise, label.Rect);
         else
           g.FillRectangle(Brushes.Aqua, label.Rect);
 
-      // sat name
-      var brush = Brushes.Blue;
-      if (label.Pass.StartTime > now) brush = Brushes.Black;
-      else if (label.Pass.EndTime < now) brush = Brushes.Gray;
+      // sat name. The selected label sits on that fixed aqua chip, so its text is fixed too -
+      // the accent is aqua in the dark theme and would vanish into it
+      Brush brush = AccentBrush;
+      if (selected) brush = Brushes.Black; // fixed: on the aqua chip
+      else if (label.Pass.StartTime > now) brush = SystemBrushes.ControlText;
+      else if (label.Pass.EndTime < now) brush = SystemBrushes.GrayText;
 
       //var brush = label.Pass.StartTime <= now && label.Pass.EndTime >= now ? Brushes.Blue : Brushes.Gray;
       g.DrawString(label.Pass.Satellite.name, font, brush, label.Rect.Location);
@@ -290,8 +297,8 @@ namespace SkyRoof
       RectangleF r = new(label.x, height - SPAN_HEIGHT-1, label.endX - label.x, SPAN_HEIGHT);
 
       bool isNow = label.Pass.StartTime <= DateTime.UtcNow && label.Pass.EndTime >= DateTime.UtcNow;
-      g.FillRectangle(isNow ? BlueSpanBrush : GraySpanBrush, r);
-      g.DrawRectangle(isNow ? Pens.Blue : Pens.Gray, r);
+      g.FillRectangle(isNow ? ActiveSpanBrush : IdleSpanBrush, r);
+      g.DrawRectangle(isNow ? AccentPen : SystemPens.GrayText, r);
     }
 
     private void DrawTriangle(TransmitterLabel label, Graphics g, Brush brush)
@@ -308,7 +315,7 @@ namespace SkyRoof
       };
 
       g.FillPolygon(brush, points);
-      g.DrawPolygon(Pens.Black, points);
+      g.DrawPolygon(SystemPens.ControlText, points);
     }
 
 

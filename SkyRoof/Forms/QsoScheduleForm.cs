@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using System.Text;
 using SGPdotNET.Observation;
 using VE3NEA;
@@ -10,8 +10,8 @@ namespace SkyRoof
     private readonly QsoSchedulerPanel.OverlapPass overlap = null!;
     private readonly Image OkImage = null!;
     private readonly Image XMarkImage = null!;
-    private readonly Brush SkyBrush = new SolidBrush(Color.FromArgb(230, 249, 255));
-    private readonly Pen FullPathPen = new Pen(Color.Silver, 2);
+    private readonly Brush SkyBrush = new SolidBrush(Theme.SkyRealTimeDisk);
+    private readonly Pen FullPathPen = new Pen(SystemColors.ControlDark, 2);
     private readonly Pen CommonPathPen = new Pen(Color.Green, 5);
     private readonly Font TitleFont;
 
@@ -83,7 +83,7 @@ namespace SkyRoof
     {
       var g = e.Graphics;
       g.SmoothingMode = SmoothingMode.AntiAlias;
-      g.Clear(Color.White);
+      g.Clear(SystemColors.Control);
 
       var bounds = ChartsPanel.ClientRectangle;
       int half = bounds.Width / 2;
@@ -98,7 +98,7 @@ namespace SkyRoof
     {
       // grid-square label above the chart
       var labelSize = g.MeasureString(label, TitleFont);
-      g.DrawString(label, TitleFont, Brushes.Black,
+      g.DrawString(label, TitleFont, SystemBrushes.ControlText,
         area.X + (area.Width - labelSize.Width) / 2, area.Y + 6);
 
       int top = (int)labelSize.Height + 14;
@@ -196,7 +196,7 @@ namespace SkyRoof
       g.ScaleTransform(size / image.Width, size / image.Height);
       var rect = new RectangleF(-image.Width / 2f, -image.Height / 2f, image.Width, image.Height);
       // white background inside the circle so transparent icons stay visible
-      g.FillEllipse(Brushes.White, rect);
+      g.FillEllipse(Brushes.White, rect); // fixed: backdrop for the transparent icon
       g.DrawImage(image, rect);
       g.ResetTransform();
     }

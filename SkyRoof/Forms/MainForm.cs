@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime;
 using CSCore.CoreAudioAPI;
 using MathNet.Numerics;
@@ -42,6 +42,8 @@ namespace SkyRoof
       ctx.UdpStreamSender.ctx = ctx;
 
       ctx.Settings.LoadFromFile();
+
+      ApplyThemeSettings();
 
       EnsureUserDetails();
 
@@ -306,7 +308,7 @@ namespace SkyRoof
 
       if (ctx.Sdr == null || !ctx.Sdr.Enabled)
       {
-        color = Color.Gray;
+        color = SystemColors.GrayText;
         if (string.IsNullOrEmpty(ctx.Settings.Sdr.SelectedDeviceName))
           tooltip = "Not configured. Click to configure";
         else
@@ -442,14 +444,14 @@ namespace SkyRoof
     public void ShowSoundcardLabels()
     {
       if (!ctx.SpeakerSoundcard.Enabled)
-        SoundcardLedLabel.ForeColor = Color.Gray;
+        SoundcardLedLabel.ForeColor = SystemColors.GrayText;
       else if (!ctx.SpeakerSoundcard.IsRunning)
         SoundcardLedLabel.ForeColor = Color.Red;
       else
         SoundcardLedLabel.ForeColor = Color.Lime;
 
       if (!ctx.Settings.OutputStream.Enabled)
-        VacLedLabel.ForeColor = Color.Gray;
+        VacLedLabel.ForeColor = SystemColors.GrayText;
       else if (ctx.Settings.OutputStream.Type == DataStreamType.AudioToVac && !ctx.AudioVacSoundcard.IsRunning)
         VacLedLabel.ForeColor = Color.Red;
       else if (ctx.Settings.OutputStream.Type == DataStreamType.IqToVac && !ctx.IqVacSoundcard.IsRunning)
@@ -533,7 +535,7 @@ namespace SkyRoof
     {
       try
       {
-        SatDataLedLabel.ForeColor = Color.Gray;
+        SatDataLedLabel.ForeColor = SystemColors.GrayText;
         SatDataStatusLabel.ToolTipText = SatDataLedLabel.ToolTipText = "Downloading TLE...";
 
 
@@ -767,6 +769,57 @@ namespace SkyRoof
 
 
 
+    //----------------------------------------------------------------------------------------------
+    //                                       theme
+    //----------------------------------------------------------------------------------------------
+    private void ApplyThemeSettings()
+    {
+      // the DockPanelSuite theme must be selected before any DockContent is created: its setter
+      // throws when dock content exists, which is one reason the theme is a startup setting.
+      // Application.SetColorMode has already been called in Program.Main
+      DockHost.Theme = Theme.IsDark ? new VS2015DarkTheme() : new VS2015LightTheme();
+
+      ShowThemeMenuChecks();
+    }
+
+    private void ShowThemeMenuChecks()
+    {
+      var mode = ctx.Settings.Ui.Theme;
+      ThemeSystemMNU.Checked = mode == ThemeMode.System;
+      ThemeLightMNU.Checked = mode == ThemeMode.Light;
+      ThemeDarkMNU.Checked = mode == ThemeMode.Dark;
+    }
+
+    private void ThemeSystemMNU_Click(object sender, EventArgs e)
+    {
+      SelectTheme(ThemeMode.System);
+    }
+
+    private void ThemeLightMNU_Click(object sender, EventArgs e)
+    {
+      SelectTheme(ThemeMode.Light);
+    }
+
+    private void ThemeDarkMNU_Click(object sender, EventArgs e)
+    {
+      SelectTheme(ThemeMode.Dark);
+    }
+
+    private void SelectTheme(ThemeMode mode)
+    {
+      if (mode == ctx.Settings.Ui.Theme) return;
+
+      ctx.Settings.Ui.Theme = mode;
+      ctx.Settings.SaveToFile();
+      ShowThemeMenuChecks();
+
+      MessageBox.Show("The new theme will be applied the next time SkyRoof starts.",
+        "Theme", MessageBoxButtons.OK, MessageBoxIcon.Information);
+    }
+
+
+
+
 
     //----------------------------------------------------------------------------------------------
     //                                     statusbar
@@ -879,13 +932,13 @@ namespace SkyRoof
       bool rxOutOfBand = ctx.FrequencyControl.IsRxCatTransverterOutOfBand;
       bool txOutOfBand = ctx.FrequencyControl.IsTxCatTransverterOutOfBand;
 
-      if (ctx.CatControl.Rx == null) RxCatLedLabel.ForeColor = Color.Gray;
+      if (ctx.CatControl.Rx == null) RxCatLedLabel.ForeColor = SystemColors.GrayText;
       else if (!ctx.CatControl.Rx!.IsRunning) RxCatLedLabel.ForeColor = Color.Red;
       else if (rxOutOfBand) RxCatLedLabel.ForeColor = Color.Yellow;
       else RxCatLedLabel.ForeColor = Color.Lime;
 
-      if (!ctx.Settings.Cat.TxCat.Enabled) TxCatLedLabel.ForeColor = Color.Gray;
-      else if (!ctx.FrequencyControl.RadioLink.HasUplink) TxCatLedLabel.ForeColor = Color.Black;
+      if (!ctx.Settings.Cat.TxCat.Enabled) TxCatLedLabel.ForeColor = SystemColors.GrayText;
+      else if (!ctx.FrequencyControl.RadioLink.HasUplink) TxCatLedLabel.ForeColor = SystemColors.ControlText;
       else if (!ctx.CatControl.Tx?.IsRunning ?? false) TxCatLedLabel.ForeColor = Color.Red;
       else if (txOutOfBand) TxCatLedLabel.ForeColor = Color.Yellow;
       else TxCatLedLabel.ForeColor = Color.Lime;
@@ -911,8 +964,8 @@ namespace SkyRoof
 
     public void ShowRotatorStatus()
     {
-      if (!ctx.Settings.Rotator.Enabled) RotatorLedLabel.ForeColor = Color.Gray;
-      else if (ctx.FrequencyControl.RadioLink.IsTerrestrial) RotatorLedLabel.ForeColor = Color.Black;
+      if (!ctx.Settings.Rotator.Enabled) RotatorLedLabel.ForeColor = SystemColors.GrayText;
+      else if (ctx.FrequencyControl.RadioLink.IsTerrestrial) RotatorLedLabel.ForeColor = SystemColors.ControlText;
       else if (ctx.RotatorControl.IsRunning()) RotatorLedLabel.ForeColor = Color.Lime;
       else RotatorLedLabel.ForeColor = Color.Red;
 

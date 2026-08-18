@@ -9,6 +9,7 @@ namespace SkyRoof
     public AboutBox()
     {
       InitializeComponent();
+      WebsiteLabel.LinkColor = Theme.Link;
       Text = $"About {Utils.GetAppName()}";
       label1.Text = Utils.GetVersionString();
       label2.Text = Utils.GetCopyrightString();

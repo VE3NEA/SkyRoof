@@ -15,8 +15,8 @@ namespace SkyRoof
     
     private readonly Font RegularFont, BoldFont;
     private readonly Image OkImage, XMarkImage, ArrowImage, SatImage;
-    private readonly Brush BlueBrush = new SolidBrush(Color.FromArgb(230, 249, 255));
-    private readonly Brush SilverBrush = new SolidBrush(Color.FromArgb(242, 242, 242));
+    private readonly Brush BlueBrush = new SolidBrush(Theme.SkyRealTimeDisk);
+    private readonly Brush SilverBrush = new SolidBrush(Theme.SkyOrbitDisk);
     private readonly Brush PinkBrush = new SolidBrush(Color.FromArgb(50, 255, 0, 0));
 
 
@@ -39,6 +39,8 @@ namespace SkyRoof
       using (var ms = new MemoryStream(Properties.Resources.xmark)) { XMarkImage = Image.FromStream(ms); }
       using (var ms = new MemoryStream(Properties.Resources.arrow)) { ArrowImage = Image.FromStream(ms); }
       using (var ms = new MemoryStream(Properties.Resources.satellite)) { SatImage = Image.FromStream(ms); }
+
+      FlowPanel.BackColor = SystemColors.Window;
 
       Utils.SetDoubleBuffered(DrawPanel, true);
     }
@@ -156,14 +158,14 @@ namespace SkyRoof
       float radiusY = Center.Y - Math.Max(sizeN.Width, sizeS.Width) - 4;
       Radius = Math.Min(radiusX, radiusY);
 
-      // fill bg 
-      g.FillRectangle(Brushes.White, DrawPanel.ClientRectangle);
+      // fill bg
+      g.FillRectangle(SystemBrushes.Window, DrawPanel.ClientRectangle);
       RectangleF rect = new RectangleF(Center.X - Radius, Center.Y - Radius, 2 * Radius, 2 * Radius);
       var brush = OrbitRadioBtn.Checked ? SilverBrush : BlueBrush;
       g.FillEllipse(brush, rect);
 
       // circles
-      var pen = OrbitRadioBtn.Checked ? Pens.Gray : Pens.Teal;
+      var pen = OrbitRadioBtn.Checked ? SystemPens.GrayText : Pens.Teal;
       for (float r = Radius / 3; r <= 1.1 * Radius; r += Radius / 3)
       {
         rect = new RectangleF(Center.X - r, Center.Y - r, 2 * r, 2 * r);
@@ -255,7 +257,7 @@ namespace SkyRoof
       var offset = SatImage.Height / 3f * scale;
       var rect = new RectangleF(location.X + offset, location.Y - size.Height - offset, size.Width, size.Height);
       if (rect.Right > DrawPanel.Width) rect.X -= 2 * offset + size.Width;
-      g.DrawString(text, font, Brushes.Black, rect);
+      g.DrawString(text, font, SystemBrushes.WindowText, rect);
       SatLabelRects[rect] = pass;
     }
 
@@ -263,7 +265,7 @@ namespace SkyRoof
     {
       var size = image.Size;
       var rect = new RectangleF(-size.Width / 2, -size.Height / 2, size.Width, size.Height);
-      if (whiteBg) g.FillEllipse(Brushes.White, rect); // give the transpatent symbol inside the circle a white bg
+      if (whiteBg) g.FillEllipse(Brushes.White, rect); // fixed: backdrop for the transparent icon // give the transpatent symbol inside the circle a white bg
       g.DrawImage(image, rect);
     }
 
@@ -340,7 +342,7 @@ namespace SkyRoof
         ellipsePath.AddEllipse(bounds);
         GradientBrush = new PathGradientBrush(ellipsePath);
         GradientBrush.CenterPoint = new PointF(bounds.Width / 2f, bounds.Height / 2f);
-        GradientBrush.CenterColor = Color.Black;
+        GradientBrush.CenterColor = Color.Black; // pending: unused code path
         GradientBrush.SurroundColors = [Color.SkyBlue];
         GradientBrush.FocusScales = new PointF(0, 0);
       }

@@ -1,4 +1,4 @@
-using FontAwesome;
+﻿using FontAwesome;
 using MathNet.Numerics;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
@@ -497,7 +497,7 @@ namespace SkyRoof
       FormatOverride = null;
       FormatOverrideId = null;
       FormatValidated = false;
-      SettingsButton.ForeColor = Color.Gray;
+      SettingsButton.ForeColor = SystemColors.GrayText;
 
       if (Terrestrial) SatNameLabel.Text = "Terrestrial";
       else SatNameLabel.Text = $"{Satellite.name}  {Transmitter.description}";
@@ -1183,7 +1183,7 @@ namespace SkyRoof
     {
       bool userChange = UserChangedFields.Count > 0 || FormatOverrideId != null;
       bool pipelineFound = PipelineFound("Baud") || PipelineFound("Deviation") || PipelineFound("Differential");
-      if (!userChange && !pipelineFound) { SettingsButton.ForeColor = Color.Gray; return; }
+      if (!userChange && !pipelineFound) { SettingsButton.ForeColor = SystemColors.GrayText; return; }
 
       bool demodOk = UserChangedFields.Count == 0 || DemodValidated;
       bool formatOk = FormatOverrideId == null || FormatValidated;
@@ -1261,7 +1261,7 @@ namespace SkyRoof
       }
 
       var passNode = new TreeNode($"{DateTime.Now:yyyy-MM-dd HH:mm} {snapshot.Transmitter.Satellite.name}  {snapshot.Transmitter.description}");
-      if (grayUntilContent) passNode.ForeColor = Color.Gray;
+      if (grayUntilContent) passNode.ForeColor = SystemColors.GrayText;
       var txPassInfo = new TxPassInfo(snapshot.Transmitter, orbit);
       txPassInfo.SignalParams = snapshot.SignalParams;
       passNode.Tag = txPassInfo;

@@ -15,6 +15,7 @@ namespace SkyRoof
   {
     private const float Alpha = 0.1f;
     private float Amplitude = 0.01f;
+    private readonly Brush RemainderBrush = new SolidBrush(Theme.BarRemainder);
 
     public Ft4AmplitudeBar()
     {
@@ -49,7 +50,7 @@ namespace SkyRoof
       float y = -Dsp.ToDb2(Amplitude);
       y = Math.Max(0, Math.Min(h, y));
 
-      e.Graphics.FillRectangle(Brushes.White, new RectangleF(0, 0, w, y));
+      e.Graphics.FillRectangle(RemainderBrush, new RectangleF(0, 0, w, y));
       e.Graphics.FillRectangle(fgBrush, new RectangleF(0, y, w, h-y));
     }
   }

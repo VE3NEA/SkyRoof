@@ -213,7 +213,7 @@ namespace SkyRoof
 
       if (!e.State.HasFlag(DrawItemState.ComboBoxEdit))
       {
-        e.Graphics.FillRectangle(Brushes.White, e.Bounds);
+        e.Graphics.FillRectangle(SystemBrushes.Window, e.Bounds);
         rect.Inflate(-2, -1);
         rect.Width -= 17; // make dropdown entries the same width as combo's edit box
       }

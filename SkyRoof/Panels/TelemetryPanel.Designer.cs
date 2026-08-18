@@ -1,4 +1,4 @@
-namespace SkyRoof
+﻿namespace SkyRoof
 {
   partial class TelemetryPanel
   {
@@ -170,7 +170,7 @@ namespace SkyRoof
       // 
       // ImageBox
       // 
-      ImageBox.BackColor = Color.DimGray;
+      ImageBox.BackColor = SystemColors.ControlDarkDark;
       ImageBox.ContextMenuStrip = ImageMenu;
       ImageBox.Dock = DockStyle.Fill;
       ImageBox.Location = new Point(0, 0);

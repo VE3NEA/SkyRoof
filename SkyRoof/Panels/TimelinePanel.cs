@@ -86,7 +86,8 @@ namespace SkyRoof
     {
       // chart
       var rect = new RectangleF(0, 0, ClientSize.Width, Math.Max(1, ClientSize.Height - ScaleHeight));
-      LinearGradientBrush lgb = new LinearGradientBrush(rect, Color.SkyBlue, Color.White, LinearGradientMode.Vertical);
+      // the chart gradient and everything drawn on it are themed in step 4
+      LinearGradientBrush lgb = new LinearGradientBrush(rect, Color.SkyBlue, Color.White, LinearGradientMode.Vertical); // pending: step 4
       g.FillRectangle(lgb, rect);
 
       // time scale
@@ -94,7 +95,7 @@ namespace SkyRoof
       ScaleHeight = textHeight * 2 + 7;
       TopMargin = textHeight;
       rect = new RectangleF(0, ClientSize.Height - ScaleHeight, ClientSize.Width, ScaleHeight);
-      g.FillRectangle(Brushes.Silver, rect);
+      g.FillRectangle(SystemBrushes.Control, rect);
 
       // past time shadow
       float x = TimeToPixel(now, now);
@@ -119,14 +120,14 @@ namespace SkyRoof
       {
         var date2 = date1.AddDays(1);
         x2 = Math.Min(ClientSize.Width, TimeToPixel(date2, now));
-        g.DrawLine(Pens.Black, x2, ClientSize.Height - ScaleHeight, x2, ClientSize.Height);
+        g.DrawLine(SystemPens.ControlText, x2, ClientSize.Height - ScaleHeight, x2, ClientSize.Height);
 
         string label = $"{date1:MMM dd}";
         var size = TextRenderer.MeasureText(label, Font, Size, TextFormatFlags.NoPadding);
         size.Width += 3;
 
         if (x2 - x1 > size.Width + 15)
-          g.DrawString(label, Font, Brushes.Black, (x1 + x2 - size.Width) / 2, ClientSize.Height - size.Height - 1);
+          g.DrawString(label, Font, SystemBrushes.ControlText, (x1 + x2 - size.Width) / 2, ClientSize.Height - size.Height - 1);
 
         date1 = date2;
         x1 = Math.Max(-1, x2);
@@ -158,7 +159,7 @@ namespace SkyRoof
       var x = TimeToPixel(time, now);
       while (x < ClientSize.Width)
       {
-        g.DrawLine(Pens.Black, x, ClientSize.Height - ScaleHeight, x, ClientSize.Height - ScaleHeight + 5);
+        g.DrawLine(SystemPens.ControlText, x, ClientSize.Height - ScaleHeight, x, ClientSize.Height - ScaleHeight + 5);
         time = time.Add(smallStep);
         x = TimeToPixel(time, now);
       }
@@ -171,9 +172,9 @@ namespace SkyRoof
         string label = $"{time:HH:mm}";
         var size = TextRenderer.MeasureText(label, Font, Size, TextFormatFlags.NoPadding);
         size.Width += 3;
-        g.DrawString(label, Font, Brushes.Black, x - size.Width / 2, ClientSize.Height - ScaleHeight + 7);
+        g.DrawString(label, Font, SystemBrushes.ControlText, x - size.Width / 2, ClientSize.Height - ScaleHeight + 7);
 
-        g.DrawLine(Pens.Black, x, ClientSize.Height - ScaleHeight, x, ClientSize.Height - ScaleHeight + 10);
+        g.DrawLine(SystemPens.ControlText, x, ClientSize.Height - ScaleHeight, x, ClientSize.Height - ScaleHeight + 10);
         time = time.Add(step);
         x = TimeToPixel(time, now);
       }
@@ -185,8 +186,8 @@ namespace SkyRoof
       float dy = (y - TopMargin) / 3;
       for (int el = 0; el <= 90; el += 30)
       {
-        g.DrawLine(Pens.Black, 0, y, 7, y);
-        g.DrawString($"{el:00}°", Font, Brushes.Black, 8, y - TopMargin);
+        g.DrawLine(Pens.Black, 0, y, 7, y); // pending: on the light chart gradient, step 4
+        g.DrawString($"{el:00}°", Font, Brushes.Black, 8, y - TopMargin); // pending: step 4
         y -= dy;
       }
     }
@@ -251,7 +252,7 @@ namespace SkyRoof
           y0 - (float)pass.MaxElevation * scaleY - size.Height,
           size.Width + 1, size.Height); // without +1 the last char is sometimes truncated
 
-        g.DrawString(text, Font, Brushes.Black, rect.Left, rect.Top);
+        g.DrawString(text, Font, Brushes.Black, rect.Left, rect.Top); // pending: on the light chart gradient, step 4
         SatLabelRects[rect] = pass;
       }
     }

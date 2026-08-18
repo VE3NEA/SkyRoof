@@ -1,4 +1,4 @@
-namespace SkyRoof
+﻿namespace SkyRoof
 {
   partial class RecorderPanel
   {
@@ -220,7 +220,7 @@ namespace SkyRoof
       // 
       // WaveformWidget
       // 
-      WaveformWidget.BackColor = Color.Black;
+      WaveformWidget.BackColor = Color.Black; // fixed: instrument display
       WaveformWidget.Dock = DockStyle.Fill;
       WaveformWidget.Location = new Point(0, 0);
       WaveformWidget.Name = "WaveformWidget";

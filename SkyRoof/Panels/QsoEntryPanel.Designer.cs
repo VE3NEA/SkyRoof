@@ -127,7 +127,7 @@
       // 
       // panel1
       // 
-      panel1.BackColor = Color.LightSkyBlue;
+      panel1.BackColor = Theme.QsoCard;
       panel1.Controls.Add(UtcFrame);
       panel1.Controls.Add(UtcLabel);
       panel1.Location = new Point(3, 3);
@@ -137,11 +137,11 @@
       // 
       // UtcFrame
       // 
-      UtcFrame.BackColor = Color.Blue;
+      UtcFrame.BackColor = Theme.QsoFieldEdited;
       UtcFrame.Controls.Add(UtcPicker);
       UtcFrame.Location = new Point(43, 6);
       UtcFrame.Name = "UtcFrame";
-      UtcFrame.Size = new Size(130, 25);
+      UtcFrame.Size = new Size(132, 27);
       UtcFrame.TabIndex = 24;
       // 
       // UtcPicker
@@ -149,7 +149,7 @@
       UtcPicker.CustomFormat = "MM/dd HH:mm";
       UtcPicker.Font = new Font("Courier New", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
       UtcPicker.Format = DateTimePickerFormat.Custom;
-      UtcPicker.Location = new Point(1, 1);
+      UtcPicker.Location = new Point(2, 2);
       UtcPicker.Name = "UtcPicker";
       UtcPicker.Size = new Size(128, 23);
       UtcPicker.TabIndex = 1;
@@ -169,7 +169,7 @@
       // 
       // panel2
       // 
-      panel2.BackColor = Color.LightSkyBlue;
+      panel2.BackColor = Theme.QsoCard;
       panel2.Controls.Add(BandFrame);
       panel2.Controls.Add(label10);
       panel2.Location = new Point(186, 3);
@@ -179,11 +179,11 @@
       // 
       // BandFrame
       // 
-      BandFrame.BackColor = Color.Blue;
+      BandFrame.BackColor = Theme.QsoFieldEdited;
       BandFrame.Controls.Add(BandComboBox);
       BandFrame.Location = new Point(43, 4);
       BandFrame.Name = "BandFrame";
-      BandFrame.Size = new Size(130, 28);
+      BandFrame.Size = new Size(132, 30);
       BandFrame.TabIndex = 24;
       // 
       // BandComboBox
@@ -191,7 +191,7 @@
       BandComboBox.AutoCompleteCustomSource.AddRange(new string[] { "2m", "70cm", "23cm", "13cm" });
       BandComboBox.Font = new Font("Courier New", 12F);
       BandComboBox.FormattingEnabled = true;
-      BandComboBox.Location = new Point(1, 1);
+      BandComboBox.Location = new Point(2, 2);
       BandComboBox.Name = "BandComboBox";
       BandComboBox.Size = new Size(128, 26);
       BandComboBox.TabIndex = 23;
@@ -209,7 +209,7 @@
       // 
       // panel3
       // 
-      panel3.BackColor = Color.LightSkyBlue;
+      panel3.BackColor = Theme.QsoCard;
       panel3.Controls.Add(ModeFrame);
       panel3.Controls.Add(label11);
       panel3.Location = new Point(369, 3);
@@ -219,18 +219,18 @@
       // 
       // ModeFrame
       // 
-      ModeFrame.BackColor = Color.Blue;
+      ModeFrame.BackColor = Theme.QsoFieldEdited;
       ModeFrame.Controls.Add(ModeComboBox);
       ModeFrame.Location = new Point(43, 4);
       ModeFrame.Name = "ModeFrame";
-      ModeFrame.Size = new Size(130, 28);
+      ModeFrame.Size = new Size(132, 30);
       ModeFrame.TabIndex = 24;
       // 
       // ModeComboBox
       // 
       ModeComboBox.Font = new Font("Courier New", 12F);
       ModeComboBox.FormattingEnabled = true;
-      ModeComboBox.Location = new Point(1, 1);
+      ModeComboBox.Location = new Point(2, 2);
       ModeComboBox.Name = "ModeComboBox";
       ModeComboBox.Size = new Size(128, 26);
       ModeComboBox.TabIndex = 23;
@@ -248,7 +248,7 @@
       // 
       // panel4
       // 
-      panel4.BackColor = Color.LightSkyBlue;
+      panel4.BackColor = Theme.QsoCard;
       panel4.Controls.Add(SatFrame);
       panel4.Controls.Add(label12);
       panel4.Location = new Point(552, 3);
@@ -258,18 +258,18 @@
       // 
       // SatFrame
       // 
-      SatFrame.BackColor = Color.Blue;
+      SatFrame.BackColor = Theme.QsoFieldEdited;
       SatFrame.Controls.Add(SatComboBox);
       SatFrame.Location = new Point(43, 4);
       SatFrame.Name = "SatFrame";
-      SatFrame.Size = new Size(130, 28);
+      SatFrame.Size = new Size(132, 30);
       SatFrame.TabIndex = 24;
       // 
       // SatComboBox
       // 
       SatComboBox.Font = new Font("Courier New", 12F);
       SatComboBox.FormattingEnabled = true;
-      SatComboBox.Location = new Point(1, 1);
+      SatComboBox.Location = new Point(2, 2);
       SatComboBox.Name = "SatComboBox";
       SatComboBox.Size = new Size(128, 26);
       SatComboBox.TabIndex = 23;
@@ -287,7 +287,7 @@
       // 
       // panel5
       // 
-      panel5.BackColor = Color.LightSkyBlue;
+      panel5.BackColor = Theme.QsoCard;
       panel5.Controls.Add(CallFrame);
       panel5.Controls.Add(label13);
       panel5.Location = new Point(3, 45);
@@ -297,18 +297,18 @@
       // 
       // CallFrame
       // 
-      CallFrame.BackColor = Color.Blue;
+      CallFrame.BackColor = Theme.QsoFieldEdited;
       CallFrame.Controls.Add(CallEdit);
       CallFrame.Location = new Point(43, 4);
       CallFrame.Name = "CallFrame";
-      CallFrame.Size = new Size(130, 28);
+      CallFrame.Size = new Size(132, 30);
       CallFrame.TabIndex = 25;
       // 
       // CallEdit
       // 
       CallEdit.CharacterCasing = CharacterCasing.Upper;
       CallEdit.Font = new Font("Courier New", 12F);
-      CallEdit.Location = new Point(1, 1);
+      CallEdit.Location = new Point(2, 2);
       CallEdit.Margin = new Padding(13);
       CallEdit.Name = "CallEdit";
       CallEdit.Size = new Size(128, 26);
@@ -328,7 +328,7 @@
       // 
       // panel6
       // 
-      panel6.BackColor = Color.LightSkyBlue;
+      panel6.BackColor = Theme.QsoCard;
       panel6.Controls.Add(GridFrame);
       panel6.Controls.Add(label14);
       panel6.Location = new Point(186, 45);
@@ -338,18 +338,18 @@
       // 
       // GridFrame
       // 
-      GridFrame.BackColor = Color.Blue;
+      GridFrame.BackColor = Theme.QsoFieldEdited;
       GridFrame.Controls.Add(GridEdit);
       GridFrame.Location = new Point(43, 4);
       GridFrame.Name = "GridFrame";
-      GridFrame.Size = new Size(130, 28);
+      GridFrame.Size = new Size(132, 30);
       GridFrame.TabIndex = 25;
       // 
       // GridEdit
       // 
       GridEdit.CharacterCasing = CharacterCasing.Upper;
       GridEdit.Font = new Font("Courier New", 12F);
-      GridEdit.Location = new Point(1, 1);
+      GridEdit.Location = new Point(2, 2);
       GridEdit.Margin = new Padding(13);
       GridEdit.Name = "GridEdit";
       GridEdit.Size = new Size(128, 26);
@@ -368,7 +368,7 @@
       // 
       // panel11
       // 
-      panel11.BackColor = Color.LightSkyBlue;
+      panel11.BackColor = Theme.QsoCard;
       panel11.Controls.Add(StateFrame);
       panel11.Controls.Add(label1);
       panel11.Location = new Point(369, 45);
@@ -378,18 +378,18 @@
       // 
       // StateFrame
       // 
-      StateFrame.BackColor = Color.Blue;
+      StateFrame.BackColor = Theme.QsoFieldEdited;
       StateFrame.Controls.Add(StateComboBox);
       StateFrame.Location = new Point(43, 4);
       StateFrame.Name = "StateFrame";
-      StateFrame.Size = new Size(130, 28);
+      StateFrame.Size = new Size(132, 30);
       StateFrame.TabIndex = 24;
       // 
       // StateComboBox
       // 
       StateComboBox.Font = new Font("Courier New", 12F);
       StateComboBox.FormattingEnabled = true;
-      StateComboBox.Location = new Point(1, 1);
+      StateComboBox.Location = new Point(2, 2);
       StateComboBox.Name = "StateComboBox";
       StateComboBox.Size = new Size(128, 26);
       StateComboBox.TabIndex = 23;
@@ -407,7 +407,7 @@
       // 
       // panel7
       // 
-      panel7.BackColor = Color.LightSkyBlue;
+      panel7.BackColor = Theme.QsoCard;
       panel7.Controls.Add(SentFrame);
       panel7.Controls.Add(label15);
       panel7.Location = new Point(552, 45);
@@ -417,18 +417,18 @@
       // 
       // SentFrame
       // 
-      SentFrame.BackColor = Color.Blue;
+      SentFrame.BackColor = Theme.QsoFieldEdited;
       SentFrame.Controls.Add(SentEdit);
       SentFrame.Location = new Point(43, 4);
       SentFrame.Name = "SentFrame";
-      SentFrame.Size = new Size(130, 28);
+      SentFrame.Size = new Size(132, 30);
       SentFrame.TabIndex = 24;
       // 
       // SentEdit
       // 
       SentEdit.CharacterCasing = CharacterCasing.Upper;
       SentEdit.Font = new Font("Courier New", 12F);
-      SentEdit.Location = new Point(1, 1);
+      SentEdit.Location = new Point(2, 2);
       SentEdit.Margin = new Padding(13);
       SentEdit.Name = "SentEdit";
       SentEdit.Size = new Size(128, 26);
@@ -447,7 +447,7 @@
       // 
       // panel8
       // 
-      panel8.BackColor = Color.LightSkyBlue;
+      panel8.BackColor = Theme.QsoCard;
       panel8.Controls.Add(RecvFrame);
       panel8.Controls.Add(label16);
       panel8.Location = new Point(3, 87);
@@ -457,18 +457,18 @@
       // 
       // RecvFrame
       // 
-      RecvFrame.BackColor = Color.Blue;
+      RecvFrame.BackColor = Theme.QsoFieldEdited;
       RecvFrame.Controls.Add(RecvEdit);
       RecvFrame.Location = new Point(43, 4);
       RecvFrame.Name = "RecvFrame";
-      RecvFrame.Size = new Size(130, 28);
+      RecvFrame.Size = new Size(132, 30);
       RecvFrame.TabIndex = 25;
       // 
       // RecvEdit
       // 
       RecvEdit.CharacterCasing = CharacterCasing.Upper;
       RecvEdit.Font = new Font("Courier New", 12F);
-      RecvEdit.Location = new Point(1, 1);
+      RecvEdit.Location = new Point(2, 2);
       RecvEdit.Margin = new Padding(13);
       RecvEdit.Name = "RecvEdit";
       RecvEdit.Size = new Size(128, 26);
@@ -487,7 +487,7 @@
       // 
       // panel9
       // 
-      panel9.BackColor = Color.LightSkyBlue;
+      panel9.BackColor = Theme.QsoCard;
       panel9.Controls.Add(NameFrame);
       panel9.Controls.Add(label17);
       panel9.Location = new Point(186, 87);
@@ -497,17 +497,17 @@
       // 
       // NameFrame
       // 
-      NameFrame.BackColor = Color.Blue;
+      NameFrame.BackColor = Theme.QsoFieldEdited;
       NameFrame.Controls.Add(NameEdit);
       NameFrame.Location = new Point(43, 4);
       NameFrame.Name = "NameFrame";
-      NameFrame.Size = new Size(130, 28);
+      NameFrame.Size = new Size(132, 30);
       NameFrame.TabIndex = 25;
       // 
       // NameEdit
       // 
       NameEdit.Font = new Font("Courier New", 12F);
-      NameEdit.Location = new Point(1, 1);
+      NameEdit.Location = new Point(2, 2);
       NameEdit.Margin = new Padding(13);
       NameEdit.Name = "NameEdit";
       NameEdit.Size = new Size(128, 26);
@@ -526,7 +526,7 @@
       // 
       // panel12
       // 
-      panel12.BackColor = Color.LightSkyBlue;
+      panel12.BackColor = Theme.QsoCard;
       panel12.Controls.Add(NotesFrame);
       panel12.Controls.Add(label2);
       panel12.Location = new Point(369, 87);
@@ -536,17 +536,17 @@
       // 
       // NotesFrame
       // 
-      NotesFrame.BackColor = Color.Blue;
+      NotesFrame.BackColor = Theme.QsoFieldEdited;
       NotesFrame.Controls.Add(NotesEdit);
       NotesFrame.Location = new Point(43, 4);
       NotesFrame.Name = "NotesFrame";
-      NotesFrame.Size = new Size(130, 28);
+      NotesFrame.Size = new Size(132, 30);
       NotesFrame.TabIndex = 25;
       // 
       // NotesEdit
       // 
       NotesEdit.Font = new Font("Courier New", 12F);
-      NotesEdit.Location = new Point(1, 1);
+      NotesEdit.Location = new Point(2, 2);
       NotesEdit.Margin = new Padding(13);
       NotesEdit.Name = "NotesEdit";
       NotesEdit.Size = new Size(128, 26);
@@ -565,7 +565,7 @@
       // 
       // ButtonsPanel
       // 
-      ButtonsPanel.BackColor = Color.LightSkyBlue;
+      ButtonsPanel.BackColor = Theme.QsoCard;
       ButtonsPanel.Controls.Add(ClearBtn);
       ButtonsPanel.Controls.Add(SaveBtn);
       ButtonsPanel.Location = new Point(552, 87);

@@ -66,6 +66,7 @@
       // utcLabel
       // 
       utcLabel.BackColor = Color.Aqua;
+      utcLabel.ForeColor = Color.Black; // fixed: the aqua and teal backgrounds are fixed too
       utcLabel.Cursor = Cursors.Hand;
       utcLabel.Font = new Font("Microsoft Sans Serif", 6F, FontStyle.Bold, GraphicsUnit.Point, 0);
       utcLabel.Location = new Point(65, 51);
@@ -81,6 +82,7 @@
       // localLabel
       // 
       localLabel.BackColor = Color.Teal;
+      localLabel.ForeColor = Color.Black; // fixed: the aqua and teal backgrounds are fixed too
       localLabel.Cursor = Cursors.Hand;
       localLabel.Font = new Font("Microsoft Sans Serif", 6F, FontStyle.Bold, GraphicsUnit.Point, 0);
       localLabel.Location = new Point(17, 51);

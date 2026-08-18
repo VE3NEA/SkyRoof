@@ -135,11 +135,11 @@ namespace SkyRoof
   {
     [DisplayName("Window")]
     [DefaultValue(typeof(Color), "White")]
-    public Color Window { get; set; } = Color.White; // SystemColors.Window;
+    public Color Window { get; set; } = Color.White; // pending: deleted in step 7, the console reads SystemColors.Window
 
     [DisplayName("Separator")]
     [DefaultValue(typeof(Color), "233, 233, 233")]
-    public Color Separator { get; set; } = Color.FromArgb(233, 233, 233);
+    public Color Separator { get; set; } = Color.FromArgb(233, 233, 233); // pending: user color, default revisited in step 7
 
     [DisplayName("Transmitted Message")]
     [DefaultValue(typeof(Color), "LightCoral")]
