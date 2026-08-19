@@ -5,7 +5,7 @@
        runs build/Set-Version.ps1 to propagate it to the installer script and the docs. -->
   <PropertyGroup>
     <Product>SkyRoof</Product>
-    <Version>1.49</Version>
+    <Version>1.50</Version>
   </PropertyGroup>
 
 </Project>
