@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.49](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.49/SkyRoofSetup-v.1.49.exe)
+[SkyRoof v.1.50](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.50/SkyRoofSetup-v.1.50.exe)
 
 <br>
 
@@ -15,6 +15,10 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.50
+
+- dark theme implemented
 
 #### v.1.49
 
