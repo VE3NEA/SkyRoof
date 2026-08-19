@@ -67,3 +67,9 @@ have been combined into a tabbed view.
 You can switch between these panels by clicking on their respective tabs.
 
 ![Dock](../images/dock_8.png)
+
+## Theme
+
+Click on **Tools / Theme** in the main menu to select the color theme. **System** follows the
+Windows app color setting, while **Light** and **Dark** force the theme regardless of it.
+The selected theme is applied the next time SkyRoof starts.
