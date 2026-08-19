@@ -32,6 +32,7 @@ namespace VE3NEA
     {
       base.OnHandleCreated(e);
       SendMessage(Handle, LVM_SETEXTENDEDLISTVIEWSTYLE, LVS_EX_DOUBLEBUFFER, LVS_EX_DOUBLEBUFFER);
+      ThemeTooltip();
     }
 
     protected override void OnNotifyMessage(Message m)
@@ -93,11 +94,30 @@ namespace VE3NEA
     const int TTDT_AUTOMATIC = 0;
     const int TTDT_AUTOPOP = 2;
     const int TTDT_INITIAL = 3;
+    const int TTM_SETTIPBKCOLOR = 0x400 + 19;
+    const int TTM_SETTIPTEXTCOLOR = 0x400 + 20;
+
+    [DllImport("uxtheme.dll", CharSet = CharSet.Unicode)]
+    static extern int SetWindowTheme(IntPtr hWnd, string subAppName, string subIdList);
 
     public void SetTooltipDelay(int delayMs)
     {
       var tooltip = SendMessage(Handle, LVM_GETTOOLTIPS, 0, 0);
       SendMessage(tooltip, TTM_SETDELAYTIME, TTDT_AUTOMATIC, delayMs);
+    }
+
+    // The item tooltip is the native control's own, and the framework leaves it light in the
+    // dark theme. Colors can be set on it, but the theme paints over them, so the theme has to
+    // go first - which trades the themed frame for a tooltip that matches the ones ToolTipEx
+    // paints. The light theme already looks right and is left alone.
+    private void ThemeTooltip()
+    {
+      if (!Theme.IsDark) return;
+
+      var tooltip = SendMessage(Handle, LVM_GETTOOLTIPS, 0, 0);
+      SetWindowTheme(tooltip, "", "");
+      SendMessage(tooltip, TTM_SETTIPBKCOLOR, ColorTranslator.ToWin32(Theme.TipBack), 0);
+      SendMessage(tooltip, TTM_SETTIPTEXTCOLOR, ColorTranslator.ToWin32(Theme.TipText), 0);
     }
 
 

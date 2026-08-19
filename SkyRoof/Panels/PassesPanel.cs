@@ -11,6 +11,8 @@ namespace SkyRoof
   {
     private readonly Context ctx;
     private List<ListViewItem> Items = new();
+    // the row whose tooltip text has been composed, see listViewEx1_MouseMove
+    private ListViewItem? HoveredItem;
 
     private readonly Font BoldFont;
     private readonly Pen PathPen = new Pen(Theme.Now, 2);
@@ -256,11 +258,17 @@ namespace SkyRoof
       e.Graphics.FillRectangle(SystemBrushes.ControlDark, rect);
     }
 
-    private void listViewEx1_ItemMouseHover(object sender, ListViewItemMouseHoverEventArgs e)
+    // A ListView no longer raises ItemMouseHover, so the text of a row is composed while the
+    // pointer moves over it, well before the tooltip has waited out its delay. Only a change of
+    // row does the work.
+    private void listViewEx1_MouseMove(object sender, MouseEventArgs e)
     {
-      if (e.Item == null) return;
-      var pass = (SatellitePass)e.Item.Tag!;
-      e.Item.ToolTipText = $"{pass.Satellite.GetTooltipText()}\n\n{string.Join("\n", pass.GetTooltipText(false))}";
+      var item = listViewEx1.GetItemAt(e.X, e.Y);
+      if (item == null || item == HoveredItem) return;
+      HoveredItem = item;
+
+      var pass = (SatellitePass)item.Tag!;
+      item.ToolTipText = $"{pass.Satellite.GetTooltipText()}\n\n{string.Join("\n", pass.GetTooltipText(false))}";
     }
   }
 }

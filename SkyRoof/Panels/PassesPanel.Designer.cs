@@ -114,7 +114,7 @@
       listViewEx1.View = View.Details;
       listViewEx1.VirtualMode = true;
       listViewEx1.DrawSubItem += listViewEx1_DrawSubItem;
-      listViewEx1.ItemMouseHover += listViewEx1_ItemMouseHover;
+      listViewEx1.MouseMove += listViewEx1_MouseMove;
       listViewEx1.RetrieveVirtualItem += listViewEx1_RetrieveVirtualItem;
       listViewEx1.MouseDown += listViewEx1_MouseDown;
       listViewEx1.Resize += listViewEx1_Resize;
