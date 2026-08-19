@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SkyRoof;
 
 namespace VE3NEA
 {
@@ -55,6 +56,8 @@ namespace VE3NEA
 
     protected override void WndProc(ref Message m)
     {
+      if (HandleGroupCustomDraw(ref m)) return;
+
       if (m.Msg == WM_NCCALCSIZE)
       {
         int style = (int)GetWindowLongPtr(Handle, GWL_STYLE);
@@ -109,6 +112,167 @@ namespace VE3NEA
 
       foreach (ColumnHeader column in Columns)
         column.Width = (int)(column.Width * factor.Width);
+    }
+
+
+
+
+    //--------------------------------------------------------------------------------------------------------------
+    //                                           group header text color
+    //--------------------------------------------------------------------------------------------------------------
+    // The group header is painted by the theme, in a blue that the dark surface swallows, and no
+    // message sets its color: even the clrText of the custom draw notification is ignored there.
+    // So the header is painted here instead - the text and the rule that trails it, measured off
+    // the native rendering, so that the light theme still looks the way it always did.
+    //
+    // ListView handles the notification itself, but reads dwItemSpec as an item index, which is a
+    // group id here, so the group stages are answered before base.WndProc sees them. The group is
+    // announced at the CDDS_PREPAINT stage, and rcText, not rc, is the header band: rc spans the
+    // whole group, items included.
+    const int WM_REFLECT = 0x2000;
+    const int WM_NOTIFY = 0x4E;
+    const int OCM_NOTIFY = WM_REFLECT + WM_NOTIFY;
+    const int NM_CUSTOMDRAW = -12;
+    const int CDDS_PREPAINT = 1;
+    const int CDRF_DODEFAULT = 0;
+    const int CDRF_SKIPDEFAULT = 4;
+    const int LVCDI_GROUP = 1;
+    const int LVM_GETGROUPINFO = LVM_FIRST + 149;
+    const int LVGF_HEADER = 1;
+
+    const TextFormatFlags HeaderFormat = TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
+      TextFormatFlags.SingleLine | TextFormatFlags.NoPadding | TextFormatFlags.EndEllipsis;
+
+    // NMHDR is a struct of its own so that its tail padding matches the native layout
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NmHdr
+    {
+      public IntPtr HwndFrom;
+      public IntPtr IdFrom;
+      public int Code;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NmLvCustomDraw
+    {
+      // NMCUSTOMDRAW
+      public NmHdr Hdr;
+      public int DrawStage;
+      public IntPtr Hdc;
+      public int Left, Top, Right, Bottom;
+      public IntPtr ItemSpec;
+      public int ItemState;
+      public IntPtr ItemLParam;
+      // NMLVCUSTOMDRAW
+      public int ClrText;
+      public int ClrTextBk;
+      public int SubItem;
+      public int ItemType;
+      public int ClrFace;
+      public int IconEffect;
+      public int IconPhase;
+      public int PartId;
+      public int StateId;
+      public int TextLeft, TextTop, TextRight, TextBottom;
+      public uint Align;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private struct LvGroup
+    {
+      public uint CbSize;
+      public uint Mask;
+      public IntPtr PszHeader;
+      public int CchHeader;
+      public IntPtr PszFooter;
+      public int CchFooter;
+      public int GroupId;
+      public uint StateMask;
+      public uint State;
+      public uint Align;
+      public IntPtr PszSubtitle;
+      public uint CchSubtitle;
+      public IntPtr PszTask;
+      public uint CchTask;
+      public IntPtr PszDescriptionTop;
+      public uint CchDescriptionTop;
+      public IntPtr PszDescriptionBottom;
+      public uint CchDescriptionBottom;
+      public int TitleImage;
+      public int ExtendedImage;
+      public int FirstItem;
+      public uint CItems;
+      public IntPtr PszSubsetTitle;
+      public uint CchSubsetTitle;
+    }
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, ref LvGroup lParam);
+
+    // true if the message was a group header custom draw notification and has been answered
+    private bool HandleGroupCustomDraw(ref Message m)
+    {
+      if (m.Msg != OCM_NOTIFY || m.LParam == IntPtr.Zero) return false;
+      if (Marshal.PtrToStructure<NmHdr>(m.LParam).Code != NM_CUSTOMDRAW) return false;
+
+      var draw = Marshal.PtrToStructure<NmLvCustomDraw>(m.LParam);
+      if (draw.ItemType != LVCDI_GROUP) return false;
+
+      if (draw.DrawStage == CDDS_PREPAINT)
+      {
+        DrawGroupHeader(draw);
+        m.Result = CDRF_SKIPDEFAULT;
+      }
+      else m.Result = CDRF_DODEFAULT;
+
+      return true;
+    }
+
+    private void DrawGroupHeader(NmLvCustomDraw draw)
+    {
+      var rect = Rectangle.FromLTRB(draw.TextLeft, draw.TextTop, draw.TextRight, draw.TextBottom);
+      string text = GetGroupHeader((int)draw.ItemSpec);
+
+      using var graphics = Graphics.FromHdc(draw.Hdc);
+      using var backBrush = new SolidBrush(BackColor);
+      graphics.FillRectangle(backBrush, rect);
+
+      // the text sits one pixel above the center of the band, and the rule one pixel below it
+      var textRect = Rectangle.FromLTRB(rect.Left + LogicalToDeviceUnits(12), rect.Top - 1, rect.Right, rect.Bottom - 1);
+      TextRenderer.DrawText(graphics, text, Font, textRect, Theme.ListGroupText, HeaderFormat);
+
+      var textSize = TextRenderer.MeasureText(graphics, text, Font, rect.Size, HeaderFormat);
+      using var pen = new Pen(Theme.ListGroupRule);
+      int ruleY = rect.Top + rect.Height / 2 - 1;
+      graphics.DrawLine(pen, textRect.Left + textSize.Width + 4, ruleY, rect.Right - 11, ruleY);
+    }
+
+    // the header text is read back from the native control: the group is identified by its id,
+    // and ListViewGroup.ID, which maps an id to a Groups entry, is internal to the framework
+    private string GetGroupHeader(int groupId)
+    {
+      const int MaxChars = 256;
+      var buffer = Marshal.AllocHGlobal(MaxChars * 2);
+
+      try
+      {
+        Marshal.WriteInt16(buffer, 0, 0);
+        var group = new LvGroup
+        {
+          CbSize = (uint)Marshal.SizeOf<LvGroup>(),
+          Mask = LVGF_HEADER,
+          PszHeader = buffer,
+          CchHeader = MaxChars,
+          GroupId = groupId
+        };
+
+        if (SendMessage(Handle, LVM_GETGROUPINFO, groupId, ref group) == -1) return string.Empty;
+        return Marshal.PtrToStringUni(buffer) ?? string.Empty;
+      }
+      finally
+      {
+        Marshal.FreeHGlobal(buffer);
+      }
     }
   }
 }
