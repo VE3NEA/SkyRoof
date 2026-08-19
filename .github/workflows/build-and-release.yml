@@ -1,15 +1,10 @@
 name: Build and Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  # no tag trigger: the version comes from Directory.Build.props, so a pushed tag would be
+  # ignored and the run would rebuild whatever version the props file names - overwriting an
+  # already published release of that version. Release by running this workflow.
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Release version (e.g., 1.2)'
-        required: true
-        type: string
 
 permissions:
   contents: write
@@ -22,15 +17,18 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Determine version
+      # Directory.Build.props is the only place the version is maintained. MSBuild applies it
+      # to the assemblies by itself, so nothing here patches SkyRoof.csproj any more.
+      - name: Read version from Directory.Build.props
         id: get_version
+        shell: pwsh
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
-            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-          fi
-        shell: bash
+          $ErrorActionPreference = 'Stop'
+          $xml = [xml](Get-Content Directory.Build.props -Raw)
+          $version = "$($xml.Project.PropertyGroup.Version)".Trim()
+          if ($version -notmatch '^\d+\.\d+$') { throw "version '$version' is not MAJOR.MINOR" }
+          Write-Host "version: $version"
+          "version=$version" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
@@ -40,16 +38,6 @@ jobs:
 
       - name: Restore NuGet packages
         run: nuget restore SkyRoof.sln
-
-      - name: Update .csproj with version from input or tag
-        run: |
-          $version = "${{ steps.get_version.outputs.version }}"
-          $csproj = "SkyRoof/SkyRoof.csproj"
-          (Get-Content $csproj) -replace '<Version>.*?</Version>', "<Version>$version</Version>" |
-            ForEach-Object { $_ -replace '<AssemblyVersion>.*?</AssemblyVersion>', "<AssemblyVersion>$version</AssemblyVersion>" } |
-            ForEach-Object { $_ -replace '<FileVersion>.*?</FileVersion>', "<FileVersion>$version</FileVersion>" } |
-            Set-Content $csproj
-        shell: pwsh
 
       - name: Build WinForms App
         run: msbuild SkyRoof.sln /p:Configuration=Release /p:Platform=x64

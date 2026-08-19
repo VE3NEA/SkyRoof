@@ -14,8 +14,6 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <ApplicationIcon>SkyRoof.ico</ApplicationIcon>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<Version>1.0</Version>
-		<FileVersion>1.0</FileVersion>
 	</PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
