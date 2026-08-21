@@ -100,9 +100,17 @@ namespace SkyRoof
       EnableCheck.Checked = ctx.AutoSelector.Enabled;
       EnableCheck.Text = $"Auto Selection: {(ctx.AutoSelector.Enabled ? "ON" : "OFF")}";
 
-      // highlight the toggle in lime while auto-selection is running, default look otherwise
-      EnableCheck.UseVisualStyleBackColor = !ctx.AutoSelector.Enabled;
-      EnableCheck.BackColor = ctx.AutoSelector.Enabled ? Color.Lime : SystemColors.Control;
+      // Highlight the toggle in lime while auto-selection is running, default look otherwise.
+      // The lime is deliberately the same in both themes, but the themed button renderer paints
+      // its own surface and ignores BackColor in the dark theme, so the running state also
+      // switches to FlatStyle.Popup, which paints BackColor itself and gives the identical
+      // #00FF00 in both themes. Its text must then be black: ControlText is white in the dark
+      // theme, and white on lime is unreadable.
+      bool running = ctx.AutoSelector.Enabled;
+      EnableCheck.FlatStyle = running ? FlatStyle.Popup : FlatStyle.Standard;
+      EnableCheck.UseVisualStyleBackColor = !running;
+      EnableCheck.BackColor = running ? Color.Lime : SystemColors.Control;
+      EnableCheck.ForeColor = running ? Color.Black : SystemColors.ControlText;
 
       var now = DateTime.UtcNow;
 

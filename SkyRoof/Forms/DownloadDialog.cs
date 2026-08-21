@@ -20,6 +20,12 @@ namespace SkyRoof
     public DownloadDialog()
     {
       InitializeComponent();
+
+      // The unfilled part of the bar paints the control's own BackColor, which inherits the form
+      // and so is invisible against it in the dark theme: a bar at 0% shows nothing at all.
+      // Unconditional - under visual styles the light theme draws its own trough and ignores
+      // BackColor, so this changes nothing there.
+      progressBar1.BackColor = SystemColors.ControlDark;
     }
 
     public static bool Download(Form parent, Context ctx)
