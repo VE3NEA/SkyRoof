@@ -136,6 +136,7 @@ namespace SkyRoof
       // back with the Save, or the countdown, the pass left it at rather than greyed out again (§3, §4.3).
       Proven = view.CanSave;
       Savable = view.Savable;
+      Saved = view.Saved;
       UpdateSaveEnabled();
       if (view.Status != null) { CountdownText = view.Status; RefreshStatusLine(); }
       return ShowDialog();
@@ -338,6 +339,7 @@ namespace SkyRoof
       }
       Proven = view.CanSave;
       Savable = view.Savable;
+      Saved = view.Saved;
       UpdateSaveEnabled();
       CountdownText = view.Status;
       RefreshStatusLine();
@@ -362,6 +364,7 @@ namespace SkyRoof
     {
       RevertParams = CurrentParams();
       RevertFormatId = CurrentFormatId();
+      Saved = true;
     }
 
     private void CancelBtn_Click(object? sender, EventArgs e)
@@ -464,6 +467,11 @@ namespace SkyRoof
     // that can only return — and it replaces the countdown, which would otherwise count toward a button
     // that never enables however many frames decode.
     private bool Savable = true;
+
+    // Whether the set on screen is the one currently written in the override file. The countdown in front of
+    // Save is a countdown to a decision; once the decision is taken the line has to stop asking for it. Any
+    // further edit unendorses the set and clears this again, which the caller's own OverrideSaved does too.
+    private bool Saved;
 
     // the save gate's second half (§4.3), shared with the status line so the two cannot disagree. The
     // telemetry format is excluded: it is not part of what Save writes to transmitters-override.json,
@@ -676,17 +684,23 @@ namespace SkyRoof
 
       Proven = have >= need;
       UpdateSaveEnabled();
-      CountdownText = ConfirmingFramesText(have, need, Savable);
+      CountdownText = ConfirmingFramesText(have, need, Savable, Saved);
       RefreshStatusLine();
     }
 
     /// <summary>The countdown's wording, shared with the panel so that the line a reopened dialog comes back
     /// with is the one the open dialog was showing.</summary>
-    public static string ConfirmingFramesText(int have, int need, bool savable)
+    public static string ConfirmingFramesText(int have, int need, bool savable, bool saved)
     {
       // nothing to count toward: the frames are decoding and the parameters are confirmed, but a signal
       // with no transmitter behind it has no override row to be written to (§4.9)
       if (!savable) return "parameters confirmed — terrestrial, nothing to save";
+
+      // already written down: the count is still the evidence, but it is no longer a countdown to anything.
+      // A forced save (§4.11) can land before the evidence is in, and then there is no count to report.
+      if (saved)
+        return have >= need ? $"{have + 1} frames decoded — parameters have been saved"
+                            : "parameters have been saved";
 
       int left = need - have;
       if (left <= 0) return $"{have + 1} frames decoded — parameters can be saved";
@@ -744,6 +758,7 @@ namespace SkyRoof
 
       Proven = view.CanSave;
       Savable = view.Savable;
+      Saved = view.Saved;
       RevertParams = view.Params;
       RevertFormatId = view.FormatId;
       UpdateSaveEnabled();
@@ -859,6 +874,9 @@ namespace SkyRoof
     // false when there is no transmitter to save against at all (a terrestrial signal), which disables Save
     // outright and replaces the countdown with the reason (§4.9)
     public bool Savable = true;
+    // whether the set on screen is the one currently in the override file, so the line in front of Save
+    // reports the decision as taken instead of going on asking for it
+    public bool Saved;
     public string? Status;
   }
 }

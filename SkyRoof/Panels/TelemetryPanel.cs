@@ -1231,6 +1231,8 @@ namespace SkyRoof
         // and they are now what Cancel goes back to: a saved set is the recorded truth about this
         // transmitter, so a Cancel after it has nothing to undo (§4.3)
         ParamsDialog.MarkSaved();
+        // no frame is due to redraw the line, and it is still counting toward a decision now taken
+        ParamsDialog.ShowConfirmingFrames(ConfirmingFrames, ConfirmFrames);
         MessageBox.Show(ParamsDialog, "Saved to transmitters-override.json.", "Signal Details",
           MessageBoxButtons.OK, MessageBoxIcon.Information);
       }
@@ -1277,8 +1279,10 @@ namespace SkyRoof
         // is replaced by the reason (§4.9). Kept apart from CanSave, which stays the verdict on the
         // evidence alone: the two answer different questions, and only one of them frames can change.
         Savable = Transmitter != null,
+        Saved = OverrideSaved,
         Status = DemodValidated && UserChangedFields.Count > 0
-          ? SignalParamsDialog.ConfirmingFramesText(ConfirmingFrames, ConfirmFrames, Transmitter != null) : null
+          ? SignalParamsDialog.ConfirmingFramesText(ConfirmingFrames, ConfirmFrames, Transmitter != null,
+            OverrideSaved) : null
       };
     }
 
