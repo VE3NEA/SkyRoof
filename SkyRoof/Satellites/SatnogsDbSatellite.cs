@@ -228,7 +228,7 @@ namespace SkyRoof
     internal void SetFlags()
     {
       // status
-      if (status == "alive") Flags = SatelliteFlags.Alive;
+      if (IsAlive()) Flags = SatelliteFlags.Alive;
       else if (status == "future") Flags = SatelliteFlags.Future;
       else Flags = SatelliteFlags.ReEntered;
 
@@ -247,6 +247,15 @@ namespace SkyRoof
       if (Transmitters.Any(t => t.type == "Transceiver")) Flags |= SatelliteFlags.Transceiver;
       if ((Flags & (SatelliteFlags.Transponder | SatelliteFlags.Transceiver)) == SatelliteFlags.None)
         Flags |= SatelliteFlags.Transmitter;
+    }
+
+    // status vocabulary changed in SatNOGS DB 1.76: the old future/alive/dead/re-entered became
+    // future/in-orbit/launch failed/re-entered, so "alive" is gone and the former "dead" sats are now
+    // reported as in orbit. The release notes spell the new value "in-orbit" while the API returns it
+    // with a space, so accept either, plus the old "alive" for a Satellites.json cached before 1.76.
+    public bool IsAlive()
+    {
+      return status == "in orbit" || status == "in-orbit" || status == "alive";
     }
 
     public static string MakeSearchText(string s) { return Regex.Replace(s, "[^a-zA-Z0-9|]", "").ToLower(); }

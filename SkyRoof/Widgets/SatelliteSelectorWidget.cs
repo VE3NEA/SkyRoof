@@ -249,7 +249,7 @@ namespace SkyRoof
       else if (sat.Flags.HasFlag(SatelliteFlags.Vhf)) backBrush = Theme.VhfTintBrush;
 
       if (sat.Flags.HasFlag(SatelliteFlags.Ham)) style |= FontStyle.Bold;
-      if (sat.status.StartsWith("alive") && sat.Tle == null) style |= FontStyle.Strikeout;
+      if (sat.IsAlive() && sat.Tle == null) style |= FontStyle.Strikeout;
 
       // derived font disposed after drawing; static Brushes need no disposal
       Font? derivedFont = style == FontStyle.Regular ? null : new Font(e.Font, style);

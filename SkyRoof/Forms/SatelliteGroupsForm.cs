@@ -108,8 +108,8 @@ namespace SkyRoof
       else if (sat.Flags.HasFlag(SatelliteFlags.Vhf)) item.BackColor = Theme.VhfTint;
 
       if (sat.Flags.HasFlag(SatelliteFlags.Ham)) item.Font = ListBoldFont;
-      item.ForeColor = Theme.RowText(!sat.status.StartsWith("alive"));
-      if (sat.status.StartsWith("alive") && sat.Tle == null) item.Font = ListStrikeoutFont;
+      item.ForeColor = Theme.RowText(!sat.IsAlive());
+      if (sat.IsAlive() && sat.Tle == null) item.Font = ListStrikeoutFont;
 
       return item;
     }
@@ -125,8 +125,8 @@ namespace SkyRoof
       else if (sat.Flags.HasFlag(SatelliteFlags.Vhf)) node.BackColor = Theme.VhfTint;
 
       if (!sat.Flags.HasFlag(SatelliteFlags.Ham)) node.NodeFont = TreeRegularFont;
-      node.ForeColor = Theme.RowText(!sat.status.StartsWith("alive"));
-      if (sat.status.StartsWith("alive") && sat.Tle == null) node.NodeFont = TreeStrikeoutFont;
+      node.ForeColor = Theme.RowText(!sat.IsAlive());
+      if (sat.IsAlive() && sat.Tle == null) node.NodeFont = TreeStrikeoutFont;
 
       return node;
     }

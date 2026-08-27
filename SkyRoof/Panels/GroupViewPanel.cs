@@ -92,8 +92,8 @@ namespace SkyRoof
       StrikeoutFont ??= new Font(listView1.Font, FontStyle.Strikeout);
 
       if (sat.Flags.HasFlag(SatelliteFlags.Ham)) item.Font = BoldFont;
-      item.ForeColor = Theme.RowText(!sat.status.StartsWith("alive"));
-      if (sat.status.StartsWith("alive") && sat.Tle == null) item.Font = StrikeoutFont;
+      item.ForeColor = Theme.RowText(!sat.IsAlive());
+      if (sat.IsAlive() && sat.Tle == null) item.Font = StrikeoutFont;
 
       return item;
     }
