@@ -124,6 +124,46 @@ contributing your telemetry to the community database:</p>
 </ul>
 </li>
 </ul>
+<h2 id="signals-the-database-does-not-describe">Signals the Database Does Not Describe</h2>
+<p>The <a href="telemetry_panel.html">Telemetry panel</a> normally reads a transmitter's modulation, baud rate and
+framing from the satellite database. Three cases are not covered there, and all three are handled the
+same way — by entering the parameters yourself in the <strong>Signal Details</strong> dialog (the gear button in the
+panel header), or by pressing <strong>Discover</strong> and letting the search work them out from the signal:</p>
+<ul>
+<li><p><strong>an unsupported transmitter</strong> — the panel says <em>telemetry format not supported</em>, <em>CW decoding not
+supported</em> or <em>FM decoding not supported</em>. Its database description either is wrong or names something
+SkyRoof cannot decode as it stands; overriding the modulation and framing is what makes it decodable.</p>
+</li>
+<li><p><strong>a transmitter with no parameters at all</strong> — the dialog opens on an empty form, every field blank.
+Fill in what you know, or press <strong>Discover</strong> and let the search fill it in.</p>
+</li>
+<li><p><strong>a terrestrial signal</strong> — tune the radio to a terrestrial frequency (see
+<a href="frequency_control.html">Frequency Control</a>) and the panel decodes whatever is on it, once you have given
+it the parameters. Nothing about a terrestrial signal is in any database, so this is the only way in.</p>
+</li>
+</ul>
+<p><strong>SSTV</strong> is one of the choices in the <strong>Modulation</strong> field. Selecting it starts the SSTV decoder on the
+tuned frequency, terrestrial or not, and needs no baud rate, framing or deviation — the mode is read from
+the image's own VIS header. See <a href="recevie_sstv.html">Receive SSTV Images</a>.</p>
+<h3 id="terrestrial-parameters">Terrestrial Parameters</h3>
+<p>Terrestrial decoding differs from satellite decoding in a few ways, all of which follow from there being
+no transmitter record behind the signal:</p>
+<ul>
+<li><p>the parameters last as long as terrestrial mode does. Moving the dial keeps them — you are decoding
+whatever is at the tuned frequency — while leaving terrestrial mode for a satellite discards them;</p>
+</li>
+<li><p>moving the dial starts a <strong>new pass entry</strong> in the tree, headed by the tuned frequency instead of by a
+satellite and transmitter name. The frame log records it the same way;</p>
+</li>
+<li><p>the frames appear in the tree, are written to the frame log and are served over the KISS server like
+any others, but they are <strong>never uploaded to SatNOGS</strong> — that database records frames against a
+satellite, and there is none here;</p>
+</li>
+<li><p>the parameters cannot be saved to <code>transmitters-override.json</code>. That file is keyed by transmitter, so
+<strong>Save</strong> is unavailable while terrestrial; the parameters are a tool for the session, not a correction
+to the database.</p>
+</li>
+</ul>
 <h2 id="uploading-to-satnogs">Uploading to SatNOGS</h2>
 <p>The <a href="https://db.satnogs.org/">SatNOGS DB</a> is a community database of satellite telemetry. To
 contribute the frames that SkyRoof decodes:</p>
