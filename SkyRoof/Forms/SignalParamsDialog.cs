@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using SkyRoof.Satellites;
@@ -18,9 +18,10 @@ namespace SkyRoof
     // the "Auto" tri-state combo items, in index order (null / true / false)
     private static readonly string[] TriStateItems = { "Auto", "On", "Off" };
 
-    // dot colors, shared with the caller so the gear button uses the same yellow/green
-    public static readonly Color EditedColor = Color.Orange;
-    public static readonly Color ConfirmedColor = Color.LimeGreen;
+    // dot colors, shared with the caller so the gear button uses the same yellow/green. Themed, because
+    // the status line paints text with them and the bright pair is unreadable on the light surface.
+    public static Color EditedColor => Theme.ParamsEdited;
+    public static Color ConfirmedColor => Theme.ParamsConfirmed;
 
     // provenance of a field's current value, mapped to a dot color
     public enum FieldDot { None, Edited, Confirmed }
@@ -44,6 +45,9 @@ namespace SkyRoof
       internal object? Opened;
       internal object? Populated;
       internal Action Reset = () => { };
+      // undo the control's change subscription: a Repopulate rebuilds the bindings, and a handler left
+      // behind would go on re-deriving the dot of a binding that no longer describes anything (§4.5).
+      internal Action Detach = () => { };
 
       internal bool AtOpened() => Equals(Value(), Opened);
       internal bool AtPopulated() => Equals(Value(), Populated);
@@ -96,9 +100,12 @@ namespace SkyRoof
 
       PopulateControls(view);
       BuildBindings(view);
-      // Save to overrides persists what a search found, so it stays disabled until a search has found
-      // something: with no result there is nothing to write beyond what the database already says (§6.1).
-      SaveOverrideBtn.Enabled = false;
+      // Save writes a parameter set down as the truth about this transmitter, so it stays disabled until the
+      // panel reports the set proven — the frames are counted there, which is why a reopened dialog comes
+      // back with the Save, or the countdown, the pass left it at rather than greyed out again (§3, §4.3).
+      Proven = view.CanSave;
+      UpdateSaveEnabled();
+      if (view.Status != null) { CountdownText = view.Status; RefreshStatusLine(); }
       return ShowDialog();
     }
 
@@ -205,9 +212,17 @@ namespace SkyRoof
       Bindings.Add(b);
       DotColors[dot] = ColorFor(initial);
 
-      void Handler(object? sender, EventArgs e) => RefreshDot(b);
-      if (control is ComboBox cb) cb.SelectedIndexChanged += Handler;
-      else if (control is TextBox tb) tb.TextChanged += Handler;
+      void Handler(object? sender, EventArgs e) { RefreshDot(b); UpdateSaveEnabled(); RefreshStatusLine(); }
+      if (control is ComboBox cb)
+      {
+        cb.SelectedIndexChanged += Handler;
+        b.Detach = () => cb.SelectedIndexChanged -= Handler;
+      }
+      else if (control is TextBox tb)
+      {
+        tb.TextChanged += Handler;
+        b.Detach = () => tb.TextChanged -= Handler;
+      }
     }
 
     // the DB value is transparent; the populated value keeps the caller's state; any other value is yellow
@@ -289,6 +304,75 @@ namespace SkyRoof
     // a search has produced a result while this dialog was open
     private bool HasDiscovered;
 
+    // the save gate's first half (§4.3): the panel's verdict that enough frames have decoded with the
+    // parameters in use. The second half is AtPopulated below — the fields must still hold the values those
+    // frames were decoded with — and it is re-tested on every field change, so editing a proven field greys
+    // Save out again: the proof was for the other values.
+    private bool Proven;
+
+    // the save gate's second half (§4.3), shared with the status line so the two cannot disagree. The
+    // telemetry format is excluded: it is not part of what Save writes to transmitters-override.json,
+    // so choosing a different one cannot invalidate the demod parameters' proof.
+    private bool FieldsHoldProvenValues => Bindings.All(b => b.Name == "TelemetryFormat" || b.AtPopulated());
+
+    private void UpdateSaveEnabled()
+      => SaveOverrideBtn.Enabled = ForceSave || (Proven && FieldsHoldProvenValues);
+
+    // The countdown line while it is the thing on the status line, else null. Kept so that an edit can take
+    // the line away from a countdown that has stopped describing what is on screen, and give it back
+    // unchanged when the field returns to the value it was counting for.
+    private string? CountdownText;
+
+    // The countdown counts frames decoded with the parameters IN USE, and a field edited since is not among
+    // them: the line would otherwise go on offering to save values the operator can no longer see, next to
+    // an orange dot and a greyed-out Save button that both say the opposite (§4.3).
+    private void RefreshStatusLine()
+    {
+      if (CountdownText == null) return;
+      if (FieldsHoldProvenValues) SetStatus(CountdownText, ConfirmedColor);
+      else SetStatus("edited value not tested — click OK to apply it", EditedColor);
+    }
+
+    // Ctrl+Shift held down enables Save whatever the gate says, for as long as the keys are down (§4.11).
+    // The gate weighs the evidence this program can see; an operator reading the parameters off the
+    // satellite's own documentation has evidence it cannot, and a two-handed gesture is a deliberate enough
+    // way to say so — it cannot be arrived at by clicking, and it is gone the moment the keys are released.
+    private bool ForceSave;
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+      base.OnKeyDown(e);
+      UpdateForceSave();
+    }
+
+    protected override void OnKeyUp(KeyEventArgs e)
+    {
+      base.OnKeyUp(e);
+      UpdateForceSave();
+    }
+
+    // the keys can be pressed or released while another window has the focus, so their state is re-read
+    // rather than remembered whenever this one gains or loses it
+    protected override void OnActivated(EventArgs e)
+    {
+      base.OnActivated(e);
+      UpdateForceSave();
+    }
+
+    protected override void OnDeactivate(EventArgs e)
+    {
+      base.OnDeactivate(e);
+      UpdateForceSave();
+    }
+
+    private void UpdateForceSave()
+    {
+      bool forced = ModifierKeys == (Keys.Control | Keys.Shift);
+      if (forced == ForceSave) return;
+      ForceSave = forced;
+      UpdateSaveEnabled();
+    }
+
     // set when the search is stopped from outside with a message of its own — the operator's second press,
     // or LOS — so the session's Ended notification does not overwrite that with "no parameters found":
     // cancelling is not the same as failing (§4.6a).
@@ -316,6 +400,7 @@ namespace SkyRoof
       Discovering = false;
       DiscoverBtn.Text = "Discover";
       StoppedExplicitly = true;
+      CountdownText = null;
       SetStatus(reason, SystemColors.ControlText);
     }
 
@@ -325,6 +410,7 @@ namespace SkyRoof
     /// that retaining bursts would pay off.</summary>
     public void ShowDiscoveryProgress(int analyzed, int skipped, bool analyzing)
     {
+      CountdownText = null;
       SetStatus(analyzing ? "analyzing" : $"waiting: {analyzed} analyzed, {skipped} skipped",
         SystemColors.ControlText);
     }
@@ -333,11 +419,11 @@ namespace SkyRoof
     /// A hypothesis decoded: put the parameters found into the fields and say so. The caller has already
     /// applied them to the live pass — this is the report, not the decision (§4.5). The search is over, so
     /// the button returns to its idle state. The fields themselves show what was found, so the line says
-    /// only that the search succeeded; the frames that follow are what the save decision rests on.
+    /// only how many more frames the save decision still needs.
     /// </summary>
-    public void ShowDiscovered(SignalParams found)
+    public void ShowDiscovered(SignalParams found, int need)
     {
-      if (InvokeRequired) { BeginInvoke(() => ShowDiscovered(found)); return; }
+      if (InvokeRequired) { BeginInvoke(() => ShowDiscovered(found, need)); return; }
 
       Discovering = false;
       DiscoverBtn.Text = "Discover";
@@ -348,8 +434,10 @@ namespace SkyRoof
       DeviationTextBox.Text = FormatRate(found.ResolvedDeviation ?? found.Deviation);
       AfCarrierTextBox.Text = FormatNullable(found.AfCarrier);
       MarkDiscovered();
-      SaveOverrideBtn.Enabled = true;
-      SetStatus("signal parameters found", ConfirmedColor);
+      // green dots at once, Save held back: one frame answers "are these the parameters in use, and did they
+      // work?", which is what the dot means, but not "should this be written down as the truth about this
+      // transmitter?" (§2). The countdown makes the difference visible instead of mysterious.
+      ShowConfirmingFrames(0, need);
     }
 
     // The discovered values are the new baseline for the fields the search sets, and they are confirmed
@@ -367,11 +455,27 @@ namespace SkyRoof
       }
     }
 
-    /// <summary>The evidence the operator needs for the save decision: frames decoded <b>since</b> the
-    /// parameters were applied (§6.1). No further frames means the answer was probably a coincidence — do
-    /// nothing, and the pass takes it away.</summary>
-    public void ShowFramesSinceApply(int frames)
-      => SetStatus($"{frames} frame(s) decoded with these parameters", frames > 0 ? ConfirmedColor : EditedColor);
+    /// <summary>The evidence the operator needs for the save decision: the frames decoded <b>after</b> the
+    /// one that turned the dots green (§2). Green throughout — the parameters are working, the button is
+    /// simply not unlocked yet.</summary>
+    public void ShowConfirmingFrames(int have, int need)
+    {
+      if (InvokeRequired) { BeginInvoke(() => ShowConfirmingFrames(have, need)); return; }
+
+      Proven = have >= need;
+      UpdateSaveEnabled();
+      CountdownText = ConfirmingFramesText(have, need);
+      RefreshStatusLine();
+    }
+
+    /// <summary>The countdown's wording, shared with the panel so that the line a reopened dialog comes back
+    /// with is the one the open dialog was showing.</summary>
+    public static string ConfirmingFramesText(int have, int need)
+    {
+      int left = need - have;
+      if (left <= 0) return $"{have + 1} frames decoded — parameters can be saved";
+      return left == 1 ? "1 more frame to save" : $"{left} more frames to save";
+    }
 
     /// <summary>The session ended with no answer. A legitimate outcome: it says the problem is not the
     /// parameters (§4.5).</summary>
@@ -380,7 +484,42 @@ namespace SkyRoof
       Discovering = false;
       DiscoverBtn.Text = "Discover";
       if (StoppedExplicitly) { StoppedExplicitly = false; return; }
-      if (!found) SetStatus("no parameters found", EditedColor);
+      if (!found) { CountdownText = null; SetStatus("no parameters found", EditedColor); }
+    }
+
+    /// <summary>The answer was another transmitter's own parameters and the caller has selected that
+    /// transmitter instead, so this dialog is describing one that is no longer the selection. Rebuild it
+    /// around the new transmitter's parameters and say what happened (§4.5). Nothing here is discovered and
+    /// nothing is proven: the database was already right about the transmitter now on screen.</summary>
+    public void Repopulate(SignalParamsView view, string status)
+    {
+      if (InvokeRequired) { BeginInvoke(() => Repopulate(view, status)); return; }
+
+      // detach first: the controls are about to be assigned the new transmitter's values, and a handler
+      // still on a binding of the old one would re-derive its dot from them.
+      foreach (var b in Bindings) b.Detach();
+      Bindings.Clear();
+      DotColors.Clear();
+
+      Original = view.Params;
+      Result = view.Params;
+      ResultFormatId = view.FormatId;
+      // the result belonged to the other transmitter: there is nothing here for OK to apply, and no
+      // discovered field to re-baseline
+      HasDiscovered = false;
+      Discovering = false;
+      StoppedExplicitly = false;
+      DiscoverBtn.Text = "Discover";
+
+      TelemetryFormatCombo.DataSource = new List<string>(view.FormatIds);
+      PopulateControls(view);
+      BuildBindings(view);
+      // unlike the initial Open, the dots are already on screen with the previous transmitter's colors
+      foreach (var b in Bindings) b.Dot.Invalidate();
+
+      Proven = view.CanSave;
+      UpdateSaveEnabled();
+      SetStatus(status, ConfirmedColor);
     }
 
     // Progress arrives on the discovery worker thread. The session is always stopped before the dialog is
@@ -496,5 +635,9 @@ namespace SkyRoof
     public SignalParamsDialog.FieldDot ManchesterDot;
     public SignalParamsDialog.FieldDot DifferentialDot;
     public SignalParamsDialog.FieldDot FormatDot;
+    // whether the panel has counted enough confirming frames for Save to be offered, and the countdown line
+    // to reopen with (null = nothing to say; the dialog keeps its own status)
+    public bool CanSave;
+    public string? Status;
   }
 }

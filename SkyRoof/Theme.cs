@@ -171,5 +171,13 @@ namespace SkyRoof
     // other theme's background - lime on #F0F0F0 and green on #202020 are both about 1.5:1
     public static Color PassbandFill => Pick(Color.FromArgb(200, Color.Lime), Color.FromArgb(200, Color.Green));
     public static Color PassbandFrame => Pick(Color.Green, Color.Lime);
+
+    // Signal Details provenance: a value the operator changed with nothing decoded for it yet, and one a
+    // decoded frame has confirmed. Both paint the field dots and the gear glyph AND the dialog's status
+    // line, and the text is what sets the requirement - LimeGreen and Orange carry a dot on either ground
+    // but wash out as text on #F0F0F0, the same 1.5:1 the passband above trades places over. So the light
+    // theme gets darker mixes of the same two hues and the dark theme keeps the bright ones.
+    public static Color ParamsEdited => Pick(Color.FromArgb(184, 84, 0), Color.Orange);
+    public static Color ParamsConfirmed => Pick(Color.Green, Color.LimeGreen);
   }
 }

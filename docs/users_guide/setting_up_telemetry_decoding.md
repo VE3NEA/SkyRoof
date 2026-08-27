@@ -29,6 +29,47 @@ The outputs are configured on the **Telemetry** page of the [Settings window](se
   - **Enabled** — turns uploading on;
   - **API Key** — your personal SatNOGS DB API key (see below).
 
+## Signals the Database Does Not Describe
+
+The [Telemetry panel](telemetry_panel.md) normally reads a transmitter's modulation, baud rate and
+framing from the satellite database. Three cases are not covered there, and all three are handled the
+same way — by entering the parameters yourself in the **Signal Details** dialog (the gear button in the
+panel header), or by pressing **Discover** and letting the search work them out from the signal:
+
+- **an unsupported transmitter** — the panel says *telemetry format not supported*, *CW decoding not
+  supported* or *FM decoding not supported*. Its database description either is wrong or names something
+  SkyRoof cannot decode as it stands; overriding the modulation and framing is what makes it decodable.
+
+- **a transmitter with no parameters at all** — the dialog opens on an empty form, every field blank.
+  Fill in what you know, or press **Discover** and let the search fill it in.
+
+- **a terrestrial signal** — tune the radio to a terrestrial frequency (see
+  [Frequency Control](frequency_control.md)) and the panel decodes whatever is on it, once you have given
+  it the parameters. Nothing about a terrestrial signal is in any database, so this is the only way in.
+
+**SSTV** is one of the choices in the **Modulation** field. Selecting it starts the SSTV decoder on the
+tuned frequency, terrestrial or not, and needs no baud rate, framing or deviation — the mode is read from
+the image's own VIS header. See [Receive SSTV Images](recevie_sstv.md).
+
+### Terrestrial Parameters
+
+Terrestrial decoding differs from satellite decoding in a few ways, all of which follow from there being
+no transmitter record behind the signal:
+
+- the parameters last as long as terrestrial mode does. Moving the dial keeps them — you are decoding
+  whatever is at the tuned frequency — while leaving terrestrial mode for a satellite discards them;
+
+- moving the dial starts a **new pass entry** in the tree, headed by the tuned frequency instead of by a
+  satellite and transmitter name. The frame log records it the same way;
+
+- the frames appear in the tree, are written to the frame log and are served over the KISS server like
+  any others, but they are **never uploaded to SatNOGS** — that database records frames against a
+  satellite, and there is none here;
+
+- the parameters cannot be saved to `transmitters-override.json`. That file is keyed by transmitter, so
+  **Save** is unavailable while terrestrial; the parameters are a tool for the session, not a correction
+  to the database.
+
 ## Uploading to SatNOGS
 
 The [SatNOGS DB](https://db.satnogs.org/) is a community database of satellite telemetry. To

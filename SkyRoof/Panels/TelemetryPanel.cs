@@ -25,8 +25,17 @@ namespace SkyRoof
   {
     private readonly Context ctx;
     private SatnogsDbSatellite? Satellite;
-    private SatnogsDbTransmitter Transmitter;
+    // null while terrestrial: the panel declines to know about a satellite it is not decoding, so a
+    // terrestrial frame cannot be filed — or uploaded — under one that was not on the air (§4.9). The
+    // selector remains the source of truth, and leaving terrestrial mode restores both from it.
+    private SatnogsDbTransmitter? Transmitter;
     private bool Terrestrial;
+    // Terrestrial decoding has no transmitter, no orbit and no pass to be keyed on, so the tuned downlink
+    // frequency is the identity instead (§4.9): it names the pass node, keys the keep-or-rebuild test and
+    // heads the archive record. Zero while a satellite is selected, where the uuid and the orbit are the
+    // identity as before. A dial move is therefore a new pass - but not a new set of parameters.
+    private double TerrestrialHz => Terrestrial ? ctx.FrequencyControl.RadioLink.DownlinkFrequency : 0;
+    private static string DescribeTerrestrial(double hz) => $"Terrestrial {hz / 1e6:F3} MHz";
     private bool SatAboveHorizon = false;
     private SignalParams? SignalParams;
     // The ranked co-channel telemetry sibling (§2.3 of cochannel_sstv_pairing_plan) and its own freshly
@@ -41,8 +50,16 @@ namespace SkyRoof
     // sibling. Used for two things only: constructing the StreamingPipeline and stamping the frames'
     // DecodeSnapshot. SignalParams, ResolvedSnapshot, UserChangedFields, the dots and the gear all stay
     // bound to the selection.
-    private (SatnogsDbTransmitter Transmitter, SignalParams Params)? TelemetrySource =>
-      IsTelemetryDecodable() ? (Transmitter, SignalParams!) : Sibling;
+    // the two branches are written as statements rather than a conditional, so each converts to the
+    // declared type directly: a common type inferred across them would drop the transmitter's nullability
+    private (SatnogsDbTransmitter? Transmitter, SignalParams Params)? TelemetrySource
+    {
+      get
+      {
+        if (IsTelemetryDecodable()) return (Transmitter, SignalParams!);
+        return Sibling;
+      }
+    }
     private TelemetryDecocder? Decoder;
     private SatnogsUploader? SatnogsUploader;
     private TelemetryRegistry? TelemetryRegistry;
@@ -73,12 +90,26 @@ namespace SkyRoof
     // SplitterMoved event does not write back what it just read
     private bool RestoringImageSplitter;
 
-    // parameter discovery (discover_params_plan.md): the running search, the dialog it reports to, and the
-    // count of frames decoded since a discovered set was applied — the evidence the operator saves on (§6.1).
-    // All three are null/zero unless the operator has pressed Discover; discovery costs nothing when idle.
+    // parameter discovery (discover_params_plan.md): the running search and the dialog it reports to. Both
+    // are null unless the operator has pressed Discover; discovery costs nothing when idle.
     private DiscoverySession? Discovery;
     private SignalParamsDialog? ParamsDialog;
-    private int FramesSinceDiscovery = -1;
+    // the parameters proven enough to persist (§2). DemodValidated says one frame decoded with the params in
+    // use — that is what turns the dots green. ConfirmingFrames counts the frames after it, and only when it
+    // reaches ConfirmFrames may the set be written to the override file or uploaded to SatNOGS: one frame can
+    // be a coincidence, three in a row cannot.
+    private int ConfirmingFrames;
+    private const int ConfirmFrames = 2;
+    private bool DemodProven => DemodValidated && ConfirmingFrames >= ConfirmFrames;
+    // SatNOGS gets frames decoded with the database's own parameters, or with a set the operator has
+    // endorsed by saving it to the override file — and with nothing else. A set that merely works for one
+    // pass stays local: the tree, the archive file and the KISS socket all have it, but an upload is the one
+    // consequence that cannot be withdrawn, so it waits for the click rather than for the countdown (§4.6).
+    // Read on the decode thread and written on the UI thread, hence volatile.
+    private volatile bool UploadHeld;
+    // the parameters in use are the ones written to transmitters-override.json. Cleared by any further edit:
+    // a set edited after saving is unendorsed again, and holds again.
+    private bool OverrideSaved;
     // bursts the running session took for analysis, so the status line can tell analyzing (one is under
     // analysis) from waiting (the search is idle between bursts): the session counts a burst as analyzed
     // only once it is done with it. A burst dropped because the previous one was still running is not
@@ -91,6 +122,11 @@ namespace SkyRoof
     // (CW, SSTV, FM voice). Mid-range on purpose: too wide a template sums noise across bins the signal
     // never fills, too narrow a one sits inside a fast signal and still detects it.
     private const double DefaultDetectBaud = 4800;
+    // the baseline the dialog and the search start from when the transmitter has no parameters at all
+    // (§4.8): every field the operator fills in reads as an override against "nothing" and gets its dot,
+    // and Reset to database value clears it back to empty.
+    private static readonly SignalParams BlankParams =
+      new(0, Modulation.Unknown, Framing.Unknown, 48000, null);
 
     // the FM speech-to-text engine (integration §10). It loads a large model (~71 MB, ~1.5 s), so a single
     // instance is created lazily on first use and SHARED across transmitter changes rather than rebuilt with
@@ -115,20 +151,24 @@ namespace SkyRoof
     private sealed class DecodeSnapshot
     {
       internal readonly SatnogsDbSatellite? Satellite;
-      internal readonly SatnogsDbTransmitter Transmitter;
+      internal readonly SatnogsDbTransmitter? Transmitter;
       internal readonly SignalParams SignalParams;
       // The orbit the decoder was built in, captured here rather than re-queried when an event arrives.
       // GetNextPass returns the first pass starting from *now*, so it rolls to the NEXT orbit the instant the
       // current pass ends — and the events that arrive at exactly that moment are the decoder's own flush.
       // Re-deriving the orbit there files them under a pass that has not happened yet.
       internal readonly int Orbit;
+      // the tuned frequency a terrestrial decode is identified by (§4.9); zero when Transmitter is set
+      internal readonly double TerrestrialHz;
 
-      internal DecodeSnapshot(SatnogsDbSatellite? satellite, SatnogsDbTransmitter transmitter, SignalParams signalParams, int orbit)
+      internal DecodeSnapshot(SatnogsDbSatellite? satellite, SatnogsDbTransmitter? transmitter, SignalParams signalParams, int orbit,
+        double terrestrialHz = 0)
       {
         Satellite = satellite;
         Transmitter = transmitter;
         SignalParams = signalParams;
         Orbit = orbit;
+        TerrestrialHz = terrestrialHz;
       }
     }
 
@@ -347,8 +387,10 @@ namespace SkyRoof
     internal class TxPassInfo
     {
       internal DateTime StartTime = DateTime.Now;
-      internal SatnogsDbTransmitter Transmitter;
+      internal SatnogsDbTransmitter? Transmitter;
       internal int Orbit;
+      // the tuned frequency this terrestrial pass node is keyed on (§4.9); zero when Transmitter is set
+      internal double TerrestrialHz;
       internal SignalParams? SignalParams;
       internal int BurstCount = 0;
       internal int FrameCount = 0;
@@ -356,26 +398,36 @@ namespace SkyRoof
       internal double MaxSnrDb = double.NaN;
       internal bool HasValidFrame = false;
 
-      internal TxPassInfo(SatnogsDbTransmitter transmitter, int orbit)
+      internal TxPassInfo(SatnogsDbTransmitter? transmitter, int orbit, double terrestrialHz = 0)
       {
         Transmitter = transmitter;
         Orbit = orbit;
+        TerrestrialHz = terrestrialHz;
       }
 
-      internal bool IsSame(SatnogsDbTransmitter transmitter, int orbit)
+      // terrestrial has neither uuid nor orbit to match on, so its pass node is keyed on the tuned
+      // frequency: a dial move starts a new node, and a satellite pass never matches a terrestrial one (§4.9)
+      internal bool IsSame(SatnogsDbTransmitter? transmitter, int orbit, double terrestrialHz)
       {
+        if (Transmitter == null || transmitter == null)
+          return Transmitter == null && transmitter == null && TerrestrialHz == terrestrialHz;
         return Transmitter.uuid == transmitter.uuid && Orbit == orbit;
       }
 
       internal string Describe(string paramsText)
       {
+        // terrestrial names no satellite, transmitter, uuid or orbit - the tuned frequency is all of it (§4.9)
+        string identity = Transmitter == null
+          ? $"{DescribeTerrestrial(TerrestrialHz)}\n"
+          : $"Sat: {Transmitter.Satellite?.name ?? "Unknown"}\n" +
+            $"Tx: {Transmitter.description}\n" +
+            $"Norad: {Transmitter.Satellite?.norad_cat_id}\n" +
+            $"Uuid: {Transmitter.uuid}\n" +
+            $"Orbit: {Orbit}\n";
         return
           $"Start: {StartTime:yyyy-MM-dd HH:mm:ss}\n" +
-          $"Sat: {Transmitter?.Satellite?.name ?? "Unknown"}\n" +
-          $"Tx: {Transmitter.description}\n" +
-          $"Norad: {Transmitter?.Satellite?.norad_cat_id}\n" +
-          $"Uuid: {Transmitter.uuid}\n" +
-          $"Orbit: {Orbit}\n\n" +
+          identity +
+          "\n" +
           $"Bursts: {BurstCount}\n" +
           $"Frames: {FrameCount}\n" +
           $"Images: {ImageCount}\n" +
@@ -487,20 +539,35 @@ namespace SkyRoof
         return;
       }
 
-      Satellite = newSatellite;
-      Transmitter = newTransmitter;
+      // staying in terrestrial mode is the same "selection": the manual parameters live as long as
+      // terrestrial mode does, and a dial move keeps them — the operator is decoding whatever is at the
+      // tuned frequency, and re-typing the parameters at every dial move would be absurd (§4.9). The
+      // frequency is the terrestrial pass identity, so UpdateTxStatus's rebuild opens a new pass node.
+      if (newTerrestrial && Terrestrial)
+      {
+        UpdateTxStatus();
+        return;
+      }
+
+      // while terrestrial the panel holds no selection at all (§4.9): what the selector still points at is
+      // not what the radio is tuned to, and copying it here is what would misfile a terrestrial frame.
+      Satellite = newTerrestrial ? null : newSatellite;
+      Transmitter = newTerrestrial ? null : newTransmitter;
       Terrestrial = newTerrestrial;
 
       // a new transmitter discards any manual override / provenance state and resets the gear button color
       UserChangedFields.Clear();
       DemodValidated = false;
+      ConfirmingFrames = 0;
       FormatOverride = null;
       FormatOverrideId = null;
       FormatValidated = false;
+      OverrideSaved = false;
+      UpdateUploadHold();
       SettingsButton.ForeColor = SystemColors.GrayText;
 
       if (Terrestrial) SatNameLabel.Text = "Terrestrial";
-      else SatNameLabel.Text = $"{Satellite.name}  {Transmitter.description}";
+      else SatNameLabel.Text = $"{Satellite!.name}  {Transmitter!.description}";
 
       ResolveSignalParams();
       UpdateTxStatus();
@@ -511,12 +578,14 @@ namespace SkyRoof
     {
       if (Terrestrial)
       {
+        // entering terrestrial mode starts from nothing; the set the operator then enters by hand is never
+        // resolved over, because a re-tune inside terrestrial mode does not reach here at all (§4.9)
         SignalParams = null;
         Sibling = null;
         return;
       }
 
-      SignalParams = SignalParamsResolver.Resolve(Transmitter);
+      SignalParams = SignalParamsResolver.Resolve(Transmitter!);
       // snapshot the pristine DB-resolved params before the pipeline writes any finding back into SignalParams
       ResolvedSnapshot = SignalParams is null ? null : SignalParams with { };
       ResolveSibling();
@@ -632,7 +701,10 @@ namespace SkyRoof
 
     private void CreatDestroyPipeline()
     {
-      bool aboveAndUp = !Terrestrial && SatAboveHorizon;
+      // terrestrial has no horizon and no pass to gate on: the manual parameters are the whole precondition
+      // there — or a running search, which is how a terrestrial signal with no parameters at all is reached
+      // (§4.8) — while a satellite still needs its pass (§4.9)
+      bool decodeWanted = Terrestrial ? SignalParams != null || Discovery != null : SatAboveHorizon;
       // §2.2: the telemetry branch follows the resolved telemetry source, which is the selection itself
       // unless an SSTV transmitter is selected; the SSTV branch follows the whole downlink, not the
       // selection. Both may name a transmitter other than the selected one.
@@ -641,12 +713,12 @@ namespace SkyRoof
       bool sstv = IsSstvBranchWanted();
       // the FM branch runs only with the model downloaded; the engine loads lazily here (once per session,
       // then shared) so an FM transmitter with no model simply builds no FM branch (status reflects it)
-      var fmEngine = aboveAndUp && IsFmDecodable() ? EnsureFmEngine() : null;
+      var fmEngine = decodeWanted && IsFmDecodable() ? EnsureFmEngine() : null;
       // a discovery session needs a burst source. The telemetry pipeline is one, but it does not exist when
       // the transmitter is CW/SSTV/FM or its format is unsupported — exactly the cases the operator reaches
       // for Discover in — so the search brings its own detection-only pipeline (§4.1).
-      var detectParams = Discovery != null && !telemetry && SignalParams != null ? DiscoveryDetectorParams() : null;
-      bool needPipeline = aboveAndUp && (telemetry || sstv || fmEngine != null || detectParams != null);
+      var detectParams = Discovery != null && !telemetry ? DiscoveryDetectorParams() : null;
+      bool needPipeline = decodeWanted && (telemetry || sstv || fmEngine != null || detectParams != null);
 
       // keep the existing decoder only if it was built for the currently selected transmitter. a transmitter
       // change must rebuild the pipeline: otherwise it keeps decoding with the previous transmitter's params
@@ -655,8 +727,13 @@ namespace SkyRoof
       // the identity that matters is the TELEMETRY SOURCE's, not the selection's: switching between the two
       // members of a co-channel pair resolves to the same pair of branches, and tearing the decoder down
       // would throw away a locked baud and the in-progress SSTV image for no gain.
+      // a terrestrial decode has no uuid to compare, so the tuned frequency answers for it: a dial move
+      // rebuilds the pipeline and opens a new pass node, while the manual parameters survive it (§4.9)
+      var identity = telemetrySource?.Transmitter ?? Transmitter;
       bool matches = Decoder != null && CurrentDecode != null
-        && CurrentDecode.Transmitter.uuid == (telemetrySource?.Transmitter ?? Transmitter).uuid
+        && (identity == null
+          ? CurrentDecode.Transmitter == null && CurrentDecode.TerrestrialHz == TerrestrialHz
+          : CurrentDecode.Transmitter?.uuid == identity.uuid)
         && (Decoder.Sstv != null) == sstv
         && (Decoder.Detector != null) == (detectParams != null);
 
@@ -699,7 +776,8 @@ namespace SkyRoof
         // source and SSTV events to the transmitter that advertises SSTV. In the unpaired case both are the
         // selection and this is exactly the single snapshot of before.
         var snapshot = new DecodeSnapshot(Satellite, telemetrySource?.Transmitter ?? Transmitter,
-          telemetrySource?.Params ?? SignalParams!, ctx.SdrPasses.GetNextPass(Satellite)?.OrbitNumber ?? -1);
+          telemetrySource?.Params ?? SignalParams!, ctx.SdrPasses.GetNextPass(Satellite)?.OrbitNumber ?? -1,
+          TerrestrialHz);
         var sstvSnapshot = SstvSnapshot(snapshot);
         CurrentDecode = snapshot;
         Decoder = new(snapshot.SignalParams, snapshot.Satellite?.norad_cat_id, telemetry, sstv, fmEngine, detectParams);
@@ -810,7 +888,10 @@ namespace SkyRoof
     // selection whose resolved modulation is SSTV through a layer HasSstv does not read.
     private bool IsSstvBranchWanted()
     {
-      if (Terrestrial) return false;
+      // no terrestrial early-out: with the selection cleared while terrestrial (§4.9),
+      // HasCoChannelSstv(null, null) is false and HasSstv(null) is false, so the rule reduces by itself to
+      // SignalParams?.Modulation == Modulation.SSTV - choosing SSTV in the combo is all it takes to start
+      // the decoder, terrestrial or not, and co-channel pairing stays satellite-only without a guard.
       return IsSstvDecodable() || CoChannel.HasCoChannelSstv(Satellite, Transmitter);
     }
 
@@ -850,7 +931,9 @@ namespace SkyRoof
       IAudioAssembler? voice)
     {
       ctx.KissServer.SendToAll(frame);
-      if (snapshot.Satellite?.norad_cat_id is int norad) SatnogsUploader?.Submit(frame, norad);
+      // held frames are dropped, not queued: uploading starts at the Save click and runs forward from there
+      // (§4.6). Parameters that were never edited are never held — the plain database path is untouched.
+      if (!UploadHeld && snapshot.Satellite?.norad_cat_id is int norad) SatnogsUploader?.Submit(frame, norad);
       // Images ride the telemetry frames, so every frame is offered unconditionally and the assembler's
       // own source parser drops the ones that are not image fragments — on HADES-SA, where the SSDV
       // packets are interleaved with telemetry on one downlink, that is most of them. Re-transcoding the
@@ -862,11 +945,21 @@ namespace SkyRoof
       voice?.Push(frame);
       BeginInvoke(() =>
       {
+        // read before AddFrame, which may set DemodValidated on this very frame: that frame is the one that
+        // made the parameters found, and what the save gate asks for is 2 MORE of them (§4.2).
+        bool wasValidated = DemodValidated;
         AddFrame(frame, snapshot);
-        // frames decoded SINCE a discovered set was applied are the evidence the save decision rests on
-        // (§6.1) — no further frames means the answer was probably a coincidence.
-        if (FramesSinceDiscovery >= 0 && frame.CrcValid == true)
-          ParamsDialog?.ShowFramesSinceApply(++FramesSinceDiscovery);
+        // frames decoded AFTER the parameters went green are the evidence the save decision rests on (§2).
+        // The increment is kept out of the null-conditional call so that it also runs with the dialog closed
+        // — the count must survive the operator closing the dialog and letting the pass run. Gated on the
+        // current decoder's snapshot like the validation in AddFrame, so a late frame from a pre-override
+        // pipeline cannot prove parameters it was never decoded with.
+        if (wasValidated && frame.CrcValid == true && ReferenceEquals(snapshot, CurrentDecode))
+        {
+          ConfirmingFrames++;
+          UpdateGearButton();
+          ParamsDialog?.ShowConfirmingFrames(ConfirmingFrames, ConfirmFrames);
+        }
       });
     }
 
@@ -879,20 +972,11 @@ namespace SkyRoof
     // gear button: open the signal-details editor for the current transmitter and apply any manual override
     private void SettingsButton_Click(object sender, EventArgs e)
     {
-      if (SignalParams == null)
-      {
-        MessageBox.Show(this, "Signal parameters are unknown for this transmitter.", "Signal Details",
-          MessageBoxButtons.OK, MessageBoxIcon.Information);
-        return;
-      }
-
-      bool discoveryEnabled = ModifierKeys.HasFlag(Keys.Control);
-
+      // a transmitter with no parameters at all has the most to gain from Discover, and a hand-entered set
+      // is the only other way in, so the dialog opens on the blank baseline instead of refusing (§4.8)
       using var dlg = new SignalParamsDialog();
       dlg.DiscoverToggled += ToggleDiscovery;
       dlg.SaveOverrideRequested += SaveOverrideRequested;
-      dlg.DiscoverBtn.Visible = discoveryEnabled;
-      dlg.SaveOverrideBtn.Visible = discoveryEnabled;
       ParamsDialog = dlg;
       try
       {
@@ -920,12 +1004,12 @@ namespace SkyRoof
     private void ToggleDiscovery(bool start)
     {
       StopDiscovery();
-      if (!start || SignalParams == null) return;
+      if (!start) return;
 
       // below the horizon a session can never be offered a burst — the pipeline it would listen to is not
       // built until AOS. refuse the press and say why, here in the click, so the line never shows the
       // "waiting" of a search that has not started
-      if (!SatAboveHorizon)
+      if (!Terrestrial && !SatAboveHorizon)
       {
         ParamsDialog?.ShowDiscoveryStopped("satellite below horizon");
         return;
@@ -941,10 +1025,15 @@ namespace SkyRoof
       };
 
       BurstsTaken = 0;
-      var session = new DiscoverySession(SignalParams, CoChannelParams, options);
+      // whether THIS search produced an answer, so its Ended notification can tell "the pass ran out" from
+      // "found nothing". Per session rather than panel state: a set already confirmed by an earlier hand
+      // edit is not this search's result.
+      bool found = false;
+      var session = new DiscoverySession(SignalParams ?? BlankParams, CoChannelParams, options);
       session.Progress += ShowDiscoveryProgress;
+      session.Found += _ => found = true;
       session.Found += DiscoveryFound;
-      session.Ended += () => BeginInvoke(() => ParamsDialog?.ShowDiscoveryEnded(FramesSinceDiscovery >= 0));
+      session.Ended += () => BeginInvoke(() => ParamsDialog?.ShowDiscoveryEnded(found));
       Discovery = session;
       // build the search its own burst source if this transmitter's decode does not provide one
       CreatDestroyPipeline();
@@ -978,10 +1067,14 @@ namespace SkyRoof
     /// template inside the signals the search can reach at all (200 - 20000 Bd).
     /// </summary>
     private SignalParams DiscoveryDetectorParams()
-      => SignalParams! with
+    {
+      // with nothing resolved for this transmitter the baseline is blank, which reduces to exactly the same
+      // detector as a DB row that carries no rate: blind FSK at the default template width (§4.8)
+      var current = SignalParams ?? BlankParams;
+      return current with
       {
         Modulation = Modulation.FSK,
-        Baud = SignalParams!.Baud > 0 ? SignalParams.Baud : DefaultDetectBaud,
+        Baud = current.Baud > 0 ? current.Baud : DefaultDetectBaud,
         Deviation = null,
         AfCarrier = null,
         Manchester = null,
@@ -989,6 +1082,7 @@ namespace SkyRoof
         ResolvedBaud = null,
         ResolvedDeviation = null
       };
+    }
 
     // Offer a burst to a running session and report where the search now stands. A burst the session drops
     // because the previous one is still under analysis is not counted as taken: the analysis it would have
@@ -1035,9 +1129,23 @@ namespace SkyRoof
       BeginInvoke(() =>
       {
         StopDiscovery();
+        // The tier-1 hypotheses are the co-channel siblings' own parameters, so an answer equal to one of
+        // them is not saying that this transmitter is described wrongly — it is saying that the wrong
+        // transmitter was selected. Switching to the sibling is the correction; writing its parameters onto
+        // this row would file the frames under a transmitter that did not send them, and would offer to save
+        // a duplicate of the sibling's values against the wrong uuid. Nothing is marked and nothing is
+        // saved: the database was already right about the twin (§4.5).
+        if (CoChannelTwin(found.Params) is SatnogsDbTransmitter twin)
+        {
+          string description = twin.description;
+          ctx.SatelliteSelector.SetSelectedTransmitter(twin);
+          if (SignalParams != null)
+            ParamsDialog?.Repopulate(BuildDialogView(), $"these are {description}'s parameters — switched to it");
+          return;
+        }
         // the discovered set replaces the demod fields only; the telemetry-format override and the
         // dialog-only fields the search does not touch (AfCarrier, Manchester) are carried through (§6.5).
-        var applied = SignalParams! with
+        var applied = (SignalParams ?? BlankParams) with
         {
           Modulation = found.Params.Modulation,
           Framing = found.Params.Framing,
@@ -1048,14 +1156,57 @@ namespace SkyRoof
         // a discovered set has already decoded a frame — that is how the search found it — so it is
         // confirmed on arrival: the gear and the field dots go green, not the yellow of an untested edit.
         DemodValidated = true;
-        FramesSinceDiscovery = 0;
         ApplySignalParamsOverride(applied);
+        ConfirmingFrames = 0;
+        AddDiscoveryFrames(found);
         UpdateGearButton();
         UpdateParamsTooltip();
-        // the "found" line stays up until a frame decodes with the parameters: reporting zero frames the
-        // instant they are applied would overwrite the answer with an accusation before it was tested.
-        ParamsDialog?.ShowDiscovered(applied);
+        // the parameters are known now, so the label stops saying "signal parameters unknown" (§4.8)
+        UpdateTxStatus();
+        // the dialog shows the found values with green dots at once, and starts the countdown that holds
+        // Save back until 2 more frames have decoded with them (§2).
+        ParamsDialog?.ShowDiscovered(applied, ConfirmFrames);
       });
+    }
+
+    // The frames the search itself decoded are the whole evidence for the answer, and until now they were
+    // the one thing the operator could not see: the search decodes them inside BurstDiscovery with no sinks
+    // wired at all. Show them in the tree, log them and serve them over KISS like any other frame (§4.4).
+    // They do NOT count toward ConfirmingFrames: they are what made the parameters found, and the save gate
+    // asks for 2 MORE (§4.2) — AddFrame leaves that counter alone, which is what keeps them out of it. The
+    // SatNOGS submission is held by §4.6 and needs no gate here: applying the override has just re-armed
+    // that hold, so no frame of this batch could be uploaded even if it were offered.
+    private void AddDiscoveryFrames(DiscoveryCandidate found)
+    {
+      if (CurrentDecode is not DecodeSnapshot decode) return;
+      foreach (var frame in found.Frames)
+      {
+        ctx.KissServer.SendToAll(frame);
+        AddFrame(frame, decode);
+      }
+    }
+
+    // The co-channel sibling whose own database parameters the answer reproduces, or null (§4.5). Tier 1 of
+    // the hypothesis set is exactly those siblings, but a generic tier-2 hypothesis can land on a sibling's
+    // values and the conclusion is identical, so the tier is not tested here — only the parameters are.
+    private SatnogsDbTransmitter? CoChannelTwin(SignalParams found)
+    {
+      if (Satellite == null || Transmitter == null) return null;
+      return Satellite.Transmitters.FirstOrDefault(tx =>
+        !ReferenceEquals(tx, Transmitter) && tx.downlink_low == Transmitter.downlink_low
+        && ParamsMatch(SignalParamsResolver.Resolve(tx), found));
+    }
+
+    // the two sets describe the same signal. The rates are compared after the same rounding the operator and
+    // the override file see, because the search measures 9600.83 against a curated 9600.
+    private static bool ParamsMatch(SignalParams? db, SignalParams found)
+    {
+      if (db == null) return false;
+      if (db.Modulation != found.Modulation || db.Framing != found.Framing) return false;
+      if (SignalParamsResolver.RoundToStandard(db.ResolvedBaud ?? db.Baud)
+        != SignalParamsResolver.RoundToStandard(found.ResolvedBaud ?? found.Baud)) return false;
+      return SignalParamsResolver.RoundToStandard(db.ResolvedDeviation ?? db.Deviation)
+        == SignalParamsResolver.RoundToStandard(found.ResolvedDeviation ?? found.Deviation);
     }
 
     // Save to overrides: write the parameters on screen into transmitters-override.json, keyed by the
@@ -1067,6 +1218,9 @@ namespace SkyRoof
       try
       {
         ctx.SatnogsDb.SaveTransmitterOverride(Transmitter, ParamsDialog.CurrentParams());
+        // the operator has endorsed these parameters, so the frames decoded with them may be published (§4.6)
+        OverrideSaved = true;
+        UpdateUploadHold();
         MessageBox.Show(ParamsDialog, "Saved to transmitters-override.json.", "Signal Details",
           MessageBoxButtons.OK, MessageBoxIcon.Information);
       }
@@ -1084,12 +1238,15 @@ namespace SkyRoof
       var formatIds = TelemetryRegistry?.AllDefinitions
         .Select(d => d.Id).Where(id => !string.IsNullOrEmpty(id)).Select(id => id!)
         .Distinct().OrderBy(id => id).ToList() ?? new List<string>();
-      string? dbFormatId = ResolveFormat(Satellite?.norad_cat_id, SignalParams!.Framing)?.Id;
+      // with nothing resolved for this transmitter the blank baseline stands in as both the current and the
+      // database values, so every field reads as an override against "nothing" (§4.8)
+      var current = SignalParams ?? BlankParams;
+      string? dbFormatId = ResolveFormat(Satellite?.norad_cat_id, current.Framing)?.Id;
 
       return new SignalParamsView
       {
-        Params = SignalParams!,
-        DbParams = ResolvedSnapshot ?? SignalParams!,
+        Params = current,
+        DbParams = ResolvedSnapshot ?? current,
         FormatIds = formatIds,
         FormatId = FormatOverrideId ?? dbFormatId,
         DbFormatId = dbFormatId,
@@ -1101,7 +1258,14 @@ namespace SkyRoof
         ManchesterDot = DotFor("Manchester"),
         DifferentialDot = DotFor("Differential"),
         FormatDot = FormatOverrideId == null ? SignalParamsDialog.FieldDot.None
-          : FormatValidated ? SignalParamsDialog.FieldDot.Confirmed : SignalParamsDialog.FieldDot.Edited
+          : FormatValidated ? SignalParamsDialog.FieldDot.Confirmed : SignalParamsDialog.FieldDot.Edited,
+        // the save gate and the countdown live in the panel, where the frames arrive, so a reopened dialog
+        // comes back as it was left rather than with Save unconditionally greyed out (§3, §4.3)
+        // terrestrial has no transmitter row to write against, and its parameters are a session tool rather
+        // than a database correction, so Save is not offered there at all (§4.9)
+        CanSave = DemodProven && UserChangedFields.Count > 0 && Transmitter != null,
+        Status = DemodValidated && UserChangedFields.Count > 0
+          ? SignalParamsDialog.ConfirmingFramesText(ConfirmingFrames, ConfirmFrames) : null
       };
     }
 
@@ -1156,6 +1320,9 @@ namespace SkyRoof
 
       UpdateGearButton();
       UpdateParamsTooltip();
+      // parameters entered against a blank baseline make an "unknown" transmitter decodable, so the status
+      // label must be re-derived rather than left on DescribeUnsupported (§4.8)
+      UpdateTxStatus();
     }
 
     // adopt the user-edited params and rebuild the pipeline so they take effect immediately. CreatDestroyPipeline
@@ -1164,6 +1331,11 @@ namespace SkyRoof
     private void ApplySignalParamsOverride(SignalParams newParams)
     {
       SignalParams = newParams;
+      // a new set of parameters is a new claim, and none of the frames counted so far were decoded with it:
+      // the evidence for saving restarts from zero (§4.1), and the uploads hold again until it is saved
+      ConfirmingFrames = 0;
+      OverrideSaved = false;
+      UpdateUploadHold();
 
       if (Decoder != null)
       {
@@ -1190,6 +1362,9 @@ namespace SkyRoof
       SettingsButton.ForeColor = demodOk && formatOk
         ? SignalParamsDialog.ConfirmedColor : SignalParamsDialog.EditedColor;
     }
+
+    // the upload hold's two inputs (§4.6), re-evaluated on the UI thread wherever either of them changes
+    private void UpdateUploadHold() => UploadHeld = UserChangedFields.Count > 0 && !OverrideSaved;
 
 
 
@@ -1257,12 +1432,14 @@ namespace SkyRoof
       for (int i = count - 1; i >= Math.Max(0, count - 2); i--)
       {
         var node = treeView1.Nodes[i];
-        if (node.Tag is TxPassInfo info && info.IsSame(snapshot.Transmitter, orbit)) return (node, info);
+        if (node.Tag is TxPassInfo info && info.IsSame(snapshot.Transmitter, orbit, snapshot.TerrestrialHz)) return (node, info);
       }
 
-      var passNode = new TreeNode($"{DateTime.Now:yyyy-MM-dd HH:mm} {snapshot.Transmitter.Satellite.name}  {snapshot.Transmitter.description}");
+      string title = snapshot.Transmitter == null ? DescribeTerrestrial(snapshot.TerrestrialHz)
+        : $"{snapshot.Transmitter.Satellite.name}  {snapshot.Transmitter.description}";
+      var passNode = new TreeNode($"{DateTime.Now:yyyy-MM-dd HH:mm} {title}");
       if (grayUntilContent) passNode.ForeColor = SystemColors.GrayText;
-      var txPassInfo = new TxPassInfo(snapshot.Transmitter, orbit);
+      var txPassInfo = new TxPassInfo(snapshot.Transmitter, orbit, snapshot.TerrestrialHz);
       txPassInfo.SignalParams = snapshot.SignalParams;
       passNode.Tag = txPassInfo;
       treeView1.Nodes.Add(passNode);
@@ -1556,8 +1733,8 @@ namespace SkyRoof
           Utc = DateTime.UtcNow,
           Satellite = snapshot.Satellite?.name,
           Norad = snapshot.Satellite?.norad_cat_id,
-          Transmitter = snapshot.Transmitter.description,
-          TransmitterUuid = snapshot.Transmitter.uuid,
+          Transmitter = snapshot.Transmitter?.description,
+          TransmitterUuid = snapshot.Transmitter?.uuid,
           Mode = evt.Mode.ToString(),
           evt.FromVis,
           evt.ValidRows,
@@ -1814,8 +1991,8 @@ namespace SkyRoof
           Utc = DateTime.UtcNow,
           Satellite = snapshot.Satellite?.name,
           Norad = snapshot.Satellite?.norad_cat_id,
-          Transmitter = snapshot.Transmitter.description,
-          TransmitterUuid = snapshot.Transmitter.uuid,
+          Transmitter = snapshot.Transmitter?.description,
+          TransmitterUuid = snapshot.Transmitter?.uuid,
           product.ImageId,
           product.Source,
           product.Width,
@@ -1888,8 +2065,8 @@ namespace SkyRoof
           Utc = DateTime.UtcNow,
           Satellite = snapshot.Satellite?.name,
           Norad = snapshot.Satellite?.norad_cat_id,
-          Transmitter = snapshot.Transmitter.description,
-          TransmitterUuid = snapshot.Transmitter.uuid,
+          Transmitter = snapshot.Transmitter?.description,
+          TransmitterUuid = snapshot.Transmitter?.uuid,
           product.DurationSeconds,
           product.SampleRate,
           product.FirstNumber,
@@ -2416,7 +2593,9 @@ namespace SkyRoof
 
       FrameLogger ??= CreateFrameLogger();
 
-      string header = $"Sat: {snapshot.Transmitter.Satellite.name}  Tx: \"{snapshot.Transmitter.description}\"  Uuid: {snapshot.Transmitter.uuid}  Frame: {frame.Length} bytes" +
+      string identity = snapshot.Transmitter == null ? DescribeTerrestrial(snapshot.TerrestrialHz)
+        : $"Sat: {snapshot.Transmitter.Satellite.name}  Tx: \"{snapshot.Transmitter.description}\"  Uuid: {snapshot.Transmitter.uuid}";
+      string header = $"{identity}  Frame: {frame.Length} bytes" +
         (addr.Length > 0 ? $"  Addr: {addr}" : "");
       FrameLogger.Information("{Header}\n{Body}", header, frameText);
     }
@@ -2434,10 +2613,21 @@ namespace SkyRoof
 
     internal void UpdateTxStatus()
     {
+      bool wasAbove = SatAboveHorizon;
       SatAboveHorizon = ctx.SdrPasses.GetNextPass(Satellite)?.IsAboveHorizon() ?? false;
       // LOS ends a running search (§4.6a): no further burst can arrive, so the session must not be left
       // running with the progress line sitting on "waiting" until the operator closes the dialog
-      if (!SatAboveHorizon && Discovery != null) StopDiscoveryAtLos();
+      if (!Terrestrial && !SatAboveHorizon && Discovery != null) StopDiscoveryAtLos();
+      // LOS also ends the evidence (§4.10). The parameters and their green dots survive — they are still the
+      // parameters in use and they still worked — but a frame from last week's pass plus one from this one is
+      // not "two frames in a row with these parameters", so a Save left unclicked needs two fresh frames.
+      // An override already saved is untouched: that is a database correction, not a per-pass finding.
+      if (wasAbove && !SatAboveHorizon && ConfirmingFrames > 0)
+      {
+        ConfirmingFrames = 0;
+        UpdateGearButton();
+        ParamsDialog?.ShowConfirmingFrames(ConfirmingFrames, ConfirmFrames);
+      }
       CreatDestroyPipeline();
 
       // §4: no parameter editing, no Discover and no Save-to-override for a transmitter the user did not
@@ -2445,13 +2635,15 @@ namespace SkyRoof
       // operator selects that telemetry transmitter, which re-adds the SSTV branch anyway (§2.2 row 1).
       SettingsButton.Visible = Sibling == null;
 
-      if (Terrestrial) UpdateStatusLabel("terrestrial, not decoded", Color.Red);
+      // terrestrial is no longer a refusal: with parameters it decodes like any other signal (§4.9), so
+      // only the state before the operator has entered any is reported as such
+      if (Terrestrial && SignalParams == null) UpdateStatusLabel("terrestrial, signal parameters not set", Color.Red);
       else if (!IsDecodable()) UpdateStatusLabel(DescribeUnsupported(), Color.Red);
       // an FM-only transmitter with no FM artefact unzipped into the installation folder reads as
       // unsupported, silently - the user installs it manually, there is no in-app prompt or download
       else if (IsFmDecodable() && !IsTelemetryDecodable() && !IsSstvDecodable() && !FmModelPresent)
         UpdateStatusLabel(DescribeUnsupported(), Color.Red);
-      else if (!SatAboveHorizon) UpdateStatusLabel("satellite below horizon", SystemColors.ControlText);
+      else if (!Terrestrial && !SatAboveHorizon) UpdateStatusLabel("satellite below horizon", SystemColors.ControlText);
       else UpdateStatusLabel($"ready to decode{DescribeBranches()}", SystemColors.ControlText);
     }
 

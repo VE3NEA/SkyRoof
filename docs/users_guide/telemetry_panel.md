@@ -83,8 +83,9 @@ supported transmitter is selected, frames are decoded automatically and appear i
     still be decoding;
   - **FM decoding not supported** in red — an FM transmitter is selected but the speech model is not
     installed;
-  - **terrestrial, not decoded** in red — a terrestrial link is selected, which the decoder does not
-    handle.
+  - **terrestrial, signal parameters not set** in red — the radio is tuned to a terrestrial signal and
+    no parameters have been entered for it yet. Enter them in the Signal Details dialog and decoding
+    starts; see [Setting Up Telemetry Decoding](setting_up_telemetry_decoding.md).
 
 - The **tree** on the left lists the decoded passes and frames.
 
@@ -120,8 +121,32 @@ Click **OK** to apply your changes. A change to any of the demodulator fields re
 immediately, so it takes effect on the next burst. A change to the telemetry format applies to frames
 decoded from that point on and does not re-parse the frames already in the tree.
 
-Overrides are remembered per transmitter for the current session only. They are discarded when you
-select a different transmitter, and they are not saved between runs.
+### Discovering Signal Parameters
+
+When the parameters are wrong and you do not know what the right ones are, the **Discover** button works
+them out from the signal itself. Press it during a pass: SkyRoof analyses the bursts that arrive from the
+press onward, trying candidate combinations of modulation, framing, baud rate, and deviation against each
+one, while normal decoding continues undisturbed. The status line beside the button reports what the
+search is doing — **waiting** between bursts, with the number of bursts analysed and skipped so far, and
+**analyzing** while it works on one that has just arrived.
+
+The search ends as soon as a candidate decodes a frame with a valid checksum. That is a strong result: a
+wrong set of parameters does not produce a correct checksum by accident. The parameters found are applied
+to the current pass immediately, so decoding continues with them, and they appear in the dialog with green
+dots.
+
+Two other outcomes are possible:
+
+- **the parameters belong to another transmitter** of the same satellite on the same downlink frequency —
+  a satellite often has several. Nothing is overridden in that case: SkyRoof selects that transmitter
+  instead and says so, because the database was right all along and the signal was simply not the one you
+  had selected;
+- **the pass ends with nothing found**, and the line says *no parameters found*. That is a useful answer
+  too: it says the trouble lies somewhere other than the parameters — too weak a signal, the wrong
+  frequency, or a modulation SkyRoof does not support.
+
+Press **Discover** a second time to stop the search early. It cannot be started while the satellite is
+below the horizon, because no burst can arrive then, and the status line says so if you try.
 
 ### Where a Value Came From
 
@@ -138,6 +163,32 @@ means no frame has decoded with it yet.
 The gear button's own color mirrors the dots, so you can see the state of the overrides without
 opening the dialog: gray when there is nothing to show, orange while an override is waiting for a
 confirming frame, and green once every override has produced one.
+
+A green dot says the parameters are working now. It does not by itself unlock the **Save to Overrides**
+button, which asks for more than that — see below, where the status line counts down the frames the save
+decision is still waiting for.
+
+### Saving the Parameters
+
+Overrides are remembered per transmitter for the current session only. They are discarded when you select
+a different transmitter, and they are not saved between runs — unless you save them with the **Save to
+Overrides** button. Saving writes them to `transmitters-override.json` in the
+[data folder](data_folder.md), where they are read on every later run and survive updates of the satellite
+database.
+
+Because that file is long-lived, the button asks for more evidence than a dot does. A green dot means one
+frame decoded with the value. Save unlocks only after **2 more frames** have decoded with the parameters
+on screen, and the status line counts them down: *2 more frames to save*, then *1 more frame to save*,
+then *3 frames decoded — parameters can be saved*. The count keeps running while the dialog is closed.
+Editing a field afterwards greys the button out again: the frames proved the values they were decoded
+with, not the new one. The count also starts again at the end of the pass, so a Save left unclicked at LOS
+needs two fresh frames on the next pass — an override already saved is not affected.
+
+The same gate decides when frames go to the [SatNOGS DB](https://db.satnogs.org/). While a transmitter's
+parameters carry unsaved edits, its decoded frames still appear in the tree, are still written to the log
+file, and still reach any KISS client, but they are not uploaded. Saving is what tells SkyRoof the frames
+are attributed to the right transmitter, and uploading runs from that point on; frames decoded before the
+save are not sent retroactively. Transmitters you have not edited are unaffected.
 
 ## Passes and Frames
 

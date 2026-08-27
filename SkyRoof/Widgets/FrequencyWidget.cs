@@ -79,6 +79,9 @@ namespace SkyRoof
       ctx.RotatorControl.SetSatellite(null);
       RadioLinkToRadio();
       UpdateTxButton();
+      // the telemetry panel decodes terrestrial signals from manually entered parameters, so it must learn
+      // that the radio has moved: nothing else tells it, and the tuned frequency is the pass identity there
+      ctx.TelemetryPanel?.SetTransmitter();
     }
 
     internal void SetTransponderOffset(SatnogsDbTransmitter transponder, double offset)

@@ -258,15 +258,14 @@ namespace SkyRoof
       DiscoverBtn.TabIndex = 9;
       DiscoverBtn.Text = "Discover";
       DiscoverBtn.UseVisualStyleBackColor = true;
-      DiscoverBtn.Visible = false;
       DiscoverBtn.Click += DiscoverBtn_Click;
       // 
       // DiscoverStatusLabel
       // 
       DiscoverStatusLabel.AutoEllipsis = true;
-      DiscoverStatusLabel.Location = new Point(128, 276);
+      DiscoverStatusLabel.Location = new Point(128, 281);
       DiscoverStatusLabel.Name = "DiscoverStatusLabel";
-      DiscoverStatusLabel.Size = new Size(204, 15);
+      DiscoverStatusLabel.Size = new Size(204, 45);
       DiscoverStatusLabel.TabIndex = 10;
       // 
       // panel1
@@ -275,7 +274,7 @@ namespace SkyRoof
       panel1.Controls.Add(CancelBtn);
       panel1.Controls.Add(OkBtn);
       panel1.Dock = DockStyle.Bottom;
-      panel1.Location = new Point(0, 306);
+      panel1.Location = new Point(0, 332);
       panel1.Name = "panel1";
       panel1.Size = new Size(344, 44);
       panel1.TabIndex = 11;
@@ -288,7 +287,6 @@ namespace SkyRoof
       SaveOverrideBtn.TabIndex = 2;
       SaveOverrideBtn.Text = "Save to Overrides";
       SaveOverrideBtn.UseVisualStyleBackColor = true;
-      SaveOverrideBtn.Visible = false;
       SaveOverrideBtn.Click += SaveOverrideBtn_Click;
       // 
       // CancelBtn
@@ -317,7 +315,7 @@ namespace SkyRoof
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
       CancelButton = CancelBtn;
-      ClientSize = new Size(344, 350);
+      ClientSize = new Size(344, 376);
       Controls.Add(DiscoverStatusLabel);
       Controls.Add(DiscoverBtn);
       Controls.Add(TelemetryFormatDot);
@@ -346,6 +344,7 @@ namespace SkyRoof
       Controls.Add(ModulationLabel);
       Controls.Add(panel1);
       FormBorderStyle = FormBorderStyle.FixedDialog;
+      KeyPreview = true;
       MaximizeBox = false;
       MinimizeBox = false;
       Name = "SignalParamsDialog";
