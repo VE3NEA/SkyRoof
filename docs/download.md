@@ -19,7 +19,7 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 #### v.1.51
 
 - added signal params discovery to telemetry decoder
-- added delemetry and SSTV decoding of terrestrial signals
+- added telemetry and SSTV decoding of terrestrial signals
 - fixed satellite data import after upstream format change
 - fixed some glitches in the dark theme
 
