@@ -18,9 +18,9 @@ namespace SkyRoof
     // the "Auto" tri-state combo items, in index order (null / true / false)
     private static readonly string[] TriStateItems = { "Auto", "On", "Off" };
 
-    // dot colors, shared with the caller so the gear button uses the same yellow/green. Themed, because
-    // the status line paints text with them and the bright pair is unreadable on the light surface.
-    public static Color EditedColor => Theme.ParamsEdited;
+    // dot colors, shared with the caller so the gear button uses the same yellow/green. The green is
+    // themed, because the status line paints text with it and LimeGreen is unreadable on the light surface.
+    public static readonly Color EditedColor = Color.Orange;
     public static Color ConfirmedColor => Theme.ParamsConfirmed;
 
     // provenance of a field's current value, mapped to a dot color
@@ -44,6 +44,10 @@ namespace SkyRoof
       internal Func<object?> Value = () => null;
       internal object? Opened;
       internal object? Populated;
+      // what was last handed to the caller and applied to the live pipeline. Every edit is applied as it is
+      // committed, so this is what a commit is tested against: tabbing out of a field nobody touched, or a
+      // second commit of the same value, must not tear the pipeline down and restart the countdown.
+      internal object? Applied;
       internal Action Reset = () => { };
       // undo the control's change subscription: a Repopulate rebuilds the bindings, and a handler left
       // behind would go on re-deriving the dot of a binding that no longer describes anything (§4.5).
@@ -51,6 +55,7 @@ namespace SkyRoof
 
       internal bool AtOpened() => Equals(Value(), Opened);
       internal bool AtPopulated() => Equals(Value(), Populated);
+      internal bool AtApplied() => Equals(Value(), Applied);
     }
 
     private readonly List<DotBinding> Bindings = new();
@@ -65,6 +70,26 @@ namespace SkyRoof
     private Control? Anchor;
 
     private SignalParams Original;
+
+    // the format ids the combo was filled from, so the controls can be restored without the view
+    private IReadOnlyList<string> FormatIds = Array.Empty<string>();
+
+    // The state Cancel goes back to: what the dialog opened with, moved forward to the values on screen
+    // every time Save writes them down. Editing is applied to the live pipeline as it happens, so Cancel
+    // has no unsent result to discard - it re-applies this one instead. A Cancel that follows a Save with
+    // no further edit therefore does nothing: saved parameters are the recorded truth about the
+    // transmitter, and undoing them is what Reset to database value is for.
+    private SignalParams RevertParams = null!;
+    private string? RevertFormatId;
+
+    // Set while the dialog writes its own controls - populating them, restoring them, clearing them for a
+    // search, filling in its answer. The commit handlers below must not mistake any of that for an operator
+    // edit and apply it to the live pipeline.
+    private bool Suppressed;
+
+    // what the fields held when a search started, so a search that ends without an answer gives them back
+    private SignalParams? SearchRestore;
+    private string? SearchRestoreFormatId;
 
     // the edited parameters, valid after the dialog returns DialogResult.OK
     public SignalParams Result { get; private set; }
@@ -81,6 +106,9 @@ namespace SkyRoof
       InitializeComponent();
       WireDots();
       SetupResetMenu();
+      // wired here rather than in the designer: the button keeps its DialogResult.Cancel (which closes the
+      // form), and this handler runs first to put the parameters back before it does
+      CancelBtn.Click += CancelBtn_Click;
     }
 
     public DialogResult Open(SignalParamsView view, Control? anchor = null)
@@ -91,6 +119,9 @@ namespace SkyRoof
       Original = view.Params;
       Result = view.Params;
       ResultFormatId = view.FormatId;
+      FormatIds = view.FormatIds;
+      RevertParams = view.Params;
+      RevertFormatId = view.FormatId;
 
       ModulationCombo.DataSource = Enum.GetValues(typeof(Modulation));
       FramingCombo.DataSource = Enum.GetValues(typeof(Framing));
@@ -98,12 +129,13 @@ namespace SkyRoof
       DifferentialCombo.DataSource = (string[])TriStateItems.Clone();
       TelemetryFormatCombo.DataSource = new List<string>(view.FormatIds);
 
-      PopulateControls(view);
+      Quiet(() => PopulateControls(view));
       BuildBindings(view);
       // Save writes a parameter set down as the truth about this transmitter, so it stays disabled until the
       // panel reports the set proven — the frames are counted there, which is why a reopened dialog comes
       // back with the Save, or the countdown, the pass left it at rather than greyed out again (§3, §4.3).
       Proven = view.CanSave;
+      Savable = view.Savable;
       UpdateSaveEnabled();
       if (view.Status != null) { CountdownText = view.Status; RefreshStatusLine(); }
       return ShowDialog();
@@ -130,19 +162,33 @@ namespace SkyRoof
     {
       // pre-fill the editable fields with the values actually used for decoding: the run-time finding when the
       // pipeline resolved one, otherwise the curated value.
-      ModulationCombo.SelectedItem = Original.Modulation;
-      FramingCombo.SelectedItem = Original.Framing;
-      BaudTextBox.Text = FormatRate(Original.ResolvedBaud ?? Original.Baud);
-      DeviationTextBox.Text = FormatRate(Original.ResolvedDeviation ?? Original.Deviation);
-      AfCarrierTextBox.Text = FormatNullable(Original.AfCarrier);
-      ManchesterCombo.SelectedIndex = BoolToIndex(Original.Manchester);
-      DifferentialCombo.SelectedIndex = BoolToIndex(Original.Differential);
+      FormatIds = view.FormatIds;
+      RestoreControls(Original, view.FormatId);
+    }
 
+    // Write a parameter set into the controls. Every caller is the dialog writing its own controls - the
+    // initial populate, a Cancel putting the parameters back, a search restoring what it cleared - so all
+    // of them run it under Quiet: none of it is an operator edit and none of it may be applied as one.
+    private void RestoreControls(SignalParams p, string? formatId)
+    {
+      ModulationCombo.SelectedItem = p.Modulation;
+      FramingCombo.SelectedItem = p.Framing;
+      BaudTextBox.Text = FormatRate(p.ResolvedBaud ?? p.Baud);
+      DeviationTextBox.Text = FormatRate(p.ResolvedDeviation ?? p.Deviation);
+      AfCarrierTextBox.Text = FormatNullable(p.AfCarrier);
+      ManchesterCombo.SelectedIndex = BoolToIndex(p.Manchester);
+      DifferentialCombo.SelectedIndex = BoolToIndex(p.Differential);
       // the NORAD-resolved format is pre-selected, or the combo is left empty when no format matches
-      if (view.FormatId != null && view.FormatIds.Contains(view.FormatId))
-        TelemetryFormatCombo.SelectedItem = view.FormatId;
-      else
-        TelemetryFormatCombo.SelectedIndex = -1;
+      TelemetryFormatCombo.SelectedIndex = FormatIndex(FormatIds, formatId);
+    }
+
+    // run a block of the dialog's own writes to the controls without any of it reaching the live pipeline
+    private void Quiet(Action write)
+    {
+      bool was = Suppressed;
+      Suppressed = true;
+      try { write(); }
+      finally { Suppressed = was; }
     }
 
     // capture each field's populated (in-use) value and its DB-derived value, then wire a change handler so the
@@ -210,19 +256,121 @@ namespace SkyRoof
         AtDb = atDb, Value = value, Opened = value(), Populated = value(), Reset = reset
       };
       Bindings.Add(b);
+      b.Applied = b.Value();
       DotColors[dot] = ColorFor(initial);
 
+      // the dot follows every keystroke; the pipeline follows a committed edit. For a combo the two are the
+      // same moment, for a text box the commit is Enter or the focus leaving it (§4.3).
       void Handler(object? sender, EventArgs e) { RefreshDot(b); UpdateSaveEnabled(); RefreshStatusLine(); }
+      void Commit(object? sender, EventArgs e) => ApplyIfEdited();
+      void CommitOnEnter(object? sender, KeyEventArgs e) { if (e.KeyCode == Keys.Enter) ApplyIfEdited(); }
       if (control is ComboBox cb)
       {
         cb.SelectedIndexChanged += Handler;
-        b.Detach = () => cb.SelectedIndexChanged -= Handler;
+        cb.SelectedIndexChanged += Commit;
+        b.Detach = () => { cb.SelectedIndexChanged -= Handler; cb.SelectedIndexChanged -= Commit; };
       }
       else if (control is TextBox tb)
       {
         tb.TextChanged += Handler;
-        b.Detach = () => tb.TextChanged -= Handler;
+        tb.Leave += Commit;
+        tb.KeyDown += CommitOnEnter;
+        b.Detach = () => { tb.TextChanged -= Handler; tb.Leave -= Commit; tb.KeyDown -= CommitOnEnter; };
       }
+    }
+
+
+    //----------------------------------------------------------------------------------------------
+    //                                        applying edits
+    //----------------------------------------------------------------------------------------------
+    /// <summary>Raised when an edit is committed - a combo selection, Enter in a text box, or the focus
+    /// leaving one - and when Cancel puts the parameters back. The caller applies what the dialog holds
+    /// immediately: this is a live control panel over a running decoder, not a form that decides on OK.
+    /// <see cref="Result"/>, <see cref="ResultFormatId"/>, <see cref="ChangedFields"/> and
+    /// <see cref="ResetFields"/> are up to date by the time it fires.</summary>
+    public event EventHandler? ParamsEdited;
+
+    // Apply what is on screen, if it has moved since the last time it was applied. The test matters: a
+    // Leave fires whenever the focus passes through a text box, and applying an unchanged set would tear
+    // the decoder down and restart the countdown for nothing.
+    private void ApplyIfEdited()
+    {
+      if (Suppressed || IsDisposed) return;
+      if (Bindings.All(b => b.AtApplied())) return;
+
+      CaptureResult();
+      foreach (var b in Bindings) b.Applied = b.Value();
+      ParamsEdited?.Invoke(this, EventArgs.Empty);
+    }
+
+    // Classify every field that moved since the dialog opened: back to the DB value (reset) or to a new
+    // value (changed), whether the operator typed it or the search found it. Fields left as they opened are
+    // reported as neither. Measured against the opening values rather than the last applied ones, because
+    // the caller accumulates the set of overridden fields and a field is overridden until it goes back.
+    private void CaptureResult()
+    {
+      Result = CurrentParams();
+      ResultFormatId = CurrentFormatId();
+      ChangedFields.Clear();
+      ResetFields.Clear();
+      foreach (var b in Bindings)
+      {
+        if (b.AtOpened()) continue;
+        if (b.AtDb()) ResetFields.Add(b.Name);
+        else ChangedFields.Add(b.Name);
+      }
+    }
+
+    /// <summary>Re-baseline the dots, the save gate and the countdown from the caller, after it has applied
+    /// what the dialog sent it or after a frame has changed its verdict. All of that state lives in the
+    /// panel (§3), so the panel states it rather than the dialog inferring it. The bindings are not rebuilt:
+    /// the operator may be typing in one of these controls.</summary>
+    public void Refresh(SignalParamsView view)
+    {
+      if (IsDisposed) return;
+      Original = view.Params;
+      foreach (var b in Bindings)
+      {
+        b.Initial = DotIn(view, b.Name);
+        b.Populated = b.Value();
+        b.Applied = b.Value();
+        RefreshDot(b);
+      }
+      Proven = view.CanSave;
+      Savable = view.Savable;
+      UpdateSaveEnabled();
+      CountdownText = view.Status;
+      RefreshStatusLine();
+    }
+
+    private static FieldDot DotIn(SignalParamsView v, string name) => name switch
+    {
+      "Modulation" => v.ModulationDot,
+      "Framing" => v.FramingDot,
+      "Baud" => v.BaudDot,
+      "Deviation" => v.DeviationDot,
+      "AfCarrier" => v.AfCarrierDot,
+      "Manchester" => v.ManchesterDot,
+      "Differential" => v.DifferentialDot,
+      "TelemetryFormat" => v.FormatDot,
+      _ => FieldDot.None
+    };
+
+    /// <summary>The parameters on screen have been written to the override file, so they become what Cancel
+    /// goes back to. A saved set is the recorded truth about this transmitter; Cancel does not undo it.</summary>
+    public void MarkSaved()
+    {
+      RevertParams = CurrentParams();
+      RevertFormatId = CurrentFormatId();
+    }
+
+    private void CancelBtn_Click(object? sender, EventArgs e)
+    {
+      // every edit went to the pipeline as it was committed, so there is nothing here to discard - Cancel
+      // puts back the last set that was written down, which is what the dialog opened with unless a Save
+      // has moved that baseline forward since. Unchanged since then, this applies nothing at all.
+      Quiet(() => RestoreControls(RevertParams, RevertFormatId));
+      ApplyIfEdited();
     }
 
     // the DB value is transparent; the populated value keeps the caller's state; any other value is yellow
@@ -310,13 +458,22 @@ namespace SkyRoof
     // Save out again: the proof was for the other values.
     private bool Proven;
 
+    // Whether there is anywhere to save the parameters at all: false for a terrestrial signal, which has no
+    // transmitter row for transmitters-override.json to be keyed by (§4.9). It gates the button ahead of
+    // both halves of the gate — Ctrl+Shift included, since a forced save would otherwise reach a handler
+    // that can only return — and it replaces the countdown, which would otherwise count toward a button
+    // that never enables however many frames decode.
+    private bool Savable = true;
+
     // the save gate's second half (§4.3), shared with the status line so the two cannot disagree. The
     // telemetry format is excluded: it is not part of what Save writes to transmitters-override.json,
     // so choosing a different one cannot invalidate the demod parameters' proof.
     private bool FieldsHoldProvenValues => Bindings.All(b => b.Name == "TelemetryFormat" || b.AtPopulated());
 
+    // ... and not while a search is running: the fields are cleared for it, so Save would write down a set
+    // the operator cannot see, assembled half from blanks and half from what the search has yet to replace.
     private void UpdateSaveEnabled()
-      => SaveOverrideBtn.Enabled = ForceSave || (Proven && FieldsHoldProvenValues);
+      => SaveOverrideBtn.Enabled = Savable && !Discovering && (ForceSave || (Proven && FieldsHoldProvenValues));
 
     // The countdown line while it is the thing on the status line, else null. Kept so that an edit can take
     // the line away from a countdown that has stopped describing what is on screen, and give it back
@@ -329,8 +486,8 @@ namespace SkyRoof
     private void RefreshStatusLine()
     {
       if (CountdownText == null) return;
-      if (FieldsHoldProvenValues) SetStatus(CountdownText, ConfirmedColor);
-      else SetStatus("edited value not tested — click OK to apply it", EditedColor);
+      if (!FieldsHoldProvenValues) SetStatus("edited value not tested — click OK to apply it", EditedColor);
+      else SetStatus(CountdownText, ConfirmedColor);
     }
 
     // Ctrl+Shift held down enables Save whatever the gate says, for as long as the keys are down (§4.11).
@@ -385,9 +542,55 @@ namespace SkyRoof
     {
       Discovering = !Discovering;
       DiscoverBtn.Text = Discovering ? "Stop" : "Discover";
-      if (Discovering) { StoppedExplicitly = false; ShowDiscoveryProgress(0, 0, false); }
+      if (Discovering) { StoppedExplicitly = false; BeginSearchDisplay(); ShowDiscoveryProgress(0, 0, false); }
       else ShowDiscoveryStopped("search stopped");
       DiscoverToggled?.Invoke(Discovering);
+    }
+
+    // The search answers for the parameters, so while it runs the dialog stops showing values it is about to
+    // replace: the four fields the search determines are cleared and every control is locked, and the answer
+    // fills them in. Nothing here is applied - the pipeline goes on decoding with the parameters it has,
+    // which is exactly what the search is listening to. AF carrier, Manchester and Precoding keep their
+    // values because the search neither reads nor sets them, and blanking a value still in use would
+    // misreport what is decoding; they are locked all the same, since an edit mid-search would be applied
+    // under a display that is not describing the pipeline.
+    private void BeginSearchDisplay()
+    {
+      SearchRestore = CurrentParams();
+      SearchRestoreFormatId = CurrentFormatId();
+
+      Quiet(() =>
+      {
+        ModulationCombo.SelectedItem = Modulation.Unknown;
+        FramingCombo.SelectedItem = Framing.Unknown;
+        BaudTextBox.Text = "";
+        DeviationTextBox.Text = "";
+      });
+
+      foreach (var b in Bindings)
+      {
+        b.Control.Enabled = false;
+        // no dot while the search runs: an empty field is not an override, it is a question
+        if (DiscoveredFields.Contains(b.Name)) { DotColors[b.Dot] = null; b.Dot.Invalidate(); }
+      }
+      UpdateSaveEnabled();
+    }
+
+    // The search is over. An answer leaves the fields it filled in; anything else gives back what was on
+    // screen when it started, because a search that found nothing must not cost the operator the parameters
+    // it was searching from.
+    private void EndSearchDisplay(bool restore)
+    {
+      if (SearchRestore != null && restore)
+        Quiet(() => RestoreControls(SearchRestore, SearchRestoreFormatId));
+      SearchRestore = null;
+
+      foreach (var b in Bindings)
+      {
+        b.Control.Enabled = true;
+        RefreshDot(b);
+      }
+      UpdateSaveEnabled();
     }
 
     /// <summary>The search was ended from outside rather than by finding an answer — the operator's second
@@ -400,6 +603,7 @@ namespace SkyRoof
       Discovering = false;
       DiscoverBtn.Text = "Discover";
       StoppedExplicitly = true;
+      EndSearchDisplay(true);
       CountdownText = null;
       SetStatus(reason, SystemColors.ControlText);
     }
@@ -428,12 +632,20 @@ namespace SkyRoof
       Discovering = false;
       DiscoverBtn.Text = "Discover";
       Original = found;
-      ModulationCombo.SelectedItem = found.Modulation;
-      FramingCombo.SelectedItem = found.Framing;
-      BaudTextBox.Text = FormatRate(found.ResolvedBaud ?? found.Baud);
-      DeviationTextBox.Text = FormatRate(found.ResolvedDeviation ?? found.Deviation);
-      AfCarrierTextBox.Text = FormatNullable(found.AfCarrier);
+      Quiet(() =>
+      {
+        ModulationCombo.SelectedItem = found.Modulation;
+        FramingCombo.SelectedItem = found.Framing;
+        BaudTextBox.Text = FormatRate(found.ResolvedBaud ?? found.Baud);
+        DeviationTextBox.Text = FormatRate(found.ResolvedDeviation ?? found.Deviation);
+        AfCarrierTextBox.Text = FormatNullable(found.AfCarrier);
+      });
+      // the answer stays on screen: this is the populate the search was cleared for
+      EndSearchDisplay(false);
       MarkDiscovered();
+      // the caller has already applied these, so they are the applied baseline too - a later Leave on one of
+      // these controls must not re-apply what is already running
+      foreach (var b in Bindings) b.Applied = b.Value();
       // green dots at once, Save held back: one frame answers "are these the parameters in use, and did they
       // work?", which is what the dot means, but not "should this be written down as the truth about this
       // transmitter?" (§2). The countdown makes the difference visible instead of mysterious.
@@ -464,14 +676,18 @@ namespace SkyRoof
 
       Proven = have >= need;
       UpdateSaveEnabled();
-      CountdownText = ConfirmingFramesText(have, need);
+      CountdownText = ConfirmingFramesText(have, need, Savable);
       RefreshStatusLine();
     }
 
     /// <summary>The countdown's wording, shared with the panel so that the line a reopened dialog comes back
     /// with is the one the open dialog was showing.</summary>
-    public static string ConfirmingFramesText(int have, int need)
+    public static string ConfirmingFramesText(int have, int need, bool savable)
     {
+      // nothing to count toward: the frames are decoding and the parameters are confirmed, but a signal
+      // with no transmitter behind it has no override row to be written to (§4.9)
+      if (!savable) return "parameters confirmed — terrestrial, nothing to save";
+
       int left = need - have;
       if (left <= 0) return $"{have + 1} frames decoded — parameters can be saved";
       return left == 1 ? "1 more frame to save" : $"{left} more frames to save";
@@ -484,7 +700,12 @@ namespace SkyRoof
       Discovering = false;
       DiscoverBtn.Text = "Discover";
       if (StoppedExplicitly) { StoppedExplicitly = false; return; }
-      if (!found) { CountdownText = null; SetStatus("no parameters found", EditedColor); }
+      if (!found)
+      {
+        EndSearchDisplay(true);
+        CountdownText = null;
+        SetStatus("no parameters found", EditedColor);
+      }
     }
 
     /// <summary>The answer was another transmitter's own parameters and the caller has selected that
@@ -512,13 +733,21 @@ namespace SkyRoof
       DiscoverBtn.Text = "Discover";
 
       TelemetryFormatCombo.DataSource = new List<string>(view.FormatIds);
-      PopulateControls(view);
+      // the co-channel switch is the caller writing the dialog, not an operator edit, and it ends whatever
+      // the search had done to the fields - they now describe a different transmitter entirely
+      SearchRestore = null;
+      Quiet(() => PopulateControls(view));
       BuildBindings(view);
+      foreach (var b in Bindings) b.Control.Enabled = true;
       // unlike the initial Open, the dots are already on screen with the previous transmitter's colors
       foreach (var b in Bindings) b.Dot.Invalidate();
 
       Proven = view.CanSave;
+      Savable = view.Savable;
+      RevertParams = view.Params;
+      RevertFormatId = view.FormatId;
       UpdateSaveEnabled();
+      CountdownText = null;
       SetStatus(status, ConfirmedColor);
     }
 
@@ -540,6 +769,9 @@ namespace SkyRoof
     }
 
     private void SaveOverrideBtn_Click(object sender, EventArgs e) => SaveOverrideRequested?.Invoke(this, e);
+
+    private string? CurrentFormatId()
+      => TelemetryFormatCombo.SelectedIndex >= 0 ? (string)TelemetryFormatCombo.SelectedItem : null;
 
 
     /// <summary>The parameters the controls currently hold, as an applicable <see cref="SignalParams"/>.
@@ -565,22 +797,8 @@ namespace SkyRoof
 
     private void OkBtn_Click(object sender, EventArgs e)
     {
-      Result = CurrentParams();
-
-      ResultFormatId = TelemetryFormatCombo.SelectedIndex >= 0 ? (string)TelemetryFormatCombo.SelectedItem : null;
-
-      // classify every field that moved since the dialog opened: back to the DB value (reset) or to a new
-      // value (changed), whether the operator typed it or the search found it. Fields left as they opened
-      // are reported as neither.
-      ChangedFields.Clear();
-      ResetFields.Clear();
-      foreach (var b in Bindings)
-      {
-        if (b.AtOpened()) continue;
-        if (b.AtDb()) ResetFields.Add(b.Name);
-        else ChangedFields.Add(b.Name);
-      }
-
+      // the caret may still be sitting in a text box whose edit has not been committed by a Leave yet
+      ApplyIfEdited();
       DialogResult = DialogResult.OK;
       Close();
     }
@@ -638,6 +856,9 @@ namespace SkyRoof
     // whether the panel has counted enough confirming frames for Save to be offered, and the countdown line
     // to reopen with (null = nothing to say; the dialog keeps its own status)
     public bool CanSave;
+    // false when there is no transmitter to save against at all (a terrestrial signal), which disables Save
+    // outright and replaces the countdown with the reason (§4.9)
+    public bool Savable = true;
     public string? Status;
   }
 }

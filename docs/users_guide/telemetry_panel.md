@@ -113,13 +113,15 @@ any of them:
   no telemetry definition for the satellite — its frames are then shown without telemetry values in
   the PAYLOAD section.
 
-To undo a single override, right-click the field and choose **Reset to database value** — the field
-goes back to the value the database gave it, leaving your other overrides in place. **Cancel** discards
-every edit you made since opening the dialog.
+Each change takes effect as soon as you finish making it — when you pick a value from a list, press Enter
+in a text box, or move on to another field. A change to any of the demodulator fields rebuilds the decoder
+there and then, so it applies to the next burst; a change to the telemetry format applies to frames decoded
+from that point on and does not re-parse the frames already in the tree.
 
-Click **OK** to apply your changes. A change to any of the demodulator fields rebuilds the decoder
-immediately, so it takes effect on the next burst. A change to the telemetry format applies to frames
-decoded from that point on and does not re-parse the frames already in the tree.
+To undo a single override, right-click the field and choose **Reset to database value** — the field goes
+back to the value the database gave it, leaving your other overrides in place. **Cancel** puts back the
+last set of parameters that was written down: the ones the dialog opened with, or the ones you last saved.
+**OK** simply closes the dialog and keeps what is in use.
 
 ### Discovering Signal Parameters
 
@@ -129,6 +131,10 @@ press onward, trying candidate combinations of modulation, framing, baud rate, a
 one, while normal decoding continues undisturbed. The status line beside the button reports what the
 search is doing — **waiting** between bursts, with the number of bursts analysed and skipped so far, and
 **analyzing** while it works on one that has just arrived.
+
+While the search runs, the parameter fields are emptied and locked. The search is about to answer for them,
+and leaving values on screen that it is about to replace would only mislead. If it ends without an answer,
+they come back exactly as they were.
 
 The search ends as soon as a candidate decodes a frame with a valid checksum. That is a strong result: a
 wrong set of parameters does not produce a correct checksum by accident. The parameters found are applied

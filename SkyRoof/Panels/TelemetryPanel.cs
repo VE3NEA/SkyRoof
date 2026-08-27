@@ -954,11 +954,16 @@ namespace SkyRoof
         // — the count must survive the operator closing the dialog and letting the pass run. Gated on the
         // current decoder's snapshot like the validation in AddFrame, so a late frame from a pre-override
         // pipeline cannot prove parameters it was never decoded with.
-        if (wasValidated && frame.CrcValid == true && ReferenceEquals(snapshot, CurrentDecode))
+        if (frame.CrcValid == true && ReferenceEquals(snapshot, CurrentDecode) && DemodValidated)
         {
-          ConfirmingFrames++;
+          // the frame that first validates the set does not count toward the two that must follow it, but it
+          // must still turn the dots green and put the countdown on screen. Without this a hand edit showed
+          // nothing at all until its second frame, while a discovered set showed "2 more frames to save" the
+          // instant it was applied - the same moment reported two different ways (§4.2).
+          if (wasValidated) ConfirmingFrames++;
           UpdateGearButton();
-          ParamsDialog?.ShowConfirmingFrames(ConfirmingFrames, ConfirmFrames);
+          if (wasValidated) ParamsDialog?.ShowConfirmingFrames(ConfirmingFrames, ConfirmFrames);
+          else ParamsDialog?.Refresh(BuildDialogView());
         }
       });
     }
@@ -977,11 +982,13 @@ namespace SkyRoof
       using var dlg = new SignalParamsDialog();
       dlg.DiscoverToggled += ToggleDiscovery;
       dlg.SaveOverrideRequested += SaveOverrideRequested;
+      // every edit is applied as it is committed, so nothing is decided when the dialog closes - OK and
+      // Cancel differ only in that Cancel puts the last written-down set back on its way out (§4.3)
+      dlg.ParamsEdited += ParamsEditedHandler;
       ParamsDialog = dlg;
       try
       {
-        if (dlg.Open(BuildDialogView(), this) != DialogResult.OK) return;
-        ApplyDialogResult(dlg);
+        dlg.Open(BuildDialogView(), this);
       }
       finally
       {
@@ -1221,6 +1228,9 @@ namespace SkyRoof
         // the operator has endorsed these parameters, so the frames decoded with them may be published (§4.6)
         OverrideSaved = true;
         UpdateUploadHold();
+        // and they are now what Cancel goes back to: a saved set is the recorded truth about this
+        // transmitter, so a Cancel after it has nothing to undo (§4.3)
+        ParamsDialog.MarkSaved();
         MessageBox.Show(ParamsDialog, "Saved to transmitters-override.json.", "Signal Details",
           MessageBoxButtons.OK, MessageBoxIcon.Information);
       }
@@ -1261,11 +1271,14 @@ namespace SkyRoof
           : FormatValidated ? SignalParamsDialog.FieldDot.Confirmed : SignalParamsDialog.FieldDot.Edited,
         // the save gate and the countdown live in the panel, where the frames arrive, so a reopened dialog
         // comes back as it was left rather than with Save unconditionally greyed out (§3, §4.3)
+        CanSave = DemodProven && UserChangedFields.Count > 0,
         // terrestrial has no transmitter row to write against, and its parameters are a session tool rather
-        // than a database correction, so Save is not offered there at all (§4.9)
-        CanSave = DemodProven && UserChangedFields.Count > 0 && Transmitter != null,
+        // than a database correction, so Save is not offered there at all and the countdown in front of it
+        // is replaced by the reason (§4.9). Kept apart from CanSave, which stays the verdict on the
+        // evidence alone: the two answer different questions, and only one of them frames can change.
+        Savable = Transmitter != null,
         Status = DemodValidated && UserChangedFields.Count > 0
-          ? SignalParamsDialog.ConfirmingFramesText(ConfirmingFrames, ConfirmFrames) : null
+          ? SignalParamsDialog.ConfirmingFramesText(ConfirmingFrames, ConfirmFrames, Transmitter != null) : null
       };
     }
 
@@ -1288,6 +1301,15 @@ namespace SkyRoof
       "Differential" => SignalParams?.Differential != ResolvedSnapshot?.Differential,
       _ => false
     };
+
+    // An edit was committed in the open dialog. Apply it at once and hand the dialog back the state it does
+    // not own: the dots, the save gate and the countdown all live here, where the frames arrive (§3).
+    private void ParamsEditedHandler(object? sender, EventArgs e)
+    {
+      if (ParamsDialog == null) return;
+      ApplyDialogResult(ParamsDialog);
+      ParamsDialog.Refresh(BuildDialogView());
+    }
 
     // apply the dialog result: the telemetry-format override takes a lightweight path (no pipeline rebuild,
     // future frames only); any demod-field change replaces the params and rebuilds the pipeline.
