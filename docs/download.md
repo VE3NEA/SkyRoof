@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.50](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.50/SkyRoofSetup-v.1.50.exe)
+[SkyRoof v.1.51](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.51/SkyRoofSetup-v.1.51.exe)
 
 <br>
 
@@ -15,6 +15,12 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.51
+
+- added signal params discovery to telemetry decoder
+- added delemetry and SSTV decoding of terrestrial signals
+- fixed some glitches in the dark theme
 
 #### v.1.50
 
