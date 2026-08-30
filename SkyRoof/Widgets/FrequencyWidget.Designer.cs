@@ -374,10 +374,9 @@
       // 
       // CtcssEnabledMnu
       // 
-      CtcssEnabledMnu.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
       CtcssEnabledMnu.Name = "CtcssEnabledMnu";
       CtcssEnabledMnu.Size = new Size(180, 22);
-      CtcssEnabledMnu.Text = "Enabled";
+      CtcssEnabledMnu.Text = "Enable";
       CtcssEnabledMnu.Click += CtcssEnabledMnu_Click;
       // 
       // CtcssSeparator
