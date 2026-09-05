@@ -4,18 +4,16 @@
 
 SkyRoof uses the
 [Soapy SDR](https://github.com/pothosware/SoapySDR)
-engine to interface with the SDR radios. Currently it supports:
+engine to interface with the SDR radios. The drivers for the following radios are included in the SkyRoof setup:
 
 - Airspy;
 - AirspyHF+;
 - SDRplay;
 - RTL-SDR;
 - HackRF;
-- PlutoSDR;
 
-> [!NOTE]
-> It may be possible to add support of other SDR devices to SkyRoof. Contact me if you have an unsupported SDR
-> and are willing to do extensive testing.
+Radios that are not on this list can also be used, see
+[Adding Support of Other Radios](#adding-support-of-other-radios) below.
 
 ## Installing The Drivers
 
@@ -28,6 +26,30 @@ or search on Google, for the driver installation instructions. At the time of th
 [PlutoSDR](https://wiki.analog.com/university/tools/pluto/users/quick_start).
 
 Once you install the drivers and make your radio work with its native software, proceed to the next step.
+
+## Adding Support of Other Radios
+
+SkyRoof can work with any SDR that has a SoapySDR driver module, even if the module does not come with SkyRoof.
+To add such a radio:
+
+- obtain the SoapySDR driver module for your radio. Pre-built modules for Windows are included in
+  [PothosSDR](https://downloads.myriadrf.org/builds/PothosSDR/), where they are located in the
+  `lib\SoapySDR\modules0.8` folder. The complete list of the SoapySDR drivers, with links to their
+  source code, is available on the
+  [SoapySDR wiki](https://github.com/pothosware/SoapySDR/wiki/PluginGuide).
+  The module must be a 64-bit build for the SoapySDR ABI version 0.8;
+
+- copy the module dll, and any dlls that it depends on, to the `lib\SoapySDR\modules0.8` folder
+  of the SkyRoof installation, usually `C:\Program Files\Afreet\SkyRoof\lib\SoapySDR\modules0.8`;
+
+- install the manufacturer's driver for the radio as described in the previous section;
+
+- restart SkyRoof and open the **SDR Devices** dialog. The radio should appear in the list of devices.
+
+> [!NOTE]
+> Some driver modules interfere with the detection of other SDR devices. The PlutoSDR module is one such
+> example, and for this reason it is no longer included in the SkyRoof setup. If your radios are no longer
+> detected after you add a new module, delete that module from the `modules0.8` folder.
 
 ## Selecting an SDR device
 

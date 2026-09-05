@@ -6,13 +6,15 @@
 - **Video Card**:  OpenGL 3.3 or higher, 512 Mb of texture memory;
 - **Monitor**: screen resolution 1900x1280 or higher, 4K recommended;
 - **Internet**: required, to download satellite data;
-- **SDR**: optional, but highly recommended. Currently plugins are available for:
+- **SDR**: optional, but highly recommended. The drivers included in the setup support:
   - Airspy;
   - AirspyHF+;
   - SDRplay;
   - RTL-SDR;
   - HackRF;
-  - PlutoSDR;
+
+  Other radios can be used if a SoapySDR driver module is available for them, see
+  [Setting Up SDR](setting_up_sdr.md);
   
 - **Transceiver**: optional. Currently the command definition files are available for:
 
