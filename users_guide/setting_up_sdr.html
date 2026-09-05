@@ -97,20 +97,16 @@
 <h2 id="supported-radios">Supported Radios</h2>
 <p>SkyRoof uses the
 <a href="https://github.com/pothosware/SoapySDR">Soapy SDR</a>
-engine to interface with the SDR radios. Currently it supports:</p>
+engine to interface with the SDR radios. The drivers for the following radios are included in the SkyRoof setup:</p>
 <ul>
 <li>Airspy;</li>
 <li>AirspyHF+;</li>
 <li>SDRplay;</li>
 <li>RTL-SDR;</li>
 <li>HackRF;</li>
-<li>PlutoSDR;</li>
 </ul>
-<div class="NOTE">
-<h5>Note</h5>
-<p>It may be possible to add support of other SDR devices to SkyRoof. Contact me if you have an unsupported SDR
-and are willing to do extensive testing.</p>
-</div>
+<p>Radios that are not on this list can also be used, see
+<a href="#adding-support-of-other-radios">Adding Support of Other Radios</a> below.</p>
 <h2 id="installing-the-drivers">Installing The Drivers</h2>
 <p>Most of the SDR devices require the driver to be installed before you can start using them. Check the manufacturer's web site,
 or search on Google, for the driver installation instructions. At the time of this writing, the following instructions were available on the Web:
@@ -120,6 +116,31 @@ or search on Google, for the driver installation instructions. At the time of th
 <a href="https://hackrf.readthedocs.io/en/latest/installing_hackrf_software.html">HackRF</a>,
 <a href="https://wiki.analog.com/university/tools/pluto/users/quick_start">PlutoSDR</a>.</p>
 <p>Once you install the drivers and make your radio work with its native software, proceed to the next step.</p>
+<h2 id="adding-support-of-other-radios">Adding Support of Other Radios</h2>
+<p>SkyRoof can work with any SDR that has a SoapySDR driver module, even if the module does not come with SkyRoof.
+To add such a radio:</p>
+<ul>
+<li><p>obtain the SoapySDR driver module for your radio. Pre-built modules for Windows are included in
+<a href="https://downloads.myriadrf.org/builds/PothosSDR/">PothosSDR</a>, where they are located in the
+<code>lib\SoapySDR\modules0.8</code> folder. The complete list of the SoapySDR drivers, with links to their
+source code, is available on the
+<a href="https://github.com/pothosware/SoapySDR/wiki/PluginGuide">SoapySDR wiki</a>.
+The module must be a 64-bit build for the SoapySDR ABI version 0.8;</p>
+</li>
+<li><p>copy the module dll, and any dlls that it depends on, to the <code>lib\SoapySDR\modules0.8</code> folder
+of the SkyRoof installation, usually <code>C:\Program Files\Afreet\SkyRoof\lib\SoapySDR\modules0.8</code>;</p>
+</li>
+<li><p>install the manufacturer's driver for the radio as described in the previous section;</p>
+</li>
+<li><p>restart SkyRoof and open the <strong>SDR Devices</strong> dialog. The radio should appear in the list of devices.</p>
+</li>
+</ul>
+<div class="NOTE">
+<h5>Note</h5>
+<p>Some driver modules interfere with the detection of other SDR devices. The PlutoSDR module is one such
+example, and for this reason it is no longer included in the SkyRoof setup. If your radios are no longer
+detected after you add a new module, delete that module from the <code>modules0.8</code> folder.</p>
+</div>
 <h2 id="selecting-an-sdr-device">Selecting an SDR device</h2>
 <p>Connect your SDR device to the computer, then click on <strong>Tools / SDR Devices</strong> in the main menu. This will open the
 <strong>SDR Devices dialog</strong>:</p>
