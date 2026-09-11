@@ -152,6 +152,16 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/clock_widget.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/clock_widget.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/ctcss_menu.png",
       "output": {
         "resource": {
@@ -1319,6 +1329,16 @@
       "output": {
         ".html": {
           "relative_path": "users_guide/calibrating_ppm_correction.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "users_guide/clock.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/clock.html"
         }
       },
       "version": ""

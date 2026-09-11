@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Satellite Passes | SkyRoof </title>
+      <title>Clock | SkyRoof </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Satellite Passes | SkyRoof ">
+      <meta name="title" content="Clock | SkyRoof ">
       
       
       <link rel="icon" href="../images/SkyRoof.ico">
@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/satellite_passes_panel.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/clock.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -92,19 +92,29 @@
         </div>
 
         <article data-uid="">
-<h1 id="satellite-passes">Satellite Passes</h1>
+<h1 id="clock">Clock</h1>
 
-<p>The Satellite Passes panel shows the list of predicted satellite passes over your location:</p>
-<p><img src="../images/satellite_passes.png" alt="Satellite Passes panel"></p>
-<p>The radio buttons at the top allow you to view either the passes of the selected satellite, of all satellites
-in the currently selected group, or all satellites carrying a VHF or UHF downlink transmitter and thus
-visible on the <a href="frequency_scale.html">Frequency Scale</a>.</p>
-<p>Click on a pass to make the satellite selected and to view its trajectory on the
-<a href="sky_view_panel.html">Sky View panel</a>.</p>
-<p>Move the cursor over the satellite name to view extra information on the mouse tooltip, or right-click to open
-the <a href="satellite_details_window.html">Satellite Details window</a>.</p>
-<p>The pass times, both in the list and on the tooltips, are displayed in the time zone selected on the
-<a href="clock.html">Clock</a> widget, marked with <strong>Z</strong> for UTC or <strong>LT</strong> for local time.</p>
+<p>The <strong>Clock</strong> widget at the right end of the toolbar shows the current time and date, and selects the
+time zone in which SkyRoof displays times:</p>
+<p><img src="../images/clock_widget.png" alt="Clock widget"></p>
+<p>The two small labels at the bottom of the widget, <strong>Local</strong> and <strong>UTC</strong>, show which mode is active: the
+selected one is highlighted in bright aqua, the other one in dark teal. Click either label, or the time
+display itself, to switch between the two modes. The selected mode is saved when the program closes and
+restored the next time it starts.</p>
+<h2 id="what-the-mode-affects">What The Mode Affects</h2>
+<p>The setting is application-wide: every wall-clock time in the program is displayed in the selected zone,
+and all panels update immediately when the mode is switched.</p>
+<p>Displayed times are marked with the zone they are in: <strong>Z</strong> for UTC and <strong>LT</strong> for local time.</p>
+<h2 id="what-does-not-change">What Does Not Change</h2>
+<p>A few times are tied to a particular zone by their purpose, and are not affected by this setting:</p>
+<ul>
+<li>the <strong>UTC</strong> field of the <a href="qso_entry_panel.html">QSO Entry</a> panel is always in UTC, as required by the
+ADIF format;</li>
+<li>the slot times in the <a href="ft4_console_panel.html">FT4 Console</a> panel are always in UTC, marked with <strong>Z</strong>,
+because the FT4 time slots themselves are aligned to UTC;</li>
+<li>the names of the files that SkyRoof saves, such as the recordings and the decoded images and voice
+messages, are always built from the local time.</li>
+</ul>
 
 </article>
 
