@@ -1042,6 +1042,16 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "images/ssdv_combined.png",
+      "output": {
+        "resource": {
+          "relative_path": "images/ssdv_combined.png"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "images/sstv_denoise_after.png",
       "output": {
         "resource": {

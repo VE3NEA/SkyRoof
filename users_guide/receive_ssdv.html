@@ -117,8 +117,9 @@ and <strong>HyperView-1G</strong> — as file transfers over their USP telemetry
 </ul>
 <p>The difference matters when the reception is imperfect. An SSDV packet that is lost costs only its
 own block of the picture, and the rest of the image is unharmed. In a raw JPEG a lost fragment
-desynchronizes everything after it, so the picture is good down to the first gap and noise below it —
-which is why the detail pane reports <strong>Intact to</strong> for these satellites and not for SSDV.</p>
+desynchronizes everything after it, so the picture is good down to the first gap and, without help,
+noise below it — which is why the detail pane reports <strong>Intact to</strong> for these satellites and not for
+SSDV. SkyRoof repairs that damage automatically, see <a href="#repairing-a-picture">Repairing a Picture</a>.</p>
 <h2 id="receiving-an-image">Receiving an Image</h2>
 <p>The steps are the same as for <a href="telemetry_panel.html#decoding-a-pass">decoding telemetry</a>:</p>
 <ol>
@@ -142,6 +143,10 @@ Doppler-corrected passband as the receiver, so the satellite's signal must be vi
 seen, the image number, and how many fragments have arrived:</p>
 <pre><code class="lang-text">04:12:37  Image 238  9/15 fragments
 </code></pre>
+<p>The frames that carry the picture are filed under that node rather than beside it, so a pass of
+thousands of fragments still reads as a handful of lines. A fragment that was read and not used says
+so: <strong>CRC FAIL</strong> for an SSDV packet whose checksum failed, <strong>duplicate</strong> for one already received,
+and <strong>not used</strong> for a raw-JPEG fragment the assembler could not place.</p>
 <p>Select the node to watch the picture fill in as the pass goes on. The detail pane below the picture
 shows:</p>
 <ul>
@@ -152,6 +157,7 @@ or the file name for a USP file transfer;</li>
 <li><strong>Size</strong> — the picture's dimensions in pixels;</li>
 <li><strong>Fragments</strong> — how many fragments were received, of how many the picture spans;</li>
 <li><strong>Intact to</strong> — for raw-JPEG satellites, how many bytes of the file are good before the first gap;</li>
+<li><strong>Repair</strong> — what the repair recovered below that point, when it ran;</li>
 <li><strong>Status</strong> — <code>receiving...</code>, <code>complete</code>, or <code>incomplete</code> for a picture the pass ended in the
 middle of;</li>
 <li><strong>Saved</strong> — the file it was written to, once it has been saved.</li>
@@ -163,6 +169,9 @@ whatever the satellite was in the middle of sending. Missing parts are left gray
 in the <strong>SsdvImages</strong> subfolder of the <a href="data_folder.html">data folder</a>. The bytes are written exactly
 as received — gaps filled in and the file properly terminated — so whatever fraction of the picture
 arrived is a valid JPEG that any program can open.</p>
+<p>A reception whose JPEG header never arrived has no picture to write, and the detail pane says so —
+<strong>No picture: the file header did not arrive.</strong> Its fragments are still archived, and a later pass
+that does catch the header turns them into a picture, see <a href="#combining-passes">Combining Passes</a>.</p>
 <p>A picture built from a single fragment is not saved automatically, because one misread frame can look
 like one image fragment; neither is one with no recognizable geometry. Such an image is still shown
 in the tree and can still be saved by hand.</p>
@@ -173,13 +182,14 @@ in the tree and can still be saved by hand.</p>
 <li><strong>Open in Viewer</strong> — open the automatically saved JPEG in the program that Windows associates with
 JPEG files, where you can see it at full size. This command is available only after the image has
 been finalized and saved, so it stays grayed out while an image is still being received;</li>
+<li><strong>Repair Damaged Image</strong> — see below;</li>
 <li><strong>Combine with Previous Passes</strong> — see below.</li>
 </ul>
 <h2 id="combining-passes">Combining Passes</h2>
 <p>Satellites usually send the same picture several times, over consecutive passes, so that stations
 that missed a piece of it can pick that piece up later. SkyRoof can put those receptions together.</p>
 <p>Right-click a picture and choose <strong>Combine with Previous Passes</strong>. SkyRoof searches the
-<strong>SsdvImages</strong> folder for earlier receptions of the same picture by the same satellite, merges their
+<strong>SsdvImages</strong> folder for earlier receptions of the same picture, merges their
 fragments with the ones just received, and shows the result. The menu item is grayed out when there
 is nothing to combine with, and shows the number of earlier receptions found when there is:
 <strong>Combine with Previous Passes (3)</strong>.</p>
@@ -190,11 +200,17 @@ Combined: 14 of 15 (with 3 earlier passes)
 </code></pre>
 <p>Combining stays live while the pass runs: each new fragment is merged in as it arrives, and the
 combined picture keeps filling in on screen.</p>
+<p><img src="../images/ssdv_combined.png" alt="Combining passes"></p>
 <p>A few limits are worth knowing:</p>
 <ul>
-<li><p>It works only where each fragment carries its own checksum, so that two copies of one fragment can
-be judged against each other. That is SSDV as <strong>HADES-SA</strong> sends it. The raw-JPEG satellites and
-JY1SAT have no per-fragment check, and the menu item stays grayed out for their pictures.</p>
+<li><p>It works for SSDV as <strong>HADES-SA</strong> sends it, where each packet carries its own checksum, and for the
+raw JPEG of the <strong>Geoscan</strong> fleet and <strong>Lobachevsky</strong>, where a reception that contradicts the ones
+already merged is dropped whole instead. <strong>JY1SAT</strong> packets carry no checksum of their own and the
+<strong>Sputnix</strong> file transfers number a session rather than a file, so the menu item stays grayed out
+for their pictures.</p>
+</li>
+<li><p>Geoscan satellites transmit one shared playlist, so a picture received from one of them combines
+with receptions of the same picture from its siblings, as in the example above.</p>
 </li>
 <li><p>Only the last <strong>30 days</strong> of the archive are searched. Image numbers are 8-bit and satellites reuse
 them freely — HADES-SA sent images 237, 238 and 239 twice within 92 minutes — so the window is what
@@ -206,6 +222,22 @@ get the pass's own reception back, exactly as it was.</p>
 combination, so the archive stays a record of what was actually heard.</p>
 </li>
 </ul>
+<h2 id="repairing-a-picture">Repairing a Picture</h2>
+<p>In a raw JPEG, a lost fragment breaks the entropy coding, and everything the decoder reads after it
+is displaced and colour-shifted — the picture below the first gap is ruined even though most of its
+bytes arrived intact. SkyRoof repairs this automatically: it finds the surviving runs of scan data
+below each gap, puts them back where the encoder wrote them, and fills what the gap destroyed with
+gray. The detail pane reports what it found:</p>
+<pre><code class="lang-text">Repair: 2 gaps, 2 runs placed (1104 and 823 MCUs), 1 declined — 1927 of 2400 MCUs recovered
+</code></pre>
+<p>A declined run is one whose position could not be established with certainty; leaving it out is the
+safe answer rather than a failure. The repair has nothing to configure, and it runs before the
+picture is saved, so the JPEG on disk is the repaired one.</p>
+<p>It cannot always help — a progressive JPEG, a file with restart markers, or one with no gap in its
+scan is emitted unchanged, and SSDV pictures never need it, because there a lost packet costs its own
+blocks and nothing else. Where it did run, <strong>Repair Damaged Image</strong> in the right-click menu is
+checked and can be unchecked to see the picture as the bytes came down. The item is grayed out on a
+picture the repair did not run on.</p>
 <h2 id="see-also">See Also</h2>
 <ul>
 <li><a href="telemetry_panel.html">Telemetry Panel</a></li>
