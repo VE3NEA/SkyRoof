@@ -1365,6 +1365,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "users_guide/control_rotator_sat_pstrotator.md",
+      "output": {
+        ".html": {
+          "relative_path": "users_guide/control_rotator_sat_pstrotator.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "users_guide/creating_satellite_groups.md",
       "output": {
         ".html": {

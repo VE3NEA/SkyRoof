@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Control the Rotator with the S.A.T. or PstRotator | SkyRoof </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Control the Rotator with the S.A.T. or PstRotator | SkyRoof ">
+      
+      
+      <link rel="icon" href="../images/SkyRoof.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/VE3NEA/SkyRoof/blob/master/docs/users_guide/control_rotator_sat_pstrotator.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MMW827H44"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-1MMW827H44');
+      </script>
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/s_over_the_globe.svg" alt="  kyRoof">
+              kyRoof
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="control-the-rotator-with-the-sat-or-pstrotator">Control the Rotator with the S.A.T. or PstRotator</h1>
+
+<p>SkyRoof moves the antenna by sending azimuth and elevation to a server that speaks the <strong>rotctld</strong>
+protocol over TCP. In the usual arrangement, described in
+<a href="setting_up_rotator_control.html">Setting Up Rotator Control</a>, that server is <strong>rotctld.exe</strong> from
+HamLib. Two popular alternatives speak the same protocol themselves, so rotctld.exe is not needed at
+all:</p>
+<ul>
+<li>the <strong>S.A.T.</strong> satellite tracker from CSN Technologies, which appears on your network as a Hamlib
+rotator server;</li>
+<li><strong>PstRotator</strong> by YO3DMU, which has a built-in rotctld server.</li>
+</ul>
+<p>In both cases SkyRoof predicts the pass and computes the bearings, and the device or the program
+moves the rotator. This section covers rotator control only — the radio is still tuned by SkyRoof as
+described in <a href="setting_up_cat_control.html">Setting Up CAT Control</a>.</p>
+<h2 id="which-option-to-use">Which Option to Use</h2>
+<p>From inside SkyRoof the three arrangements are identical: the same three settings, the same
+<a href="rotator_control.html">Rotator Control</a> panel, the same rotation algorithm, and the same manual
+pointing, parking and stop commands. They differ in what is wired to the rotator controller, and in
+what you have to start and keep running:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>rotctld.exe</th>
+<th>S.A.T.</th>
+<th>PstRotator</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Wired to the rotator controller</strong></td>
+<td>a COM port of the computer that runs SkyRoof</td>
+<td>the S.A.T., over its own cable</td>
+<td>a COM port of the computer that runs PstRotator</td>
+</tr>
+<tr>
+<td><strong>Controllers supported</strong></td>
+<td>the <a href="https://github.com/Hamlib/Hamlib/wiki/Supported-Rotators">HamLib list</a></td>
+<td>Yaesu G-5400 / G-5500 / G-5600 and PstRotator, and SPID in the recent firmware</td>
+<td>the <a href="http://www.qsl.net/yo3dmu/index_Page346.htm">PstRotator list</a></td>
+</tr>
+<tr>
+<td><strong>To start before a session</strong></td>
+<td>the rotctld.exe console window</td>
+<td>nothing, the S.A.T. always listens</td>
+<td>the PstRotator window</td>
+</tr>
+<tr>
+<td><strong>Pointing the antenna when SkyRoof is not running</strong></td>
+<td>not possible, rotctld.exe has no user interface</td>
+<td>from the S.A.T. web page or its front panel</td>
+<td>from the PstRotator window</td>
+</tr>
+<tr>
+<td><strong>Cost</strong></td>
+<td>free</td>
+<td>the price of the device</td>
+<td>the price of the license</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Use rotctld.exe</strong> when the rotator controller is cabled to the computer that runs SkyRoof and
+HamLib supports it. This is the shortest path from SkyRoof to the rotator — one program, one
+shortcut, nothing to buy — and it is the arrangement described in
+<a href="setting_up_rotator_control.html">Setting Up Rotator Control</a>.</p>
+<p><strong>Use the S.A.T.</strong> when you already own one, or when the rotator controller is not near the computer:
+the S.A.T. sits at the rotator and is reached over the network, and it also tracks satellites and
+parks the antenna on its own when SkyRoof is not running. Its built-in tracker must stay idle while
+SkyRoof is tracking.</p>
+<p><strong>Use PstRotator</strong> when you already run it for your other antennas, when your rotator controller is
+supported by PstRotator but not by HamLib, or when you want its maps and its manual controls at hand
+during a pass. It is the only one of the three that costs a license fee if you do not already use it.</p>
+<p>Each of these puts one program or device between SkyRoof and the rotator. Longer chains are possible
+— the S.A.T. can drive PstRotator, and rotctld.exe can drive PstRotator through its UDP interface —
+but every added link is one more place where the bearings can stop flowing, so build one only when
+the rotator controller cannot be reached any other way.</p>
+<h2 id="using-the-sat">Using the S.A.T.</h2>
+<p>The S.A.T. listens for rotator commands on TCP port <strong>4533</strong>, and this server is enabled by default,
+so no setting has to be changed to turn it on.</p>
+<ol>
+<li><p>In the S.A.T. web interface open the <strong>ROTATOR</strong> panel, set <strong>TYPE</strong> to your rotator model, set the
+travel limits and the park and ready positions as usual, and click <strong>SAVE</strong>.</p>
+</li>
+<li><p>Open the <strong>NETWORK</strong> panel and note the IP address of the S.A.T. It is also shown on the S.A.T.
+display. The <strong>PORTS</strong> fields on the same panel show which ports the S.A.T. listens on; leave the
+rotator port at 4533 unless it conflicts with something else on your network.</p>
+</li>
+<li><p>Make sure the antenna is enabled in the S.A.T. — the <strong>ANT ENABLE</strong> button flashes red when it is
+not.</p>
+</li>
+<li><p><strong>Do not start tracking on the S.A.T. itself.</strong> SkyRoof and the built-in tracker of the S.A.T.
+would then send conflicting bearings to the same rotator. Let the S.A.T. sit idle and leave the
+tracking to SkyRoof.</p>
+</li>
+<li><p>In SkyRoof, click <strong>Tools / Settings</strong> and set, in the <strong>Rotator</strong> section:</p>
+<ul>
+<li><strong>Host</strong> - the IP address of the S.A.T.;</li>
+<li><strong>TCP Port</strong> - 4533;</li>
+<li><strong>Enabled</strong> - True.</li>
+</ul>
+</li>
+</ol>
+<p>SkyRoof uses only three rotctld commands - set the position, read the position and stop - and these
+are exactly the commands that the S.A.T. implements. Other tracking programs may require a more
+complete Hamlib implementation and have to reach the S.A.T. through a HamLib backend; SkyRoof
+connects to it directly.</p>
+<p>Set <strong>Minimum Azimuth</strong>, <strong>Maximum Azimuth</strong>, <strong>Minimum Elevation</strong> and <strong>Maximum Elevation</strong> in the
+SkyRoof settings to the same travel limits that you configured in the S.A.T., so that SkyRoof does
+not ask for a bearing that the rotator cannot reach.</p>
+<h2 id="using-pstrotator">Using PstRotator</h2>
+<p>Before you connect SkyRoof, configure PstRotator for your rotator controller and check in the
+<strong>Manual</strong> mode that it moves the antenna. SkyRoof only supplies the bearings; everything about the
+controller itself stays in PstRotator.</p>
+<p>PstRotator listens on TCP port <strong>4533</strong> and SkyRoof connects to it directly. Its rotctld server has
+been part of the program since version 14.93.</p>
+<ol>
+<li><p>In PstRotator, open the <strong>Setup</strong> menu and check <strong>Rotctld Hamlib Server</strong>. The option is off in a
+new installation, and the program starts listening on port 4533 as soon as you check it.</p>
+</li>
+<li><p>Open <strong>Communication / Rotctld Server Setup...</strong>, and in the <strong>Rotctld Setup</strong> window check that
+<strong>Port number</strong> is <strong>4533</strong> and that <strong>Extended protocol</strong> is <strong>unchecked</strong>, which is how a new
+installation comes. SkyRoof expects the plain replies of the standard protocol. Click <strong>Save
+Settings</strong> to close the window.</p>
+</li>
+<li><p>Leave <strong>Mode</strong> set to <strong>Manual</strong> in the main window of PstRotator. The <strong>Manual / Tracking</strong>
+selector belongs to the trackers of PstRotator itself: with <strong>Tracking</strong> selected, the program
+follows whatever is chosen in its <strong>Tracker</strong> menu — the Moon in a new installation — and
+overrides the bearings that SkyRoof sends. The rotctld server accepts positions in either mode.</p>
+</li>
+<li><p>If your rotator can point higher than 90° in elevation, check <strong>180 deg Elevation</strong> in the
+<strong>Setup</strong> menu, so that PstRotator accepts the flipped bearings that SkyRoof sends on high passes.
+Without this option PstRotator answers a flipped bearing with &quot;RPRT 0&quot; but silently moves to 90°
+instead of the elevation it was given.</p>
+</li>
+<li><p>In SkyRoof, click <strong>Tools / Settings</strong> and set, in the <strong>Rotator</strong> section:</p>
+<ul>
+<li><strong>Host</strong> - &quot;127.0.0.1&quot; if PstRotator runs on the same computer as SkyRoof, or the address of
+the computer where it runs;</li>
+<li><strong>TCP Port</strong> - 4533;</li>
+<li><strong>Enabled</strong> - True.</li>
+</ul>
+</li>
+</ol>
+<p>The server of PstRotator accepts the set position, read position, stop and park commands, and
+SkyRoof uses the first three of them, so everything on the
+<a href="rotator_control.html">Rotator Control</a> panel works, including the <strong>Stop</strong> button.</p>
+<p>Do not run rotctld.exe at the same time. Both programs would try to listen on port 4533 and only one
+of them would get it.</p>
+<h2 id="checking-the-connection">Checking the Connection</h2>
+<p>Click on the <strong>Rotator</strong> label on the status bar to enable and disable rotator control, and watch the
+<a href="rotator_control.html">Rotator Control</a> panel: the small numbers below the satellite position are the
+antenna bearing as reported by the S.A.T. or by PstRotator. If they follow the satellite, the
+connection works. A pink color on the panel means that the antenna is not pointing where SkyRoof
+asked it to.</p>
+<p>If nothing moves, set <strong>Log Traffic</strong> to True in the <strong>Rotator</strong> settings, reproduce the problem, and
+look at the log file in the <a href="data_folder.html">data folder</a> to see the commands and the replies.</p>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="setting_up_rotator_control.html">Setting Up Rotator Control</a></li>
+<li><a href="rotator_control.html">Rotator Control</a></li>
+<li><a href="smart_antenna_rotation.html">Smart Antenna Rotation</a></li>
+</ul>
+
+</article>
+
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
