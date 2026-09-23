@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Drawing.Design;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms.Design;
 using VE3NEA;
 
 namespace SkyRoof
@@ -63,6 +65,49 @@ namespace SkyRoof
     [Description("TX CAT Control via rigctld.exe")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public CatRadioSettings TxCat { get; set; } = new();
+
+    [DisplayName("SkyCAT Daemon")]
+    [Description("Start and stop skycatd.exe together with SkyRoof")]
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public SkyCatSettings SkyCat { get; set; } = new();
+
+    public override string ToString() { return string.Empty; }
+  }
+
+  // skycatd.exe is the CAT daemon of the SkyCAT package. It serves one radio on one TCP port, so
+  // a single daemon is started for the local CAT endpoint; two-radio setups still run their own.
+  public class SkyCatSettings
+  {
+    [DefaultValue(false)]
+    [DisplayName("Auto Start")]
+    [Description("Start skycatd.exe when SkyRoof starts, and restart it if it exits. Ignored when CAT control is disabled or the radio is on a remote host. skycatd serves one radio on one port, so a second radio needs a second daemon started by hand.")]
+    public bool Enabled { get; set; } = false;
+
+    [DefaultValue(true)]
+    [DisplayName("Stop On Exit")]
+    [Description("Stop skycatd.exe when SkyRoof closes, and whenever its configuration stops applying - Auto Start switched off, CAT control switched off, or the CAT host changed to another computer. Only a daemon that SkyRoof started is ever stopped. Changing this applies to a daemon that is already running, in either direction.")]
+    public bool StopOnExit { get; set; } = true;
+
+    [DefaultValue("")]
+    [DisplayName("Executable")]
+    [Description(@"Full path to skycatd.exe, e.g. C:\Program Files\SkyCAT\skycatd.exe")]
+    [Editor(typeof(FileNameEditor), typeof(UITypeEditor))]
+    public string ExePath { get; set; } = "";
+
+    [DefaultValue("")]
+    [DisplayName("Command Tail")]
+    [Description(@"Command line arguments for skycatd.exe, e.g. -m IC-9700 -r COM9 -s 115200 -f. Do not pass -t: the daemon has to serve the TCP Port from the CAT settings, which SkyRoof appends for you.")]
+    public string Arguments { get; set; } = "";
+
+    [DefaultValue(false)]
+    [DisplayName("Log Output")]
+    [Description("Copy skycatd.exe output into the SkyRoof log. The SkyCAT panel shows the output either way, so leave this off when running skycatd with a verbose option.")]
+    public bool LogOutput { get; set; } = false;
+
+    [DefaultValue(5000)]
+    [DisplayName("Startup Timeout")]
+    [Description("Milliseconds to wait for skycatd.exe to start listening on the CAT port before giving up, up to 30000. Applies when SkyRoof starts; a later settings change never waits.")]
+    public int StartupTimeout { get; set; } = 5000;
 
     public override string ToString() { return string.Empty; }
   }

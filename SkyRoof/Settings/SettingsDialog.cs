@@ -147,6 +147,12 @@ namespace SkyRoof
         case "SkyRoof.RotatorSettings.StepSize":
           ValidateFloat(e, 30, 0.01f);
           break;
+
+        // spent blocking in the main form constructor, before the window is on screen, so a large
+        // value here is indistinguishable from SkyRoof having hung on startup
+        case "SkyRoof.SkyCatSettings.StartupTimeout":
+          ValidateInt(e, 30000, 500);
+          break;
       }
 
       if (canChange) ChangedFields.Add(label);
@@ -220,10 +226,18 @@ namespace SkyRoof
           ChangedFields.Exists(s => s.StartsWith("SkyRoof.Announcement.Enabled")))
         ctx.Announcer.RebuildQueue();
 
+      // the daemon's command line is built from the CAT host and port and it only runs when CAT
+      // is enabled, so a change to either may require it to start, stop or be relaunched
       if (ChangedFields.Exists(s => s.StartsWith("SkyRoof.CatSettings.")) ||
         ChangedFields.Exists(s => s.StartsWith("SkyRoof.CatRadioSettings")))
+        ctx.MainForm.ApplyCatSettings();
+
+      // a SkyCAT-only edit never changes how the CAT engines connect, so it must not go through
+      // ApplyCatSettings, which destroys and rebuilds them: ticking Log Output to watch the daemon
+      // would drop the rig connection in the middle of a pass
+      else if (ChangedFields.Exists(s => s.StartsWith("SkyRoof.SkyCatSettings.")))
       {
-        ctx.CatControl.ApplySettings();
+        ctx.SkyCatDaemon.ApplySettings();
         ctx.MainForm.ShowCatStatus();
       }
 

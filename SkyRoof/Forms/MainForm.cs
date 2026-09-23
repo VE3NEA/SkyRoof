@@ -38,6 +38,7 @@ namespace SkyRoof
       ctx.AutoSelector.ctx = ctx;
       ctx.AutoSelector.Initialize();
       ctx.CatControl.ctx = ctx;
+      ctx.SkyCatDaemon.ctx = ctx;
       ctx.RotatorControl.ctx = ctx;
       SatellitePhotoWidget.ctx = ctx;
       ctx.AmsatStatusLoader.ctx = ctx;
@@ -63,7 +64,7 @@ namespace SkyRoof
       ApplyAudioSettings();
       ApplyOutputStreamSettings();
       ApplyKissServerSettings();
-      ctx.CatControl.ApplySettings();
+      ApplyCatSettings(isStartup: true);
       ctx.RotatorControl.ApplySettings();
 
       UpdateSatellitePhotoVisibility();
@@ -112,6 +113,10 @@ namespace SkyRoof
         ctx.Settings.Waterfall.SplitterDistance = ctx.WaterfallPanel.SplitContainer.SplitterDistance;
 
       ctx.Settings.SaveToFile();
+
+      // stop the CAT engines before the daemon they are talking to, then stop skycatd
+      ctx.CatControl.DestroyAllEngines();
+      ctx.SkyCatDaemon.Shutdown();
 
       // dispose sdr and dsp
       ctx.Sdr?.Dispose();
@@ -711,6 +716,14 @@ namespace SkyRoof
         ctx.TelemetryPanel.Close();
     }
 
+    private void SkyCatMNU_Click(object sender, EventArgs e)
+    {
+      if (ctx.SkyCatPanel == null)
+        ShowFloatingPanel(new SkyCatPanel(ctx));
+      else
+        ctx.SkyCatPanel.Close();
+    }
+
     private void AutoSelectionMNU_Click(object sender, EventArgs e)
     {
       if (ctx.AutoSelectionPanel == null)
@@ -911,13 +924,27 @@ namespace SkyRoof
     private void RxCatLabel_Click(object sender, EventArgs e)
     {
       ctx.Settings.Cat.RxCat.Enabled = !ctx.Settings.Cat.RxCat.Enabled;
-      ctx.CatControl.ApplySettings();
-      ShowCatStatus();
+      ApplyCatSettings();
     }
 
     private void TxCatLabel_Click(object sender, EventArgs e)
     {
       ctx.Settings.Cat.TxCat.Enabled = !ctx.Settings.Cat.TxCat.Enabled;
+      ApplyCatSettings();
+    }
+
+    /// <summary>
+    /// Brings CAT control in line with the settings. The daemon goes first so that the port is
+    /// listening before the engines connect to it; every caller needs that order, so they all come
+    /// through here rather than repeating it.
+    /// </summary>
+    /// <param name="isStartup">
+    /// True only from the constructor, where waiting for the daemon to start listening is worth the
+    /// pause. A settings change or a status bar click must not block the UI for it.
+    /// </param>
+    public void ApplyCatSettings(bool isStartup = false)
+    {
+      ctx.SkyCatDaemon.ApplySettings(waitForPort: isStartup);
       ctx.CatControl.ApplySettings();
       ShowCatStatus();
     }
@@ -1041,6 +1068,7 @@ namespace SkyRoof
         case "SkyRoof.QsoSchedulerPanel": return new QsoSchedulerPanel(ctx);
         case "SkyRoof.TelemetryPanel": return new TelemetryPanel(ctx);
         case "SkyRoof.AutoSelectionPanel": return new AutoSelectionPanel(ctx);
+        case "SkyRoof.SkyCatPanel": return new SkyCatPanel(ctx);
 
         default: return null;
       }
@@ -1089,6 +1117,7 @@ namespace SkyRoof
       ctx.Sdr?.Retry();
       ctx.CatControl.Rx?.Retry();
       ctx.CatControl.Tx?.Retry();
+      ctx.SkyCatDaemon.Poll();
       ctx.Announcer.AnnouncePasses();
       ctx.AutoSelector.Tick();
       ctx.AutoSelectionPanel?.UpdateStatus();

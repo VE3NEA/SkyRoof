@@ -89,6 +89,8 @@ items:
       href: telemetry_panel.md
     - name: Auto Selection
       href: auto_selection_panel.md
+    - name: SkyCAT
+      href: skycat_panel.md
   - name: How To
     items:
     - name: Decode Telemetry from PEARL-1C

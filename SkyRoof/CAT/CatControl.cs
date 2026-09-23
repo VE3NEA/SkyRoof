@@ -129,7 +129,7 @@
         Tx = null;
     }
 
-    private void DestroyAllEngines()
+    internal void DestroyAllEngines()
     {
       if (Tx != null && Tx != Rx) Tx.Dispose();
       if (Tx == Rx) Tx = null;
