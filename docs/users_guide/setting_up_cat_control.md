@@ -15,6 +15,64 @@ If your radio is supported by SkyCAT, use skycatd.exe, a command line program th
 The latest command definition files are available [here](https://github.com/VE3NEA/SkyCAT/tree/master/Rigs).
 Update the file for your radio before you proceed.
 
+### Starting skycatd.exe automatically
+
+SkyRoof can start **skycatd.exe** for you when it starts and stop it again when it closes, so that you do
+not have to launch the daemon by hand before every session. The settings are in the **SkyCAT Daemon**
+section of **CAT Control** in the [Settings dialog](settings_window.md):
+
+![SkyCAT Daemon settings](../images/skycat_settings.png)
+
+
+- **Auto Start** - start skycatd.exe when SkyRoof starts, and start it again if it exits while SkyRoof is
+    running, so that power-cycling the radio does not leave you without CAT control for the rest of the
+    session. Restarts back off from 5 seconds to a minute, so a daemon that fails immediately because it
+    is misconfigured is retried slowly rather than continuously. The daemon is started for the RX radio,
+    or for the TX radio when RX CAT is disabled or its **Host** is another computer. Nothing is started
+    when both are disabled, or when neither of them is on this computer;
+- **Stop On Exit** - stop skycatd.exe when SkyRoof closes, and whenever its configuration stops
+    applying: **Auto Start** switched off, CAT control switched off, or the CAT **Host** changed to
+    another computer. Only a daemon that SkyRoof itself started is ever stopped. Changing this applies to
+    a daemon that is already running, in either direction, and the SkyCAT panel confirms it;
+- **Executable** - the full path to skycatd.exe, for example `C:\SkyCAT\skycatd.exe`;
+- **Command Tail** - the command line arguments for your radio, for example
+    `-m IC-9700 -r COM9 -s 115200 -f`.
+    Use the same arguments you would type on the command line, minus the `-t` port argument: SkyRoof
+    appends `-t` itself, from the **TCP Port** in the CAT settings. A `-t` of your own is dropped, with
+    a note in the panel, because the daemon has to serve the port CAT control connects to;
+- **Log Output** - copy skycatd.exe output into the SkyRoof log. Off by default: the SkyCAT panel shows
+    the output either way, and the SkyRoof log rolls at 3 MB, so a verbose daemon copied into it pushes
+    everything else out. Turn it on only when you need the daemon's output interleaved with SkyRoof's own;
+- **Startup Timeout** - how long, in milliseconds, SkyRoof waits for skycatd.exe to start listening before
+    it gives up and lets CAT control connect on its own schedule, up to 30 seconds. This wait happens only
+    while SkyRoof is starting, and it happens before the main window appears, which is why it is capped;
+    a settings change or a click on the CAT indicator never waits.
+
+skycatd serves one radio on one TCP port. If RX CAT and TX CAT point at two different local ports, for two
+separate radios, SkyRoof starts a daemon for one of them and says so in the SkyCAT panel; the second radio
+needs its own skycatd started by hand.
+
+If skycatd.exe is already listening on the CAT port when SkyRoof starts, SkyRoof uses the running daemon
+instead of starting a second one, and leaves it running when it closes. Because that daemon was started
+elsewhere, SkyRoof cannot see or change its command line: editing **Command Tail** or **Executable** has no
+effect on it, and the SkyCAT panel says so rather than letting the edit look as though it was accepted.
+
+### Watching the daemon
+
+skycatd.exe runs without a console window of its own, so its output goes to the
+[SkyCAT panel](skycat_panel.md), opened from **View / SkyCAT**, and to the SkyRoof log as well when
+**Log Output** is on. The panel replays what the daemon has already printed and then follows it live, and
+says whether the daemon is running and whether SkyRoof started it. It is also where SkyRoof explains
+itself: every decision it takes about the daemon is written there on a line beginning `==`. See the
+[SkyCAT panel](skycat_panel.md) page for what those lines mean, and for watching the CAT traffic itself.
+
+### When the radio is switched off
+
+skycatd does not give up if the serial port cannot be opened: it logs a warning, keeps retrying, and
+opens its TCP port only once the radio answers. SkyRoof recognizes this, stops waiting out the startup
+timeout, and notes it in the panel. CAT control then connects by itself as soon as you switch the radio
+on, with no need to restart either program.
+
 ## Using rigctld.exe
 
 If a SkyCAT command definition file for your transceiver is not yet available, use **rigctld.exe**, a HamLib-based CAT control daemon. Note, however, that some commands may not work properly with rigctld.exe.
@@ -60,6 +118,10 @@ Click on **Tools / Settings** in the main menu to open the **Settings dialog**:
 - **Log Traffic** should be set to False and enabled only for debugging;
 - **Ignore Dial Knob** - by default, CAT control allows you to change the frequency both in the program and by
     spinning the dial knob. If for some reason this causes trouble, change this setting to True, so that the dial knob rotation is ignored.
+
+The **SkyCAT Daemon** section is described above, under
+[Starting skycatd.exe automatically](#starting-skycatdexe-automatically). It applies only to skycatd.exe;
+rigctld.exe is always started by hand.
 
 The two sections in the Settings, **RX CAT** and **TX CAT**, allow you to use either the same radio for RX and TX, or
 two different radios. You can also enable only one of those, or disable both. The recommended configuration is to use an SDR for reception and a transceiver for transmission, in this case RX CAT should be disabled.

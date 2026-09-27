@@ -41,11 +41,13 @@ namespace SkyRoof
     public QsoSchedulerPanel? QsoSchedulerPanel;
     public TelemetryPanel? TelemetryPanel;
     public AutoSelectionPanel? AutoSelectionPanel;
+    public SkyCatPanel? SkyCatPanel;
 
     // devices
     public SoapySdrDevice? Sdr;
     public Slicer? Slicer;
     public CatControl CatControl = new();
+    public readonly SkyCatDaemon SkyCatDaemon = new();
 
     // soundcards
     public readonly OutputSoundcard<float> SpeakerSoundcard = new();
@@ -72,6 +74,7 @@ namespace SkyRoof
       QsoSchedulerPanel?.Close();
       TelemetryPanel?.Close();
       AutoSelectionPanel?.Close();
+      SkyCatPanel?.Close();
     }
   }
 }

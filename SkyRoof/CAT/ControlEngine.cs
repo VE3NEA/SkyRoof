@@ -13,7 +13,7 @@ namespace SkyRoof
     protected SynchronizationContext syncContext = SynchronizationContext.Current!;
 
     public readonly string Host;
-    protected readonly ushort Port;
+    public readonly ushort Port;
     protected readonly int Delay;
     protected readonly bool log;
 
