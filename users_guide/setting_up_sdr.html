@@ -104,6 +104,7 @@ engine to interface with the SDR radios. The drivers for the following radios ar
 <li>SDRplay;</li>
 <li>RTL-SDR;</li>
 <li>HackRF;</li>
+<li>LimeSDR;</li>
 </ul>
 <p>Radios that are not on this list can also be used, see
 <a href="#adding-support-of-other-radios">Adding Support of Other Radios</a> below.</p>
@@ -114,8 +115,16 @@ or search on Google, for the driver installation instructions. At the time of th
 <a href="https://www.rtl-sdr.com/rtl-sdr-quick-start-guide/">RTL-SDR</a>,
 <a href="https://www.sdrplay.com/api/">SDRplay</a>,
 <a href="https://hackrf.readthedocs.io/en/latest/installing_hackrf_software.html">HackRF</a>,
-<a href="https://wiki.analog.com/university/tools/pluto/users/quick_start">PlutoSDR</a>.</p>
+<a href="https://wiki.analog.com/university/tools/pluto/users/quick_start">PlutoSDR</a>,
+<a href="https://wiki.myriadrf.org/Lime_Suite">LimeSDR</a>.</p>
 <p>Once you install the drivers and make your radio work with its native software, proceed to the next step.</p>
+<div class="NOTE">
+<h5>Note</h5>
+<p>The LimeSuite driver included in SkyRoof reaches the radio through libusb, not through the CyUSB
+and FTDI drivers that the LimeSuite installer sets up. If SkyRoof does not see your LimeSDR while
+other software does, bind the device to the WinUSB driver with <a href="https://zadig.akeo.ie/">Zadig</a>,
+selecting your Lime device in its device list.</p>
+</div>
 <h2 id="adding-support-of-other-radios">Adding Support of Other Radios</h2>
 <p>SkyRoof can work with any SDR that has a SoapySDR driver module, even if the module does not come with SkyRoof.
 To add such a radio:</p>
