@@ -1817,11 +1817,42 @@ namespace SkyRoof
     // cannot lose it
     private void SstvImageHandler(SstvImageEvent evt, DecodeSnapshot snapshot, Dictionary<int, TreeNode> imageNodes)
     {
-      string? savedPath = evt.Final && evt.ValidRows > 0 ? SaveImageToFile(evt, snapshot) : null;
-      BeginInvoke(() => ShowImage(evt, snapshot, imageNodes, savedPath));
+      // the finalized image is filtered once, here, with the auto-save filter from the settings, so the
+      // picture on display and the picture on disk are the same one
+      var rendering = evt.Image;
+      string? filter = null;
+      if (evt.Final) (rendering, filter) = ApplySaveFilter(evt, ctx.Settings.Telemetry.SstvSaveFilter);
+
+      string? savedPath = evt.Final && evt.ValidRows > 0 ? SaveImageToFile(evt, rendering, snapshot) : null;
+      BeginInvoke(() => ShowImage(evt, rendering, filter, snapshot, imageNodes, savedPath));
     }
 
-    private void ShowImage(SstvImageEvent evt, DecodeSnapshot snapshot, Dictionary<int, TreeNode> imageNodes, string? savedPath)
+    // The finalized picture with the auto-save filter applied, and its description for the info pane.
+    // evt.Image has already been through the decode-time Wiener (D15), so Wiener returns it as is, with no
+    // description, as before this setting existed; None and NLM start from the raw reconstruction in
+    // evt.Planes, NLM with the library default parameters. Without planes there is nothing to re-filter.
+    private static (RgbImage Image, string? Filter) ApplySaveFilter(SstvImageEvent evt, SstvSaveFilter filter)
+    {
+      if (evt.Planes is not { } planes || filter == SstvSaveFilter.Wiener) return (evt.Image, null);
+
+      try
+      {
+        var options = new SstvDenoiseOptions
+        {
+          Method = filter == SstvSaveFilter.None ? SstvDenoiseMethod.None : SstvDenoiseMethod.Nlm
+        };
+        var image = options.Method == SstvDenoiseMethod.None ? planes.ToRgb() : planes.Denoise(options).ToRgb();
+        return (image, DescribeFilter(options));
+      }
+      catch (Exception e)
+      {
+        Log.Error(e, "Failed to filter SSTV image for auto-save");
+        return (evt.Image, null);
+      }
+    }
+
+    private void ShowImage(SstvImageEvent evt, RgbImage rendering, string? filter, DecodeSnapshot snapshot,
+      Dictionary<int, TreeNode> imageNodes, string? savedPath)
     {
       var (passNode, txPassInfo) = EnsureCurrentPassNode(snapshot);
 
@@ -1839,10 +1870,11 @@ namespace SkyRoof
       var info = (SstvImageInfo)node!.Tag;
       var oldBitmap = info.Bitmap;
       info.Event = evt;
-      // the new reconstruction is what is now on display; any filtered rendering described the previous one
-      info.Rendering = evt.Image;
-      info.Filter = null;
-      info.Bitmap = evt.Image.ToBitmap();
+      // the new reconstruction is what is now on display; any filtered rendering described the previous one.
+      // On the final event it is the auto-save rendering, until the operator filters it by hand.
+      info.Rendering = rendering;
+      info.Filter = filter;
+      info.Bitmap = rendering.ToBitmap();
       if (savedPath != null) info.SavedPath = savedPath;
       node.Text = $"{ClockWidget.Stamp(info.FirstSeen, "HH:mm:ss")}  {evt.Mode}  {evt.ValidRows}/{evt.Image.Height} rows";
       if (ImageBox.Image == oldBitmap) ImageBox.Image = info.Bitmap;
@@ -1945,15 +1977,16 @@ namespace SkyRoof
       finally { RestoringImageSplitter = false; }
     }
 
-    /// <summary>Auto-save the finalized image as PNG + JSON metadata sidecar under the user data folder.</summary>
-    private static string? SaveImageToFile(SstvImageEvent evt, DecodeSnapshot snapshot)
+    /// <summary>Auto-save the finalized image as PNG + JSON metadata sidecar under the user data folder.
+    /// <paramref name="rendering"/> is the picture with the auto-save filter applied, see ApplySaveFilter.</summary>
+    private static string? SaveImageToFile(SstvImageEvent evt, RgbImage rendering, DecodeSnapshot snapshot)
     {
       try
       {
         string folder = Path.Combine(Utils.GetUserDataFolder(), "SstvImages");
         string sat = string.Concat((snapshot.Satellite?.name ?? "Unknown").Split(Path.GetInvalidFileNameChars()));
         string path = Path.Combine(folder, $"{DateTime.Now:yyyyMMdd_HHmmss}_{sat}_{evt.Mode}_{evt.ImageId}.png");
-        evt.Image.SavePng(path);
+        rendering.SavePng(path);
 
         var meta = new
         {
