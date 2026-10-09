@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.55](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.55/SkyRoofSetup-v.1.55.exe)
+[SkyRoof v.1.56](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.56/SkyRoofSetup-v.1.56.exe)
 
 <br>
 
@@ -15,6 +15,11 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.56
+
+- support of SSDV format used by AO-123
+- user-selected default SSTV filter: None, Wiener, or NLM
 
 #### v.1.55
 

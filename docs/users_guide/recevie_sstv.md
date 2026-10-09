@@ -51,7 +51,9 @@ images both appear in the same panel.
 
 A satellite SSTV picture arrives over an FM link, and once the signal drops toward the FM threshold the
 picture fills with coloured speckle. SkyRoof applies a mild **Wiener** filter to every decoded image
-automatically, which is what you see while the image is building. When a pass was marginal you can do
+automatically, which is what you see while the image is building. When the image is finalized, the
+filter chosen in the **SSTV Auto-Save Filter** setting is applied to it — see
+[Saved Images](#saved-images). When a pass was marginal you can do
 considerably better afterwards: right-click a finished image and choose **Denoise Image...**.
 
 | As received | After non-local means |
@@ -108,7 +110,16 @@ what was received. **OK** keeps what is on screen and replaces the automatically
 ## Saved Images
 
 Each finalized image is saved automatically as a PNG file, with a JSON sidecar holding its metadata,
-in the **SstvImages** subfolder of the [data folder](data_folder.md). You can also right-click an
+in the **SstvImages** subfolder of the [data folder](data_folder.md).
+
+The **SSTV Auto-Save Filter** setting, on the **Telemetry** page of the
+[Settings window](settings_window.md), selects the denoising filter applied to the finalized image
+before it is saved: **None**, **Wiener** (the default), or **Non-local means** with its default
+parameters. The picture shown in the panel is the same one that is saved, and the detail pane names
+the filter when it is other than Wiener. **Denoise Image...** can still re-filter the picture by hand
+afterwards.
+
+You can also right-click an
 image in the detail pane and choose:
 
 - **Save As...** — save the image to a location of your choice. This writes the image as it is

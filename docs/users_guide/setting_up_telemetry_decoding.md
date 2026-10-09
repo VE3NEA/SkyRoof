@@ -16,6 +16,10 @@ The outputs are configured on the **Telemetry** page of the [Settings window](se
   information that is shown in the panel: the time, satellite, transmitter, frame length and address,
   the decoded telemetry, and the ASCII, HEX and META views of the frame.
 
+- **SSTV Auto-Save Filter** — the denoising filter applied to a finalized SSTV image before it is
+  saved automatically and shown in the panel: **None**, **Wiener** (the default), or **Non-local
+  means**. See [Receive SSTV Images](recevie_sstv.md#saved-images).
+
 - **KISS Server** — makes the decoded frames available to other telemetry software over a
   KISS-over-TCP server:
   - **Enabled** — turns the server on;
