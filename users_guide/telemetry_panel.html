@@ -114,7 +114,7 @@ is covered separately in <a href="recevie_sstv.html">Receive SSTV Images</a>.</p
 <p>Some satellites send more than telemetry in their frames, and the panel reconstructs that too, with
 nothing extra to turn on:</p>
 <ul>
-<li><strong>SSDV images</strong> — still pictures sent as data, either as SSDV packets (HADES-SA, JY1SAT) or as raw
+<li><strong>SSDV images</strong> — still pictures sent as data, either as SSDV packets (HADES-SA, JY1SAT, AO-123) or as raw
 JPEG fragments (the Geoscan fleet, Lobachevsky, and the Sputnix satellites). See
 <a href="receive_ssdv.html">Receive SSDV Images</a>;</li>
 <li><strong>Codec2 voice messages</strong> — short recorded speech compressed to a few hundred bits per second and
@@ -288,7 +288,9 @@ orbit number, the number of bursts, frames, and images decoded, and the signal p
 where the frame has them, the named telemetry values decoded from it (battery voltage,
 temperatures, and so on) for satellites that SkyRoof has a telemetry definition for, and, on the
 Geoscan fleet, the sending satellite and the message type, including where an image frame's bytes
-belong in the picture. The section is omitted when none of these apply;</li>
+belong in the picture. On <strong>AO-123</strong> it shows the CCSDS frame header — spacecraft ID, virtual
+channel and frame counters — followed by the SSDV packet header on an image frame, or the text of
+the callsign beacon. The section is omitted when none of these apply;</li>
 <li><strong>ASCII</strong> — the frame bytes rendered as text;</li>
 <li><strong>HEX</strong> — a hex dump of the frame bytes;</li>
 <li><strong>META</strong> — the carrier frequency offset (CFO), signal-to-noise ratio (SNR), CRC check result, and

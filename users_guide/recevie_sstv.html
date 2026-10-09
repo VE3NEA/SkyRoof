@@ -139,7 +139,9 @@ images both appear in the same panel.</p>
 <h2 id="denoising-an-image">Denoising an Image</h2>
 <p>A satellite SSTV picture arrives over an FM link, and once the signal drops toward the FM threshold the
 picture fills with coloured speckle. SkyRoof applies a mild <strong>Wiener</strong> filter to every decoded image
-automatically, which is what you see while the image is building. When a pass was marginal you can do
+automatically, which is what you see while the image is building. When the image is finalized, the
+filter chosen in the <strong>SSTV Auto-Save Filter</strong> setting is applied to it — see
+<a href="#saved-images">Saved Images</a>. When a pass was marginal you can do
 considerably better afterwards: right-click a finished image and choose <strong>Denoise Image...</strong>.</p>
 <table>
 <thead>
@@ -198,7 +200,14 @@ what was received. <strong>OK</strong> keeps what is on screen and replaces the 
 <strong>Cancel</strong> leaves the image as it was.</p>
 <h2 id="saved-images">Saved Images</h2>
 <p>Each finalized image is saved automatically as a PNG file, with a JSON sidecar holding its metadata,
-in the <strong>SstvImages</strong> subfolder of the <a href="data_folder.html">data folder</a>. You can also right-click an
+in the <strong>SstvImages</strong> subfolder of the <a href="data_folder.html">data folder</a>.</p>
+<p>The <strong>SSTV Auto-Save Filter</strong> setting, on the <strong>Telemetry</strong> page of the
+<a href="settings_window.html">Settings window</a>, selects the denoising filter applied to the finalized image
+before it is saved: <strong>None</strong>, <strong>Wiener</strong> (the default), or <strong>Non-local means</strong> with its default
+parameters. The picture shown in the panel is the same one that is saved, and the detail pane names
+the filter when it is other than Wiener. <strong>Denoise Image...</strong> can still re-filter the picture by hand
+afterwards.</p>
+<p>You can also right-click an
 image in the detail pane and choose:</p>
 <ul>
 <li><strong>Save As...</strong> — save the image to a location of your choice. This writes the image as it is
