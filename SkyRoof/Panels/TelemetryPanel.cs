@@ -1733,9 +1733,14 @@ namespace SkyRoof
       // a GEOSCAN frame carries a header we can name even when it is not telemetry: the sending satellite,
       // the message type, and, on an image frame, where its bytes belong in the picture. Empty for the AX.25
       // beacon flavor of the same downlink, which the address and the telemetry fields already describe.
+      // AO-123's frames likewise: the TM short header (spacecraft, virtual channel, counters), then the SSDV
+      // packet header on an image frame or the text of a callsign beacon. CCSDS is shared by many satellites
+      // with other layouts, so this one is selected by NORAD ID.
       string geo = "";
       if (snapshot.SignalParams.Framing == Framing.GEOSCAN)
         geo = string.Join("", GeoscanHeader.Describe(frame.Bytes).Select(f => $"  {f.Name}: {f.Value}\n"));
+      else if (snapshot.SignalParams.Framing == Framing.CCSDS && snapshot.Satellite?.norad_cat_id == Asrtu1Header.NoradId)
+        geo = string.Join("", Asrtu1Header.Describe(frame.Bytes).Select(f => $"  {f.Name}: {f.Value}\n"));
 
       // an SSDV packet carries a CRC-32 and RS of its own, and the framings that carry it — HADES, AO-40
       // FEC — carry no frame CRC at all, so the "CRC:" line below reads "n/a" on precisely the frames whose
