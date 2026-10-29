@@ -191,6 +191,43 @@
 </tr>
 </tbody>
 </table>
+<h4 id="nonstandard-callsigns">Nonstandard Callsigns</h4>
+<p>A nonstandard callsign, such as a compound call like VE3NEA/MM, cannot be sent together with a grid square or a signal report, so SkyRoof follows the WSJT-X convention: the CQ message has no grid square, the callsign in angle brackets is sent as a short hash code, and the full callsign is sent in the messages without a report. With VE3NEA/MM as your callsign, the messages are:</p>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CQ</td>
+<td>CQ VE3NEA/MM</td>
+</tr>
+<tr>
+<td>DE</td>
+<td>&lt;AA0AA&gt; VE3NEA/MM</td>
+</tr>
+<tr>
+<td>dB</td>
+<td>AA0AA &lt;VE3NEA/MM&gt; -10</td>
+</tr>
+<tr>
+<td>R-dB</td>
+<td>AA0AA &lt;VE3NEA/MM&gt; R-10</td>
+</tr>
+<tr>
+<td>RR73</td>
+<td>&lt;AA0AA&gt; VE3NEA/MM RR73</td>
+</tr>
+<tr>
+<td>73</td>
+<td>&lt;AA0AA&gt; VE3NEA/MM 73</td>
+</tr>
+</tbody>
+</table>
+<p>If the other station has a nonstandard callsign, the angle brackets go around that callsign instead. The receiving station shows a hashed callsign in full if it has received that callsign recently, otherwise it shows &lt;...&gt;. A QSO between two nonstandard callsigns is not possible.</p>
 <h2 id="making-contacts">Making Contacts</h2>
 <p>At the time of this writing RS-44 was the best choice for FT4 contacts, so we will use this satellite in the examples below.
 When the satellite rises above the horizon and you start receiving its signals, do a quick check:</p>
