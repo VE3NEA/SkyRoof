@@ -44,7 +44,6 @@
       // 
       // listView1
       // 
-      listView1.Activation = ItemActivation.OneClick;
       listView1.Columns.AddRange(new ColumnHeader[] { columnHeader1, columnHeader2, columnHeader3, columnHeader4 });
       listView1.ContextMenuStrip = contextMenuStrip1;
       listView1.Dock = DockStyle.Fill;

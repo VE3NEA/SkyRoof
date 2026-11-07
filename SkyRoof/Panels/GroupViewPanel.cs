@@ -22,6 +22,12 @@ namespace SkyRoof
     private Font BoldFont, StrikeoutFont;
     // sat the context menu was opened on, captured at Opening time (see SatelliteDetailsMNU_Click)
     private SatnogsDbSatellite? ContextMenuSat;
+    // shown only over the AMSAT status icon, the row tooltip is suppressed meanwhile.
+    // It is shown by hand for the panel, never attached to the list: a ToolTip attached
+    // to a ListView replaces the list's native item tooltip
+    private System.Windows.Forms.ToolTip? AmsatToolTip;
+    private System.Windows.Forms.Timer? AmsatToolTipTimer;
+    private ListViewItem? AmsatToolTipItem;
 
 
 
@@ -35,6 +41,14 @@ namespace SkyRoof
       Log.Information("Creating GroupViewPanel");
       this.ctx = ctx;
       InitializeComponent();
+
+      // match the list's native item tooltip: visual-styled in the light theme,
+      // repainted in the dark one (see ListViewEx.ThemeTooltip)
+      AmsatToolTip = Theme.IsDark ? new ToolTipEx(components!) : new System.Windows.Forms.ToolTip(components!);
+      AmsatToolTipTimer = new System.Windows.Forms.Timer(components!) { Interval = AmsatToolTip.InitialDelay };
+      AmsatToolTipTimer.Tick += AmsatToolTipTimer_Tick;
+      listView1.MouseMove += listView1_MouseMove;
+      listView1.MouseLeave += listView1_MouseLeave;
 
       this.ctx.GroupViewPanel = this;
       this.ctx.MainForm.GroupViewMNU.Checked = true;
@@ -118,17 +132,34 @@ namespace SkyRoof
       }
 
       listView1.SmallImageList = imageList1;
-      var statuses = ctx.AmsatStatusLoader.Statuses;
+      var loader = ctx.AmsatStatusLoader;
 
       foreach (var item in Items)
       {
         int? norad_id = ((ItemData)item.Tag!).Sat.norad_cat_id;
+        bool? status = norad_id == null ? null : loader.IsActive(norad_id.Value);
 
-        if (norad_id != null && statuses.TryGetValue(norad_id.Value, out bool status))
-          item.ImageIndex = status ? 1 : 2;
+        if (status != null)
+          item.ImageIndex = status.Value ? 1 : 2;
         else
           item.ImageIndex = -1;
       }
+    }
+
+    private string MakeAmsatTooltip(SatnogsDbSatellite sat)
+    {
+      if (sat.norad_cat_id == null ||
+        !ctx.AmsatStatusLoader.Statuses.TryGetValue(sat.norad_cat_id.Value, out var statuses)) return "";
+
+      var active = statuses.Where(s => s.Active).OrderByDescending(s => s.LatestTime).ToArray();
+      if (active.Length == 0) return "No transmitters reported active";
+
+      var now = DateTime.UtcNow;
+      var lines = active.Select(s =>
+        $"{s.Mode}:  {Utils.TimespanToString(now - s.LatestTime, false)} ago,  " +
+        $"{s.ActiveCount} report{(s.ActiveCount == 1 ? "" : "s")}");
+
+      return $"Reported active:\n{string.Join("\n", lines)}";
     }
 
     public void UpdatePassTimes()
@@ -227,7 +258,50 @@ namespace SkyRoof
 
     private void GroupViewPanel_MouseClick(object sender, MouseEventArgs e)
     {
-      
+
+    }
+
+    private void listView1_MouseMove(object? sender, MouseEventArgs e)
+    {
+      var hit = listView1.HitTest(e.Location);
+      var item = hit.Location == ListViewHitTestLocations.Image && hit.Item?.ImageIndex >= 0 ? hit.Item : null;
+      if (item == AmsatToolTipItem) return;
+
+      HideAmsatToolTip();
+      if (item == null) return;
+
+      // show after the usual hover delay
+      AmsatToolTipItem = item;
+      listView1.EnableItemToolTips(false);
+      AmsatToolTipTimer?.Start();
+    }
+
+    private void listView1_MouseLeave(object? sender, EventArgs e)
+    {
+      HideAmsatToolTip();
+    }
+
+    private void AmsatToolTipTimer_Tick(object? sender, EventArgs e)
+    {
+      AmsatToolTipTimer!.Stop();
+      if (AmsatToolTipItem == null) return;
+
+      string text = MakeAmsatTooltip(((ItemData)AmsatToolTipItem.Tag!).Sat);
+      if (text == "") return;
+
+      var point = PointToClient(Cursor.Position);
+      point.Offset(0, 20);
+      AmsatToolTip!.Show(text, this, point);
+    }
+
+    private void HideAmsatToolTip()
+    {
+      AmsatToolTipTimer?.Stop();
+      if (AmsatToolTipItem == null) return;
+
+      AmsatToolTipItem = null;
+      AmsatToolTip?.Hide(this);
+      listView1.EnableItemToolTips(true);
     }
   }
 }

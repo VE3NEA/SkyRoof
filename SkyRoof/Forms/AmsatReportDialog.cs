@@ -49,9 +49,10 @@
       StartAutoClose();
     }
 
-    private void okBtn_Click(object sender, EventArgs e)
+    private async void okBtn_Click(object sender, EventArgs e)
     {
-      string? errorMessage = ctx.AmsatStatusLoader.SendAmsatStatus(comboBox1.Text, comboBox2.Text);
+      okBtn.Enabled = false;
+      string? errorMessage = await ctx.AmsatStatusLoader.SendAmsatStatusAsync(comboBox1.Text, comboBox2.Text);
       if (errorMessage != null)
         MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 

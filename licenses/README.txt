@@ -38,10 +38,6 @@ ft4_coder                   Copyright (C) Alex Shovkoplyas, VE3NEA
 .NET libraries
 --------------
 
-AngleSharp 1.3.0            Copyright (c) AngleSharp, 2013-2024
-                            MIT ..................................... MIT.txt
-                            https://anglesharp.github.io/
-
 CSCore 1.2.1.2              Copyright (c) Florian R.
                             Ms-PL ................................... Ms-PL.txt
                             https://github.com/filoe/cscore

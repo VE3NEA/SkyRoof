@@ -106,6 +106,16 @@ namespace VE3NEA
       SendMessage(tooltip, TTM_SETDELAYTIME, TTDT_AUTOMATIC, delayMs);
     }
 
+    // turns the native item tooltip off and on without touching ShowItemToolTips,
+    // whose setter recreates the handle
+    const int TTM_ACTIVATE = 0x400 + 1;
+
+    public void EnableItemToolTips(bool enable)
+    {
+      var tooltip = SendMessage(Handle, LVM_GETTOOLTIPS, 0, 0);
+      if (tooltip != IntPtr.Zero) SendMessage(tooltip, TTM_ACTIVATE, enable ? 1 : 0, 0);
+    }
+
     // The item tooltip is the native control's own, and the framework leaves it light in the
     // dark theme. Colors can be set on it, but the theme paints over them, so the theme has to
     // go first - which trades the themed frame for a tooltip that matches the ones ToolTipEx
