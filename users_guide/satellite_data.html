@@ -107,9 +107,9 @@ These abbreviations are stored in a file in the
 <a href="data_folder.html">Data folder</a>, you can view them in the
 <a href="satellite_details_window.html">Satellite Details window</a>.</p>
 </li>
-<li><p><a href="https://www.amsat.org/status/">AMSAT Live OSCAR Satellite Status Page</a> accepts satellite
-observations with their own satellite abbreviations, these abbreviations are stored in a file in the
-<a href="data_folder.html">Data folder</a>.</p>
+<li><p><a href="https://status.amsat.org/">AMSAT Satellite Status</a> accepts satellite
+observations with their own satellite abbreviations, these abbreviations are downloaded from AMSAT once a day
+and stored in the Downloads subfolder of the <a href="data_folder.html">Data folder</a>.</p>
 </li>
 </ul>
 <h2 id="signal-parameters">Signal Parameters</h2>
@@ -169,17 +169,23 @@ using the <strong>Tools / Load TLE from File</strong> menu command. Two TLE form
 </ul>
 <p>Note that TLE import cannot add new satellites, it only loads orbital elements for the satellites already in the database.</p>
 <h2 id="amsat-satellite-status">AMSAT Satellite Status</h2>
-<p><a href="https://www.amsat.org/status/">AMSAT Live OSCAR Satellite Status Page</a> is a crowd-sourced, real-time Ham satellite status page.</p>
+<p><a href="https://status.amsat.org/">AMSAT Satellite Status</a> is a crowd-sourced, real-time Ham satellite status service.
+SkyRoof exchanges data with it via the AMSAT Satellite Status API.</p>
 <h3 id="posting-status-data">Posting Status Data</h3>
 <p>You can post your satellite status observations the the AMSAT web site either by filling the submission form on their
 site, or using the right-click menu of the satellite   labels on the <a href="frequency_scale.html">Frequency Scale</a>.
 A valid Ham callsign must be entered in the <a href="settings_window.html">Settings window</a> for this function to work.</p>
 <h3 id="downloading-status-data">Downloading Status Data</h3>
 <p>Set the <strong>Amsat Satellite Status / Enable</strong> option in the Settings window to <code>true</code> to enable automatic downloads of the
-satellite status information from the AMSAT web site. The statuses are shown on the <a href="current_group_panel.html">Current Group</a>
-panel, the green and red icons represent the active and inactive status respectively.</p>
-<p>Satellite status data are downloaded once an hour. You can manually download it at any time using the
-<strong>Tools / Download AMSAT Statuses</strong> menu command.</p>
+satellite status information from AMSAT. The statuses are shown on the <a href="current_group_panel.html">Current Group</a>
+panel, the green and red icons represent the active and inactive status respectively. A satellite is shown as active
+if at least one of its transmitters was reported heard in the latest reports. Move the mouse cursor over the icon
+to see which transmitters were reported active, how long ago, and how many reports were received.</p>
+<p>Satellite status data are downloaded every 15 minutes. You can manually download it at any time using the
+<strong>Tools / Download AMSAT Statuses</strong> menu command. If the statuses cannot be updated for more than 2 hours,
+the icons are hidden.</p>
+<p>The time of the last status download is shown in the tooltip of the <strong>Satellite Data</strong> light on the status bar.
+If a download fails, the light turns yellow, and the tooltip shows the reason.</p>
 
 </article>
 

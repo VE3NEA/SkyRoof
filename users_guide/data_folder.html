@@ -100,11 +100,6 @@
 <ul>
 <li><p><strong>Settings.json</strong> - this is the file where all user-defined settings are stored;</p>
 </li>
-<li><p><strong>amsat_sat_names.json</strong> - satellite names used on
-<a href="https://www.amsat.org/status/">AMSAT Live OSCAR Satellite Status Page</a>. The
-<a href="frequency_scale.html">Frequency Scale</a> section explains how to post your observations
-to this page;</p>
-</li>
 <li><p><strong>lotw_sat_names.json</strong> - the list of satellite abbreviations accepted by
 <a href="https://www.arrl.org/quick-start">LoTW</a>;</p>
 </li>
@@ -123,7 +118,9 @@ keeps up to date; mark an entry <code>&quot;read_only&quot;: true</code> to prot
 <ul>
 <li><strong>Logs</strong> - contains the log files with error messages and other information;</li>
 <li><strong>Adif</strong> - QSO records stored in the ADIF format;</li>
-<li><strong>Downloads</strong> - a copy of the satellite data downloaded from various sources, kept for troubleshooting;</li>
+<li><strong>Downloads</strong> - a copy of the satellite data downloaded from various sources, kept for troubleshooting;
+this folder also stores <strong>amsat_catalog.json</strong>, the satellite names used by
+<a href="https://status.amsat.org/">AMSAT Satellite Status</a>;</li>
 <li><strong>Palettes</strong> - definition of the color palettes used by the waterfall display. Add your own
 palette as a text file with &quot;html&quot; color codes. Pick the color codes at
 <a href="https://htmlcolorcodes.com/">htmlcolorcodes.com</a>;</li>
