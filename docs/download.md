@@ -18,7 +18,7 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 
 #### v.1.58
 
-- AMSAT satellite status via the new AMSAT Satellite Status APIt
+- AMSAT satellite status via the new AMSAT Satellite Status API
 
 #### v.1.57
 
