@@ -13,11 +13,6 @@ SkyRoof keeps all of its data in the **data folder**.
 
 - **Settings.json** - this is the file where all user-defined settings are stored;
 
-- **amsat_sat_names.json** - satellite names used on
-    [AMSAT Live OSCAR Satellite Status Page](https://www.amsat.org/status/). The
-    [Frequency Scale](frequency_scale.md) section explains how to post your observations
-    to this page;
-
 - **lotw_sat_names.json** - the list of satellite abbreviations accepted by
     [LoTW](https://www.arrl.org/quick-start);
 
@@ -36,6 +31,8 @@ SkyRoof keeps all of its data in the **data folder**.
 - **Logs** - contains the log files with error messages and other information;
 - **Adif** - QSO records stored in the ADIF format;
 - **Downloads** - a copy of the satellite data downloaded from various sources, kept for troubleshooting;
+    this folder also stores **amsat_catalog.json**, the satellite names used by
+    [AMSAT Satellite Status](https://status.amsat.org/);
 - **Palettes** - definition of the color palettes used by the waterfall display. Add your own
     palette as a text file with "html" color codes. Pick the color codes at
     [htmlcolorcodes.com](https://htmlcolorcodes.com/);

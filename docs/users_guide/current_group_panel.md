@@ -5,7 +5,8 @@ The Current Satellite Group panel shows the list of the satellites in the curren
 ![Current Group Panel](../images/current_group.png)
 
 The green and red icons indicate real-time satellite status (active or inactive) according
-to the AMSAT web site. See
+to the AMSAT Satellite Status service. Move the mouse cursor over the icon to see which transmitters
+were reported active, how long ago, and how many reports were received. See
 [Satellite Data](satellite_data.md) for details.
 
 Click on a satellite to select it.

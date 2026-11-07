@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.57](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.57/SkyRoofSetup-v.1.57.exe)
+[SkyRoof v.1.58](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.58/SkyRoofSetup-v.1.58.exe)
 
 <br>
 
@@ -15,6 +15,13 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.58
+
+- AMSAT satellite status via the new AMSAT Satellite Status API
+- satellite statuses updated every 15 minutes, outdated statuses hidden
+- tooltip on the AMSAT status icon lists the transmitters reported active
+- AMSAT download errors shown on the Satellite Data status light
 
 #### v.1.57
 
