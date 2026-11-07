@@ -18,10 +18,7 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 
 #### v.1.58
 
-- AMSAT satellite status via the new AMSAT Satellite Status API
-- satellite statuses updated every 15 minutes, outdated statuses hidden
-- tooltip on the AMSAT status icon lists the transmitters reported active
-- AMSAT download errors shown on the Satellite Data status light
+- AMSAT satellite status via the new AMSAT Satellite Status APIt
 
 #### v.1.57
 
