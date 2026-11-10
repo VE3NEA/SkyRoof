@@ -263,8 +263,10 @@ namespace SkyRoof
 
     private void listView1_MouseMove(object? sender, MouseEventArgs e)
     {
-      var hit = listView1.HitTest(e.Location);
-      var item = hit.Location == ListViewHitTestLocations.Image && hit.Item?.ImageIndex >= 0 ? hit.Item : null;
+      // not HitTest(): in Details view it throws when the sub-item hit test returns -1
+      // (point on the row but outside all columns)
+      var item = listView1.GetItemAt(e.X, e.Y);
+      if (item != null && (item.ImageIndex < 0 || !item.GetBounds(ItemBoundsPortion.Icon).Contains(e.Location))) item = null;
       if (item == AmsatToolTipItem) return;
 
       HideAmsatToolTip();
