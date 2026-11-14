@@ -112,7 +112,17 @@
     <None Include="..\Vendor\SoapySDR\SDR\libad9361.dll" Link="lib\SoapySDR\modules0.8\libad9361.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\Vendor\SoapySDR\SDR\libiio.dll" Link="lib\SoapySDR\modules0.8\libiio.dll">
+    <!-- PlutoSDR: the 0.2.4 module and its dependencies; its libiio.dll replaces the one in SDR\ -->
+    <None Include="..\Vendor\SoapySDR\PlutoSDR-0.2.4\libiio.dll" Link="lib\SoapySDR\modules0.8\libiio.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Vendor\SoapySDR\PlutoSDR-0.2.4\libserialport-0.dll" Link="lib\SoapySDR\modules0.8\libserialport-0.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Vendor\SoapySDR\PlutoSDR-0.2.4\libxml2.dll" Link="lib\SoapySDR\modules0.8\libxml2.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Vendor\SoapySDR\PlutoSDR-0.2.4\PlutoSDRSupport.dll" Link="lib\SoapySDR\modules0.8\PlutoSDRSupport.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <!-- LimeSDR: LMS7Support.dll is the Soapy module and LimeSuite.dll the driver it links against.
