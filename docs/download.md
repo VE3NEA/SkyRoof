@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.58](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.58/SkyRoofSetup-v.1.58.exe)
+[SkyRoof v.1.59](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.59/SkyRoofSetup-v.1.59.exe)
 
 <br>
 
@@ -15,6 +15,12 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.59
+
+- added support of PlutoSDR
+- RTL-SDR driver updated, adds support of RTL-SDR Blog V4L
+- fixed a crash in the Current Group panel
 
 #### v.1.58
 

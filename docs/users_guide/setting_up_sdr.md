@@ -12,6 +12,7 @@ engine to interface with the SDR radios. The drivers for the following radios ar
 - RTL-SDR;
 - HackRF;
 - LimeSDR;
+- PlutoSDR;
 
 Radios that are not on this list can also be used, see
 [Adding Support of Other Radios](#adding-support-of-other-radios) below.
@@ -54,10 +55,6 @@ To add such a radio:
 
 - restart SkyRoof and open the **SDR Devices** dialog. The radio should appear in the list of devices.
 
-> [!NOTE]
-> Some driver modules interfere with the detection of other SDR devices. The PlutoSDR module is one such
-> example, and for this reason it is no longer included in the SkyRoof setup. If your radios are no longer
-> detected after you add a new module, delete that module from the `modules0.8` folder.
 
 ## Selecting an SDR device
 
