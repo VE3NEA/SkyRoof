@@ -33,8 +33,7 @@
 	  "pdfFileName": "skyroof_users_guide.pdf",
 	  "pdfTocPage": true,
 	  "pdfCoverPage": "users_guide/pdf_cover.html",
-	  "_disableContribution": true,
-    "_googleAnalyticsTagId": "G-1MMW827H44"
+	  "_disableContribution": true
     }
   }
 }

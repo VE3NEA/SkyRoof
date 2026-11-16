@@ -1,13 +1,31 @@
 using System.ComponentModel;
+using VE3NEA;
 
 namespace SkyRoof
 {
+  // the denoising filter applied to an SSTV image before it is auto-saved
+  public enum SstvSaveFilter
+  {
+    [Description("None")]
+    None,
+    [Description("Wiener")]
+    Wiener,
+    [Description("Non-local means")]
+    Nlm,
+  }
+
   public class TelemetrySettings
   {
     [DisplayName("Save to File")]
     [Description("Save decoded frames to a file")]
     [DefaultValue(false)]
     public bool ArchiveToFile { get; set; }
+
+    [DisplayName("SSTV Auto-Save Filter")]
+    [Description("Denoising filter applied to SSTV images when they are saved automatically")]
+    [DefaultValue(SstvSaveFilter.Wiener)]
+    [TypeConverter(typeof(EnumDescriptionConverter))]
+    public SstvSaveFilter SstvSaveFilter { get; set; } = SstvSaveFilter.Wiener;
 
     [DisplayName("KISS Server")]
     [TypeConverter(typeof(ExpandableObjectConverter))]

@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.54](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.54/SkyRoofSetup-v.1.54.exe)
+[SkyRoof v.1.59](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.59/SkyRoofSetup-v.1.59.exe)
 
 <br>
 
@@ -15,6 +15,32 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.59
+
+- added support of PlutoSDR
+- RTL-SDR driver updated, adds support of RTL-SDR Blog V4L
+- fixed a crash in the Current Group panel
+
+#### v.1.58
+
+- AMSAT satellite status via the new AMSAT Satellite Status API
+
+#### v.1.57
+
+- FT4 Console: nonstandard callsigns, such as VE3NEA/MM, use the WSJT-X message formats
+- fixed a crash when the remote SoapySDR server restarts
+- groups and satellites sorted in the Satellite Groups dialog
+
+#### v.1.56
+
+- support of SSDV format used by AO-123
+- user-selected default SSTV filter: None, Wiener, or NLM
+
+#### v.1.55
+
+- QSO structure updated for interface with ACLog by Keith KV5J
+- Auto Selection tunes to next satellite 30 s after LOS
 
 #### v.1.54
 

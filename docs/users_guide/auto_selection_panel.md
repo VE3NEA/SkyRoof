@@ -24,6 +24,12 @@ The panel shows the live status of auto-selection for the current group:
 - **Recording** — the recording type and elapsed time while a pass is being recorded, or **Off** when
   nothing is being recorded.
 
+When a pass ends and no other selected pass is up, the satellite that just set stays tuned for another 30
+seconds, so you can still hear signals that come in shortly after LOS. After that, the satellite of the next
+selected pass is tuned ahead of time, so the radio is ready when the pass starts. The pass itself becomes
+**Active**, and its recording starts, only at its AOS. If auto selection is turned on between passes, the
+next satellite is tuned right away.
+
 While auto selection is on, changing the satellite, transmitter, or group **by hand** stops auto selection
 and shows a message. Your manual change is applied normally; re-enable auto selection when you are ready.
 
@@ -96,8 +102,8 @@ overlap mode, this option belongs to the schedule, so each satellite group has i
 
 - When a pass is entered, the antenna starts tracking it and follows it until LOS.
 - One minute before the AOS of the next selected pass, the antenna is sent to the pass's rise point ahead
-  of time, so it is already in position when the pass starts. Only the antenna moves at this point; the
-  satellite is not selected or tuned until AOS.
+  of time, so it is already in position when the pass starts. Antenna tracking itself starts at AOS, when
+  the pass becomes active.
 - Outside that one-minute window, auto selection does not touch the rotator between passes, so you are
   free to move or track the antenna by hand in the gaps. If you click **Stop** during the pre-roll, the
   antenna stays where it is until the pass begins.

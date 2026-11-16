@@ -26,6 +26,10 @@ namespace SkyRoof
     // point this many seconds before AOS; switches between two live passes have no advance (§ grill design)
     private const int PreRollLeadSeconds = 60;
 
+    // idle-gap early tuning: this many seconds after LOS the radio is tuned to the next scheduled pass ahead
+    // of its AOS; the delay keeps the setting satellite tuned for signals still heard shortly after LOS
+    private const int PreselectDelaySeconds = 30;
+
     // set while the engine performs its own SetSelected* calls so the selector events do not read them
     // as a manual override (plan §2.4)
     private bool selecting;
@@ -37,6 +41,14 @@ namespace SkyRoof
     // the upcoming pass the idle-gap pre-roll has already been applied to; keeps UpdateIdleTracking from
     // running on every idle tick, so the user is free to stop the rotator during the pre-roll window
     private SatellitePass? idleTrackedPass;
+
+    // LOS time of the last active pass, which starts the PreselectDelaySeconds wait of the idle gap; null
+    // when auto-selection was switched on in a gap, so the early tuning runs at once
+    private DateTime? lastLosUtc;
+
+    // the upcoming pass the radio was tuned to ahead of its AOS in the current idle gap; keeps the early
+    // tuning to once per gap, and lets Tick skip the re-selection at AOS when the target is this pass
+    private SatellitePass? preselectedPass;
 
     // the engine's own headless recorder, separate from the manual RecorderPanel (plan §2.5); a segment
     // runs from selection to deselection/LOS and is saved as one file per contiguous segment
@@ -116,6 +128,8 @@ namespace SkyRoof
         if (!Settings.Schedules.TryGetValue(CurrentGroupId, out var schedule) || schedule.Sats.Count == 0)
           return;
 
+        // switched on, not re-enabled by the config dialog: a gap entered now tunes the next pass at once
+        if (!Enabled) lastLosUtc = null;
         Enabled = true;
         Settings.WasEnabled = true;
         Log.Information("Auto-selection started for group {GroupId}", CurrentGroupId);
@@ -131,6 +145,8 @@ namespace SkyRoof
         if (!closing) Settings.WasEnabled = false;
         ActivePass = null;
         idleTrackedPass = null;
+        preselectedPass = null;
+        lastLosUtc = null;
         if (wasEnabled) Log.Information("Auto-selection stopped");
       }
     }
@@ -226,20 +242,25 @@ namespace SkyRoof
 
       var target = ChooseTarget(schedule, candidates, now, ActivePass);
 
-      // idle gap - stop any recording (LOS) but stay tuned to the last transmitter. the pre-roll runs at
-      // most once per upcoming pass: once idleTrackedPass is set, this gap's antenna handling is done
+      // idle gap - stop any recording (LOS) and stay tuned to the last transmitter until the early tuning.
+      // the pre-roll and the early tuning each run at most once per gap: once idleTrackedPass /
+      // preselectedPass is set, that part of the gap handling is done
       if (target == null)
       {
+        if (ActivePass != null) lastLosUtc = now;           // the active pass has just ended
         EndSegment();
         ActivePass = null;
         if (idleTrackedPass == null) UpdateIdleTracking();
+        if (preselectedPass == null) UpdatePreselection(schedule, now);
         return;
       }
 
-      if (!IsSamePass(target, ActivePass))
-        SelectPass(schedule, target);
-      else
+      if (IsSamePass(target, ActivePass))
         ActivePass = target;                                // keep, refresh the reference
+      else if (IsSamePass(target, preselectedPass))
+        ActivatePreselectedPass(schedule, target);
+      else
+        SelectPass(schedule, target);
     }
 
     // picks the pass to be tuned at the given time, or null when none of the scheduled passes are up.
@@ -284,24 +305,62 @@ namespace SkyRoof
 
       EndSegment();                                         // stop + save the previous segment
 
+      TuneTo(schedule, pass.Satellite);
+
+      ActivePass = pass;
+      idleTrackedPass = null;                               // the idle gap is over, arm the next pre-roll
+      preselectedPass = null;                               // and the next early tuning
+      BeginSegment(schedule, pass);                         // start recording per the schedule's RecordMode
+      // re-assert tracking after the selection cascade above (SelectedPassChanged -> RotatorWidget.SetPass
+      // -> ResetUi) unchecked the track box; also handles the no-advance repoint at a sat-to-sat switch
+      if (CurrentSchedule?.TrackAntenna == true) ctx.RotatorControl.TrackPass(pass);
+    }
+
+    // AOS of the pass the radio was already tuned to in the idle gap: the same as SelectPass, minus the
+    // satellite and transmitter selection, so the selector events do not fire a second time
+    private void ActivatePreselectedPass(GroupSchedule schedule, SatellitePass pass)
+    {
+      Log.Information("Auto-selection activated {Sat} orbit #{Orbit}", pass.Satellite.name, pass.OrbitNumber);
+
+      ActivePass = pass;
+      idleTrackedPass = null;                               // the idle gap is over, arm the next pre-roll
+      preselectedPass = null;                               // and the next early tuning
+      BeginSegment(schedule, pass);                         // start recording per the schedule's RecordMode
+      // a no-op path rebuild if the pre-roll already tracks this pass; starts tracking if it does not
+      if (CurrentSchedule?.TrackAntenna == true) ctx.RotatorControl.TrackPass(pass);
+    }
+
+    // idle-gap early tuning: PreselectDelaySeconds after LOS (at once if auto-selection was switched on in
+    // the gap) tunes the radio to the next scheduled pass, without making it active or starting a recording.
+    // runs once per gap - a later change of the next pass is left to SelectPass at AOS
+    private void UpdatePreselection(GroupSchedule schedule, DateTime now)
+    {
+      if (lastLosUtc != null && now - lastLosUtc.Value < TimeSpan.FromSeconds(PreselectDelaySeconds)) return;
+
+      var next = GetNextSelection();
+      if (next == null) return;
+
+      preselectedPass = next.Value.Pass;
+      Log.Information("Auto-selection tuned to {Sat} orbit #{Orbit} ahead of AOS",
+        preselectedPass.Satellite.name, preselectedPass.OrbitNumber);
+      TuneTo(schedule, preselectedPass.Satellite);
+    }
+
+    // selects the satellite and its scheduled transmitter, guarded so the resulting events are not read as
+    // a manual override
+    private void TuneTo(GroupSchedule schedule, SatnogsDbSatellite sat)
+    {
       selecting = true;
       try
       {
-        ctx.SatelliteSelector.SetSelectedSatellite(pass.Satellite);
-        var tx = TransmitterFor(schedule, pass.Satellite);
+        ctx.SatelliteSelector.SetSelectedSatellite(sat);
+        var tx = TransmitterFor(schedule, sat);
         if (tx != null) ctx.SatelliteSelector.SetSelectedTransmitter(tx);
       }
       finally
       {
         selecting = false;
       }
-
-      ActivePass = pass;
-      idleTrackedPass = null;                               // the idle gap is over, arm the next pre-roll
-      BeginSegment(schedule, pass);                         // start recording per the schedule's RecordMode
-      // re-assert tracking after the selection cascade above (SelectedPassChanged -> RotatorWidget.SetPass
-      // -> ResetUi) unchecked the track box; also handles the no-advance repoint at a sat-to-sat switch
-      if (CurrentSchedule?.TrackAntenna == true) ctx.RotatorControl.TrackPass(pass);
     }
 
     // re-applies the active pass's scheduled transmitter. the engine tunes the transmitter only in

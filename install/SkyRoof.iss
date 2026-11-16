@@ -59,6 +59,9 @@ Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\lib\SoapySDR\modules0.8\ha
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\lib\SoapySDR\modules0.8\HackRFSupport.dll; DestDir: {app}\lib\SoapySDR\modules0.8; Flags: overwritereadonly ignoreversion
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\lib\SoapySDR\modules0.8\libad9361.dll; DestDir: {app}\lib\SoapySDR\modules0.8; Flags: overwritereadonly ignoreversion
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\lib\SoapySDR\modules0.8\libiio.dll; DestDir: {app}\lib\SoapySDR\modules0.8; Flags: overwritereadonly ignoreversion
+Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\lib\SoapySDR\modules0.8\libserialport-0.dll; DestDir: {app}\lib\SoapySDR\modules0.8; Flags: overwritereadonly ignoreversion
+Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\lib\SoapySDR\modules0.8\libxml2.dll; DestDir: {app}\lib\SoapySDR\modules0.8; Flags: overwritereadonly ignoreversion
+Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\lib\SoapySDR\modules0.8\PlutoSDRSupport.dll; DestDir: {app}\lib\SoapySDR\modules0.8; Flags: overwritereadonly ignoreversion
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\lib\SoapySDR\modules0.8\LimeSuite.dll; DestDir: {app}\lib\SoapySDR\modules0.8; Flags: overwritereadonly ignoreversion
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\lib\SoapySDR\modules0.8\LMS7Support.dll; DestDir: {app}\lib\SoapySDR\modules0.8; Flags: overwritereadonly ignoreversion
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\runtimes\win\lib\net10.0\System.Speech.dll; DestDir: {app}\runtimes\win\lib\net10.0; Flags: overwritereadonly ignoreversion
@@ -88,7 +91,6 @@ Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\Serilog.dll; DestDir: {app
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\Serilog.Sinks.File.dll; DestDir: {app}; Flags: overwritereadonly ignoreversion
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\SharpGL.dll; DestDir: {app}; Flags: overwritereadonly ignoreversion
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\SharpGL.SceneGraph.dll; DestDir: {app}; Flags: overwritereadonly ignoreversion
-Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\AngleSharp.dll; DestDir: {app}; Flags: overwritereadonly ignoreversion
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\ft4_coder.dll; DestDir: {app}; Flags: overwritereadonly ignoreversion
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\ft4_coder.pdb; DestDir: {app}; Flags: overwritereadonly ignoreversion
 Source: ..\SkyRoof\bin\x64\Release\net10.0-windows7.0\libquadmath-0.dll; DestDir: {app}; Flags: overwritereadonly ignoreversion

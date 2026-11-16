@@ -29,9 +29,20 @@ namespace VE3NEA
     public SoapySdrStream(IntPtr device)
     {
       Device = device;
-      SetupStream();
-      CreateBuffers();
-      ActivateStream();
+
+      // a constructor that throws leaves the caller no object to dispose, so whatever was set up
+      // before the failure is released here
+      try
+      {
+        SetupStream();
+        CreateBuffers();
+        ActivateStream();
+      }
+      catch
+      {
+        Dispose();
+        throw;
+      }
     }
 
     private void SetupStream()

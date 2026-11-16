@@ -235,9 +235,12 @@ namespace SkyRoof
 
       if (ChangedFields.Exists(s => s.StartsWith("SkyRoof.AmsatSettings.")))
         if (ctx.Settings.Amsat.Enabled)
-          ctx.AmsatStatusLoader.GetStatusesAsync().DoNotAwait();
+          ctx.AmsatStatusLoader.GetStatusesAsync(true).DoNotAwait();
         else
+        {
           ctx.GroupViewPanel?.ShowAmsatStatuses();
+          ctx.MainForm.ShowSatDataStatus();
+        }
 
       if (ChangedFields.Exists(s => s.StartsWith("SkyRoof.QsoEntrySettings.")))
         ctx.QsoEntryPanel?.ApplySettings();

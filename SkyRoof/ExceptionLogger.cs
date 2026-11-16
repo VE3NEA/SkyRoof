@@ -23,6 +23,11 @@ namespace VE3NEA
     private static NativeSoapySdr.SoapySDRLogHandlerDelegate LogHandlerDelegate = new(SoapySdrLogHandler);
     private static int MainThreadId;
 
+    // SoapySDR streaming status indicators (O, U, S, T) are counted and summarized periodically
+    private static readonly TimeSpan SsiSummaryInterval = TimeSpan.FromSeconds(60);
+    private static readonly Dictionary<char, int> SsiCounts = new();
+    private static readonly Stopwatch SsiStopwatch = Stopwatch.StartNew();
+
     public static void Initialize()
     {
       string appName = AppDomain.CurrentDomain.FriendlyName ?? "log";
@@ -113,9 +118,32 @@ namespace VE3NEA
       {
         if (messagePtr == IntPtr.Zero) return;
         string message = Marshal.PtrToStringAnsi(messagePtr)!;
-        Log.Information($"[{logLevel}]: {message}");
+
+        if (logLevel == NativeSoapySdr.SoapySDRLogLevel.SOAPY_SDR_SSI)
+          CountSsiMessage(message);
+        else
+          Log.Information($"[{logLevel}]: {message}");
       }
       catch { }
+    }
+
+    // the handler is invoked only when a message arrives, so the summary of the last
+    // batch of indicators is written when the next indicator comes in
+    private static void CountSsiMessage(string message)
+    {
+      lock (SsiCounts)
+      {
+        foreach (char c in message)
+          if (!char.IsWhiteSpace(c)) SsiCounts[c] = SsiCounts.GetValueOrDefault(c) + 1;
+
+        double seconds = SsiStopwatch.Elapsed.TotalSeconds;
+        if (seconds < SsiSummaryInterval.TotalSeconds) return;
+
+        string counts = string.Join(" ", SsiCounts.OrderBy(p => p.Key).Select(p => $"{p.Key}={p.Value}"));
+        Log.Information($"[SOAPY_SDR_SSI]: stream status in last {seconds:F0} s: {counts}");
+        SsiCounts.Clear();
+        SsiStopwatch.Restart();
+      }
     }
   }
 }

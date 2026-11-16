@@ -19,7 +19,6 @@ folder and are also in [the repository](https://github.com/VE3NEA/SkyRoof/tree/m
 - [MathNet.Filtering](https://github.com/mathnet/mathnet-filtering) — MIT
 - [Newtonsoft.Json](https://www.newtonsoft.com/json) — MIT
 - [Serilog](https://serilog.net/) — Apache-2.0
-- [AngleSharp](https://github.com/AngleSharp/AngleSharp) — MIT
 - [System.Drawing.Common](https://www.nuget.org/packages/System.Drawing.Common) — MIT
 - [System.Speech](https://www.nuget.org/packages/System.Speech) — MIT
 - [WSJT-X](https://wsjt.sourceforge.io/wsjtx.html) — GPL-3.0-or-later
@@ -72,6 +71,11 @@ and install them by hand:
 
 - [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) — Apache-2.0
 - [ONNX Runtime](https://onnxruntime.ai/) — MIT
+
+## Data
+
+- Satellite status data: [AMSAT](https://status.amsat.org) —
+  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 ## Fonts and Images
 

@@ -137,28 +137,39 @@ namespace VE3NEA
     {
       Log.Information($"Starting SDR Read thread");
 
-      Stream = new(Device);
+      // setting up the stream talks to the device and fails if a remote server has dropped the
+      // connection. an exception that escapes this thread would terminate the process, so the error
+      // is only logged, and Retry restarts the device once it is reachable again
+      try
+      {
+        Stream = new(Device);
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, $"{Info.Name} stream setup failed");
+      }
 
-      while (!Stopping)
-        try
-        {
-          Stream.ReadStream();
+      if (Stream != null)
+        while (!Stopping)
+          try
+          {
+            Stream.ReadStream();
 
-          // a timeout or an overflow yields no samples. an empty block has nothing for the
-          // consumers downstream, so do not pass it on
-          if (Stream.Args.Count == 0) continue;
+            // a timeout or an overflow yields no samples. an empty block has nothing for the
+            // consumers downstream, so do not pass it on
+            if (Stream.Args.Count == 0) continue;
 
-          Stream.Args.Utc = DateTime.UtcNow;
-          DataAvailable?.Invoke(this, Stream.Args);
-        }
-        catch (Exception ex)
-        {
-          Log.Error(ex, $"{Info.Name} read failed");
-          break;
-        }
+            Stream.Args.Utc = DateTime.UtcNow;
+            DataAvailable?.Invoke(this, Stream.Args);
+          }
+          catch (Exception ex)
+          {
+            Log.Error(ex, $"{Info.Name} read failed");
+            break;
+          }
 
       Log.Information($"Terminating SDR Read thread");
-      Stream.Dispose();
+      Stream?.Dispose();
       Stream = null;
       SoapySdr.ReleaseDevice(Device);
       Device = IntPtr.Zero;

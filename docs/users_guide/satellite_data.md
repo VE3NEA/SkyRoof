@@ -20,9 +20,9 @@ SkyRoof obtains satellite date from several sources:
     [Data folder](data_folder.md), you can view them in the
     [Satellite Details window](satellite_details_window.md).
 
-- [AMSAT Live OSCAR Satellite Status Page](https://www.amsat.org/status/) accepts satellite
-    observations with their own satellite abbreviations, these abbreviations are stored in a file in the
-    [Data folder](data_folder.md).
+- [AMSAT Satellite Status](https://status.amsat.org/) accepts satellite
+    observations with their own satellite abbreviations, these abbreviations are downloaded from AMSAT once a day
+    and stored in the Downloads subfolder of the [Data folder](data_folder.md).
 
 ## Signal Parameters
 
@@ -105,7 +105,8 @@ Note that TLE import cannot add new satellites, it only loads orbital elements f
 
 ## AMSAT Satellite Status
 
-[AMSAT Live OSCAR Satellite Status Page](https://www.amsat.org/status/) is a crowd-sourced, real-time Ham satellite status page.
+[AMSAT Satellite Status](https://status.amsat.org/) is a crowd-sourced, real-time Ham satellite status service.
+SkyRoof exchanges data with it via the AMSAT Satellite Status API.
 
 ### Posting Status Data
 
@@ -116,8 +117,14 @@ A valid Ham callsign must be entered in the [Settings window](settings_window.md
 ### Downloading Status Data
 
 Set the **Amsat Satellite Status / Enable** option in the Settings window to `true` to enable automatic downloads of the
-satellite status information from the AMSAT web site. The statuses are shown on the [Current Group](current_group_panel.md)
-panel, the green and red icons represent the active and inactive status respectively.
+satellite status information from AMSAT. The statuses are shown on the [Current Group](current_group_panel.md)
+panel, the green and red icons represent the active and inactive status respectively. A satellite is shown as active
+if at least one of its transmitters was reported heard in the latest reports. Move the mouse cursor over the icon
+to see which transmitters were reported active, how long ago, and how many reports were received.
 
-Satellite status data are downloaded once an hour. You can manually download it at any time using the
-**Tools / Download AMSAT Statuses** menu command.
+Satellite status data are downloaded every 15 minutes. You can manually download it at any time using the
+**Tools / Download AMSAT Statuses** menu command. If the statuses cannot be updated for more than 2 hours,
+the icons are hidden.
+
+The time of the last status download is shown in the tooltip of the **Satellite Data** light on the status bar.
+If a download fails, the light turns yellow, and the tooltip shows the reason.

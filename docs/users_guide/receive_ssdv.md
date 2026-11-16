@@ -16,8 +16,8 @@ you are decoding telemetry from a satellite that sends images, the images are de
 Two families of image transport are supported:
 
 - **SSDV packets** — the amateur-satellite digital SSTV format, where each packet carries the image
-  ID, its own position in the picture, and a checksum. Sent by **HADES-SA** and by
-  **JY1SAT (JO-97)**.
+  ID, its own position in the picture, and a checksum. Sent by **HADES-SA**, by
+  **JY1SAT (JO-97)**, and by **AO-123 (ASRTU-1)**.
 
 - **Raw JPEG fragments** — the picture is sent as byte ranges of the JPEG file itself. Sent by the
   **Geoscan** fleet and **Lobachevsky**, and by the **Sputnix** satellites — **Luca**, **239Alferov**
@@ -129,7 +129,7 @@ combined picture keeps filling in on screen.
 
 A few limits are worth knowing:
 
-- It works for SSDV as **HADES-SA** sends it, where each packet carries its own checksum, and for the
+- It works for SSDV as **HADES-SA** and **AO-123** send it, where each packet carries its own checksum, and for the
   raw JPEG of the **Geoscan** fleet and **Lobachevsky**, where a reception that contradicts the ones
   already merged is dropped whole instead. **JY1SAT** packets carry no checksum of their own and the
   **Sputnix** file transfers number a session rather than a file, so the menu item stays grayed out

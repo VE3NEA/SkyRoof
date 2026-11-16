@@ -92,6 +92,21 @@ The popup menu has commands to
  | DE   | AA0AA VE3NEA FN03   |
  | R-dB | AA0AA VE3NEA R-10   |
  | 73   | AA0AA VE3NEA 73     |
+
+#### Nonstandard Callsigns
+
+A nonstandard callsign, such as a compound call like VE3NEA/MM, cannot be sent together with a grid square or a signal report, so SkyRoof follows the WSJT-X convention: the CQ message has no grid square, the callsign in angle brackets is sent as a short hash code, and the full callsign is sent in the messages without a report. With VE3NEA/MM as your callsign, the messages are:
+
+ | Button | Example                 |
+ |--------|-------------------------|
+ | CQ     | CQ VE3NEA/MM            |
+ | DE     | &lt;AA0AA&gt; VE3NEA/MM       |
+ | dB     | AA0AA &lt;VE3NEA/MM&gt; -10   |
+ | R-dB   | AA0AA &lt;VE3NEA/MM&gt; R-10  |
+ | RR73   | &lt;AA0AA&gt; VE3NEA/MM RR73  |
+ | 73     | &lt;AA0AA&gt; VE3NEA/MM 73    |
+
+If the other station has a nonstandard callsign, the angle brackets go around that callsign instead. The receiving station shows a hashed callsign in full if it has received that callsign recently, otherwise it shows &lt;...&gt;. A QSO between two nonstandard callsigns is not possible.
  
 
  ## Making Contacts

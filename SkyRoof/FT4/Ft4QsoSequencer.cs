@@ -1,4 +1,5 @@
-﻿using VE3NEA;
+﻿using System.Text.RegularExpressions;
+using VE3NEA;
 
 namespace SkyRoof
 {
@@ -56,6 +57,9 @@ namespace SkyRoof
     //   - I clicked on a message, addressed to me or not (forceReply=true)
     public bool ProcessMessage(DecodedItem item, bool forceReply)
     {
+      // his call is an unresolved hash, <...>
+      if (string.IsNullOrEmpty(item.Parse.DECallsign)) return false;
+
       // I am in the middle of a qso and someone else calls me
       if (!forceReply && HisCall != null && item.Parse.DECallsign != HisCall) return false;
 
@@ -129,25 +133,52 @@ namespace SkyRoof
       return result;
     }
 
+    // nonstandard calls follow the WSJT-X convention: no grid in CQ, the nonstandard call hashed
+    // in messages with a grid or report, and sent in full in messages without them
     private void GenerateMessages()
     {
-      messages[(int)Ft4MessageType.CQ] = $"CQ {myCall} {mySquare}";
+      messages[(int)Ft4MessageType.CQ] = IsStandardCall(myCall) ? $"CQ {myCall} {mySquare}" : $"CQ {myCall}";
 
       if (HisCall != null)
       {
-        messages[(int)Ft4MessageType.DE] = $"{HisCall} {myCall} {mySquare}";
-        messages[(int)Ft4MessageType.dB] = $"{HisCall} {myCall} {IntToReport((int)HisSnr!)}";
-        messages[(int)Ft4MessageType.R_dB] = $"{HisCall} {myCall} R{IntToReport((int)HisSnr!)}";
-        messages[(int)Ft4MessageType.RR73] = $"{HisCall} {myCall} RR73";
-        messages[(int)Ft4MessageType._73] = $"{HisCall} {myCall} 73";
+        messages[(int)Ft4MessageType.DE] = IsStandardCall(myCall) ? $"{CallsWithInfo(HisCall)} {mySquare}" : CallsWithoutInfo(HisCall);
+        messages[(int)Ft4MessageType.dB] = $"{CallsWithInfo(HisCall)} {IntToReport((int)HisSnr!)}";
+        messages[(int)Ft4MessageType.R_dB] = $"{CallsWithInfo(HisCall)} R{IntToReport((int)HisSnr!)}";
+        messages[(int)Ft4MessageType.RR73] = $"{CallsWithoutInfo(HisCall)} RR73";
+        messages[(int)Ft4MessageType._73] = $"{CallsWithoutInfo(HisCall)} 73";
       }
       else
       {
         for (Ft4MessageType i = Ft4MessageType.Unknown; i <= Ft4MessageType._73; i++)
           messages[(int)i] = null;
 
-        if (LastHisCall != null) messages[(int)Ft4MessageType._73] = $"{LastHisCall} {myCall} 73";
+        if (LastHisCall != null) messages[(int)Ft4MessageType._73] = $"{CallsWithoutInfo(LastHisCall)} 73";
       }
+    }
+
+    // calls for a message with a grid or report: the nonstandard call is hashed (type 1)
+    private string CallsWithInfo(string hisCall)
+    {
+      if (!IsStandardCall(myCall)) return $"{hisCall} <{myCall}>";
+      if (!IsStandardCall(hisCall)) return $"<{hisCall}> {myCall}";
+      return $"{hisCall} {myCall}";
+    }
+
+    // calls for a message without a grid or report: the nonstandard call is sent in full,
+    // the standard one hashed (type 4)
+    private string CallsWithoutInfo(string hisCall)
+    {
+      if (!IsStandardCall(myCall)) return $"<{hisCall}> {myCall}";
+      if (!IsStandardCall(hisCall)) return $"{hisCall} <{myCall}>";
+      return $"{hisCall} {myCall}";
+    }
+
+    // same pattern as stdCall() in WSJT-X mainwindow.cpp
+    private static readonly Regex StandardCallRegex = new(@"^([A-Z]{0,2}|[A-Z][0-9]|[0-9][A-Z])[0-9][A-Z]{0,3}(/R|/P)?$");
+
+    public static bool IsStandardCall(string call)
+    {
+      return StandardCallRegex.IsMatch(call.Trim().ToUpperInvariant());
     }
 
     public bool IsMessageAvailable(Ft4MessageType type)

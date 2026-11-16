@@ -22,9 +22,9 @@ namespace SkyRoof
     public string Notes { get; set; } = string.Empty;
     
 
-    public string StatusString = string.Empty;
-    public string BackColor = "#FFFFFF";
-    public string ForeColor = "#000000";
+    public string StatusString { get; set; } = string.Empty;
+    public string BackColor { get; set; } = "#FFFFFF";
+    public string ForeColor { get; set; } = "#000000";
     
     internal ulong TxFreq;
 

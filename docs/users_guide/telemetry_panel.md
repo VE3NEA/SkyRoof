@@ -26,7 +26,7 @@ is covered separately in [Receive SSTV Images](recevie_sstv.md).
 Some satellites send more than telemetry in their frames, and the panel reconstructs that too, with
 nothing extra to turn on:
 
-- **SSDV images** — still pictures sent as data, either as SSDV packets (HADES-SA, JY1SAT) or as raw
+- **SSDV images** — still pictures sent as data, either as SSDV packets (HADES-SA, JY1SAT, AO-123) or as raw
   JPEG fragments (the Geoscan fleet, Lobachevsky, and the Sputnix satellites). See
   [Receive SSDV Images](receive_ssdv.md);
 - **Codec2 voice messages** — short recorded speech compressed to a few hundred bits per second and
@@ -225,7 +225,9 @@ Select a **frame** node to see its full contents:
   where the frame has them, the named telemetry values decoded from it (battery voltage,
   temperatures, and so on) for satellites that SkyRoof has a telemetry definition for, and, on the
   Geoscan fleet, the sending satellite and the message type, including where an image frame's bytes
-  belong in the picture. The section is omitted when none of these apply;
+  belong in the picture. On **AO-123** it shows the CCSDS frame header — spacecraft ID, virtual
+  channel and frame counters — followed by the SSDV packet header on an image frame, or the text of
+  the callsign beacon. The section is omitted when none of these apply;
 - **ASCII** — the frame bytes rendered as text;
 - **HEX** — a hex dump of the frame bytes;
 - **META** — the carrier frequency offset (CFO), signal-to-noise ratio (SNR), CRC check result, and

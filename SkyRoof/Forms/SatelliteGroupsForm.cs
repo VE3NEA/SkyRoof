@@ -53,18 +53,17 @@ namespace SkyRoof
       ApplyFilter();
       UpdatedDateLabel.Text = $"Updated {updateTime:yyyy-MM-dd}";
 
-      // groups to treeview
+      // groups to treeview, sorted alphabetically and collapsed
       foreach (var group in ctx.Settings.Satellites.SatelliteGroups)
       {
         var node = new TreeNode(group.Name);
         node.Tag = group;
-        treeView1.Nodes.Add(node);
+        InsertSorted(treeView1.Nodes, node);
         foreach (var satId in group.SatelliteIds)
         {
           var sat = ctx.SatnogsDb.GetSatellite(satId);
-          if (sat != null) node.Nodes.Add(NodeFromSat(sat));
+          if (sat != null) InsertSorted(node.Nodes, NodeFromSat(sat));
         }
-        node.Expand();
       }
     }
 
@@ -256,6 +255,29 @@ namespace SkyRoof
       //  Announcer.SaySatName(((SatnogsDbSatellite)treeView1.SelectedNode.Tag).name);
     }
 
+    // insert node keeping the groups, or the sats in a group, sorted alphabetically
+    private static void InsertSorted(TreeNodeCollection nodes, TreeNode node)
+    {
+      int index = 0;
+      while (index < nodes.Count && string.Compare(nodes[index].Text, node.Text, StringComparison.CurrentCultureIgnoreCase) <= 0) index++;
+      nodes.Insert(index, node);
+    }
+
+    // move a renamed node to its sorted position
+    private static void ResortNode(TreeNode node)
+    {
+      var treeView = node.TreeView;
+      var nodes = node.Parent?.Nodes ?? treeView.Nodes;
+      bool wasExpanded = node.IsExpanded;
+      bool wasSelected = treeView.SelectedNode == node;
+
+      node.Remove();
+      InsertSorted(nodes, node);
+
+      if (wasExpanded) node.Expand();
+      if (wasSelected) treeView.SelectedNode = node;
+    }
+
     // sat or group rename finished
     private void treeView1_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
     {
@@ -309,7 +331,7 @@ namespace SkyRoof
       if (string.IsNullOrWhiteSpace(name)) return;
 
       var node = new TreeNode(name);
-      treeView1.Nodes.Add(node);
+      InsertSorted(treeView1.Nodes, node);
       treeView1.SelectedNode = node;
 
       Changed = true;
@@ -378,7 +400,11 @@ namespace SkyRoof
       var node = treeView1.Nodes.Cast<TreeNode>()
         .SelectMany(n => n.Nodes.Cast<TreeNode>())
         .FirstOrDefault(n => n.Tag == sat);
-      if (node != null) node.Text = sat.name;
+      if (node != null)
+      {
+        node.Text = sat.name;
+        ResortNode(node);
+      }
     }
 
     private void DetailsMNU_Click(object sender, EventArgs e)
@@ -425,6 +451,7 @@ namespace SkyRoof
         if (item != null) { item.Text = sat.name; listView1.Invalidate(); }
       }
 
+      ResortNode(sel);
       Changed = true;
     }
 
@@ -478,6 +505,9 @@ namespace SkyRoof
 
     private void treeView1_ItemDrag(object sender, ItemDragEventArgs e)
     {
+      // groups are sorted alphabetically, they cannot be re-ordered
+      if (((TreeNode)e.Item).Level == 0) return;
+
       var effect = ModifierKeys.HasFlag(Keys.Control) ? DragDropEffects.Copy : DragDropEffects.Move;
       DoDragDrop(e.Item, DragDropEffects.All);
     }
@@ -526,34 +556,22 @@ namespace SkyRoof
       var existingSats = existingNodes.Cast<TreeNode>().Select(n => (SatnogsDbSatellite)n.Tag).ToList();
       var newNodes = sats.Except(existingSats).Select(NodeFromSat).ToList();
 
-      foreach (var node in newNodes)
-        if (dst.Level == 0) existingNodes.Add(node);
-        else existingNodes.Insert(dst.Index, node);
+      foreach (var node in newNodes) InsertSorted(existingNodes, node);
 
       dst.Expand();
       Changed = true;
     }
 
+    // move or copy sat to another group
     private void MoveOrCopyNode(TreeNode? src, TreeNode dst, DragDropEffects effect)
     {
-      bool isGroup = src.Level == 0;
-
       if (effect == DragDropEffects.Move)
         src.Remove();
       else
-      {
         src = src.Clone() as TreeNode;
-        if (isGroup) src.Text += " (copy)";
-      }
 
-      // dragging group
-      if (isGroup) treeView1.Nodes.Insert(dst.Index, src);
-
-      // dragging sat to group
-      else if (dst.Level == 0) dst.Nodes.Insert(dst.Index, src);
-
-      // dragging sat to sibling
-      else dst.Parent.Nodes.Insert(dst.Index, src);
+      var dstGroup = dst.Level == 0 ? dst : dst.Parent;
+      InsertSorted(dstGroup.Nodes, src);
 
       Changed = true;
     }
@@ -567,18 +585,11 @@ namespace SkyRoof
       var src = data.GetData(typeof(TreeNode)) as TreeNode;
       if (src != null)
       {
-        // do not drop on itself, its own parent or next node, do not drop group on sat
-        bool ok = !dst.Equals(src) && !dst.Equals(src.Parent) && !dst.Equals(src.NextNode) && dst.Level <= src.Level;
-        if (!ok) return false;
+        // groups, and sats within a group, are sorted alphabetically and cannot be re-ordered
+        if (src.Level == 0) return false;
 
-        // dragging group
-        if (src.Level == 0) return true;
-
-        // dropping sat on another group
-        if (!dstSats.Contains(src.Tag)) return true;
-
-        // dropping in sibling 
-        if (dst.Level == 1) return dst.Parent.Equals(src.Parent);
+        // dropping sat on another group that does not have it yet
+        return !dstSats.Contains(src.Tag);
       }
 
       // dragging multiple listview items
