@@ -561,7 +561,7 @@ namespace SkyRoof
           tle2 = lines[i + 2].Trim(),
           tle_source = "Local file",
           updated = DateTime.Now,
-          norad_cat_id = int.Parse(lines[i + 1].Substring(2, 5).Trim(), CultureInfo.InvariantCulture)
+          norad_cat_id = SatelliteTracker.ParseCatalogNumber(lines[i + 1].Substring(2, 5))
         });
 
       return tles;
