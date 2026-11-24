@@ -4,7 +4,7 @@
 
 ### Current Version
 
-[SkyRoof v.1.59](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.59/SkyRoofSetup-v.1.59.exe)
+[SkyRoof v.1.60](https://github.com/VE3NEA/SkyRoof/releases/download/v.1.60/SkyRoofSetup-v.1.60.exe)
 
 <br>
 
@@ -15,6 +15,13 @@ See [All Releases](https://github.com/VE3NEA/SkyRoof/releases)
 <br>
 
 ### Release Notes
+
+#### v.1.60
+
+- CAT control of 10m (29.0-29.7 MHz) uplinks and downlinks
+- 10m satellites included in the ham satellite passes
+- support of the new Alpha-5 catalog numbers, used by satellites such as UNNE-1B
+- fixed SDR passes listing satellites that have no downlink within the SDR frequency range
 
 #### v.1.59
 
