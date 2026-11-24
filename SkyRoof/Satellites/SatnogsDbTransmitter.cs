@@ -125,6 +125,12 @@ namespace SkyRoof
       return IsUhfFrequency((double)freq);
     }
 
+    public bool IsHf(long? freq = null)
+    {
+      freq ??= DownlinkLow;
+      return IsHfFrequency((double)freq);
+    }
+
     public static bool IsVhfFrequency(double freq)
     {
       return freq >= 144000000 && freq <= 148000000;
@@ -135,9 +141,30 @@ namespace SkyRoof
       return freq >= 430000000 && freq <= 440000000;
     }
 
+    // the 10m satellite segment
+    public static bool IsHfFrequency(double freq)
+    {
+      return freq >= 29000000 && freq <= 29700000;
+    }
+
     public static bool IsHamFrequency(double freq)
     {
       return IsVhfFrequency(freq) || IsUhfFrequency(freq);
+    }
+
+    // bands where an external radio may be tuned via CAT. unlike IsHamFrequency, includes 10m,
+    // IsHamFrequency is also used to choose between HamPasses and SdrPasses and must not change
+    public static bool IsCatFrequency(double freq)
+    {
+      return IsHfFrequency(freq) || IsHamFrequency(freq);
+    }
+
+    public static string GetBandName(double freq)
+    {
+      if (IsUhfFrequency(freq)) return "70cm";
+      if (IsVhfFrequency(freq)) return "2m";
+      if (IsHfFrequency(freq)) return "10m";
+      return string.Empty;
     }
 
     internal bool HasUplink()

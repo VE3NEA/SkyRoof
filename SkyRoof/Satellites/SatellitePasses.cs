@@ -69,7 +69,8 @@ namespace SkyRoof
     protected override IEnumerable<SatnogsDbSatellite> ListSatellites()
     {
       return ctx.SatnogsDb.Satellites.Where(
-        sat => sat.Flags.HasFlag(SatelliteFlags.Vhf) || sat.Flags.HasFlag(SatelliteFlags.Uhf));
+        sat => sat.Flags.HasFlag(SatelliteFlags.Vhf) || sat.Flags.HasFlag(SatelliteFlags.Uhf) ||
+          sat.Transmitters.Any(tx => tx.IsHf()));
     }
   }
 
@@ -115,9 +116,9 @@ namespace SkyRoof
     {
       if (StartFrequency == 0 || EndFrequency == 0) return Array.Empty<SatnogsDbSatellite>();
 
+      // the same transmitter must be within the SDR range, not one above the start and another below the end
       return ctx.SatnogsDb.Satellites.Where(sat =>
-        sat.Transmitters.Any(tx => tx.DownlinkLow >= StartFrequency) &&
-        sat.Transmitters.Any(tx => tx.DownlinkLow <= EndFrequency));
+        sat.Transmitters.Any(tx => tx.DownlinkLow >= StartFrequency && tx.DownlinkLow <= EndFrequency));
     }
 }
 

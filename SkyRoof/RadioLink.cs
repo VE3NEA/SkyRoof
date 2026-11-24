@@ -90,14 +90,12 @@ namespace SkyRoof
     // -DownlinkFrequency * DopplerFactor and its time derivative is -DownlinkFrequency * factorRate.
     public double DownlinkDopplerRate =>
       DownlinkDopplerCorrectionEnabled ? -DownlinkFrequency * DopplerEstimator.FactorRate : 0;
-    public bool HasUplink => !IsTerrestrial && UplinkFrequency > 0 && SatnogsDbTransmitter.IsHamFrequency(UplinkFrequency);
+    public bool HasUplink => !IsTerrestrial && UplinkFrequency > 0 && SatnogsDbTransmitter.IsCatFrequency(UplinkFrequency);
     public bool IsTransponder => Tx != null &&
       Tx.downlink_high.HasValue && Tx.downlink_high != Tx.downlink_low &&
       Tx.uplink_low.HasValue && Tx.uplink_high.HasValue;
-    public bool IsCrossBand => HasUplink && 
-      ((SatnogsDbTransmitter.IsUhfFrequency(UplinkFrequency) != SatnogsDbTransmitter.IsUhfFrequency(DownlinkFrequency)) 
-      ||
-      (SatnogsDbTransmitter.IsVhfFrequency(UplinkFrequency) != SatnogsDbTransmitter.IsVhfFrequency(DownlinkFrequency)));
+    public bool IsCrossBand => HasUplink &&
+      SatnogsDbTransmitter.GetBandName(UplinkFrequency) != SatnogsDbTransmitter.GetBandName(DownlinkFrequency);
 
 
     public void ObserveSatellite(SatellitePasses engine)
